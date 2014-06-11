@@ -1,0 +1,112 @@
+/***************************************************************************
+ *   Copyright (c) 2014 Abdullah Tahiri <abdullah.tahiri.yo@gmail.com	     *
+ *                                                                         *
+ *   This file is part of the FreeCAD CAx development system.              *
+ *                                                                         *
+ *   This library is free software; you can redistribute it and/or         *
+ *   modify it under the terms of the GNU Library General Public           *
+ *   License as published by the Free Software Foundation; either          *
+ *   version 2 of the License, or (at your option) any later version.      *
+ *                                                                         *
+ *   This library  is distributed in the hope that it will be useful,      *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU Library General Public License for more details.                  *
+ *                                                                         *
+ *   You should have received a copy of the GNU Library General Public     *
+ *   License along with this library; see the file COPYING.LIB. If not,    *
+ *   write to the Free Software Foundation, Inc., 59 Temple Place,         *
+ *   Suite 330, Boston, MA  02111-1307, USA                                *
+ *                                                                         *
+ ***************************************************************************/
+
+
+#ifndef GUI_TASKVIEW_TaskSketcherElements_H
+#define GUI_TASKVIEW_TaskSketcherElements_H
+
+#include <Gui/TaskView/TaskView.h>
+#include <Gui/Selection.h>
+#include <boost/signals.hpp>
+
+namespace App {
+class Property;
+}
+
+namespace SketcherGui {
+
+class ViewProviderSketch;
+class Ui_TaskSketcherElements;
+
+class ElementView : public QListWidget
+{
+    Q_OBJECT
+
+public:
+    explicit ElementView(QWidget *parent = 0);
+    ~ElementView();
+
+        
+Q_SIGNALS:
+    void onFilterChange();  
+    
+protected:
+    void contextMenuEvent (QContextMenuEvent* event);
+    void keyPressEvent(QKeyEvent * event);
+
+protected Q_SLOTS:
+    void deleteSelectedItems();
+    void doHorizontalDistance();
+    void doVerticalDistance();
+    void doHorizontalConstraint();
+    void doVerticalConstraint();
+    void doLockConstraint();
+    void doPointCoincidence();
+    void doParallelConstraint();
+    void doPerpendicularConstraint();
+    void doLengthConstraint();
+    void doRadiusConstraint();
+    void doAngleConstraint();
+    void doEqualConstraint();
+    void doPointOnObjectConstraint();
+    void doSymetricConstraint();
+    void doTangentConstraint();
+
+};
+
+class TaskSketcherElements : public Gui::TaskView::TaskBox, public Gui::SelectionObserver
+{
+    Q_OBJECT
+
+public:
+    TaskSketcherElements(ViewProviderSketch *sketchView);
+    ~TaskSketcherElements();
+
+    /// Observer message from the Selection
+    void onSelectionChanged(const Gui::SelectionChanges& msg);
+
+private:
+    void slotElementsChanged(void);
+
+public Q_SLOTS:
+    void on_listWidgetElements_itemSelectionChanged(void); 
+    void on_listWidgetElements_itemEntered(QListWidgetItem *item);
+    void on_listWidgetElements_filterChanged();
+
+protected:
+    void changeEvent(QEvent *e);
+    ViewProviderSketch *sketchView;
+    typedef boost::BOOST_SIGNALS_NAMESPACE::connection Connection;
+    Connection connectionElementsChanged;
+
+private:
+    QWidget* proxy;
+    bool inEditMode;
+    Ui_TaskSketcherElements* ui;
+    QListWidgetItem * focusItem;
+    
+    bool inhibitSelectionUpdate;
+};
+
+} //namespace SketcherGui
+
+#endif // GUI_TASKVIEW_TASKAPPERANCE_H
