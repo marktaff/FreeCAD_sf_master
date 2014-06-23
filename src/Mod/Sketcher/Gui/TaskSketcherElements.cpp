@@ -71,13 +71,11 @@ public:
         : QListWidgetItem(icon,text),ElementNbr(ConstNbr),isLineSelected(false),
 	  isStartingPointSelected(false),isEndPointSelected(false),isMidPointSelected(false)
     {
-        this->setFlags(this->flags() | Qt::ItemIsEditable);
     }
     ElementItem(const QString & text,int ConstNbr)
         : QListWidgetItem(text),ElementNbr(ConstNbr),isLineSelected(false),
 	  isStartingPointSelected(false),isEndPointSelected(false),isMidPointSelected(false)
     {
-        this->setFlags(this->flags() | Qt::ItemIsEditable);
     }
     ~ElementItem()
     {
@@ -197,14 +195,14 @@ void ElementView::keyPressEvent(QKeyEvent * event)
 
 TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
     : TaskBox(Gui::BitmapFactory().pixmap("document-new"),tr("Elements"),true, 0),
-    sketchView(sketchView), inEditMode(false), inhibitSelectionUpdate(false)
+    sketchView(sketchView), inhibitSelectionUpdate(false), focusItemIndex(-1)
 {
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
     ui = new Ui_TaskSketcherElements();
     ui->setupUi(proxy);
     ui->listWidgetElements->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    ui->listWidgetElements->setEditTriggers(QListWidget::EditKeyPressed);
+    ui->listWidgetElements->setEditTriggers(QListWidget::NoEditTriggers);
     ui->listWidgetElements->setMouseTracking(true);
 
     // connecting the needed signals
@@ -270,13 +268,13 @@ void TaskSketcherElements::onSelectionChanged(const Gui::SelectionChanges& msg)
 		  int pos = expr.indexOf(rx);
 		  if (pos > -1) {
 		      bool ok;
-		      int ConstrId = rx.cap(1).toInt(&ok) - 1;
+		      int ElementId = rx.cap(1).toInt(&ok) - 1;
 		      if (ok) {
 			  int countItems = ui->listWidgetElements->count();
 			  for (int i=0; i < countItems; i++) {
 			      ElementItem* item = static_cast<ElementItem*>
 				  (ui->listWidgetElements->item(i));
-			      if (item->ElementNbr == ConstrId) {
+			      if (item->ElementNbr == ElementId) {
 				  item->isLineSelected=select;
 				  break;
 			      }
@@ -289,12 +287,12 @@ void TaskSketcherElements::onSelectionChanged(const Gui::SelectionChanges& msg)
 		  int pos = expr.indexOf(rx);
 		  if (pos > -1) {
 		      bool ok;
-		      int ConstrId = rx.cap(1).toInt(&ok) - 1;
+		      int ElementId = rx.cap(1).toInt(&ok) - 1;
 		      if (ok) {
 			  // Get the GeoID&Pos
 			  int GeoId; 
 			  Sketcher::PointPos PosId;
-			  sketchView->getSketchObject()->getGeoVertexIndex(ConstrId,GeoId, PosId);
+			  sketchView->getSketchObject()->getGeoVertexIndex(ElementId,GeoId, PosId);
 			  
 			  int countItems = ui->listWidgetElements->count();
 			  for (int i=0; i < countItems; i++) {
@@ -321,12 +319,13 @@ void TaskSketcherElements::onSelectionChanged(const Gui::SelectionChanges& msg)
 		}
 		// update the listwidget
 		int element=ui->comboBoxElementFilter->currentIndex();
-		
+
+		ui->listWidgetElements->blockSignals(true);
+
+
 		for (int i=0;i<ui->listWidgetElements->count(); i++) {
 		    ElementItem * ite=static_cast<ElementItem*>(ui->listWidgetElements->item(i));
-		    
-		    ui->listWidgetElements->blockSignals(true);
-		    
+		       
 		    switch(element){
 		      case 0:		
 			  ite->setSelected(ite->isLineSelected);
@@ -341,10 +340,9 @@ void TaskSketcherElements::onSelectionChanged(const Gui::SelectionChanges& msg)
 			  ite->setSelected(ite->isMidPointSelected);
 			  break;	
 		    }
-		    
-		    ui->listWidgetElements->blockSignals(false);
 		}
-		
+
+		ui->listWidgetElements->blockSignals(false);
 
             }
         }
@@ -364,25 +362,32 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
     // we can not do this with ItemPressed because that signal is triggered after this one
     int element=ui->comboBoxElementFilter->currentIndex();
     
-    ElementItem * itf=static_cast<ElementItem*>(focusItem);
+    ElementItem * itf;
+    
+    if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count())
+      itf=static_cast<ElementItem*>(ui->listWidgetElements->item(focusItemIndex));
+    else
+      itf=NULL;
     
     bool multipleselection=true;
     
     if(!inhibitSelectionUpdate){	
-      switch(element){
-	case 0:
-	    itf->isLineSelected=!itf->isLineSelected;	
-	    break;
-	case 1:
-	    itf->isStartingPointSelected=!itf->isStartingPointSelected;
-	    break;
-	case 2:
-	    itf->isEndPointSelected=!itf->isEndPointSelected;
-	    break;
-	case 3:
-	    itf->isMidPointSelected=!itf->isMidPointSelected;
-	    break;	
-      } 
+      if(itf!=NULL) {
+	switch(element){
+	  case 0:
+	      itf->isLineSelected=!itf->isLineSelected;	
+	      break;
+	  case 1:
+	      itf->isStartingPointSelected=!itf->isStartingPointSelected;
+	      break;
+	  case 2:
+	      itf->isEndPointSelected=!itf->isEndPointSelected;
+	      break;
+	  case 3:
+	      itf->isMidPointSelected=!itf->isMidPointSelected;
+	      break;	
+	} 
+      }
       
       if(QApplication::keyboardModifiers()==Qt::ControlModifier)// multiple selection?
 	multipleselection=true;
@@ -481,7 +486,7 @@ void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *it
     
     ui->listWidgetElements->setFocus();
     
-    focusItem=item;
+    focusItemIndex=ui->listWidgetElements->row(item);
     
     std::string doc_name = sketchView->getSketchObject()->getDocument()->getName();
     std::string obj_name = sketchView->getSketchObject()->getNameInDocument();
@@ -546,9 +551,10 @@ void TaskSketcherElements::on_listWidgetElements_filterChanged(){
       
     ui->comboBoxElementFilter->setCurrentIndex(element);
 
-    //ui->listWidgetElements->setFocus();
-    if(focusItem!=0)
-      on_listWidgetElements_itemEntered(focusItem);
+    if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count()){
+      ElementItem * itf=static_cast<ElementItem*>(ui->listWidgetElements->item(focusItemIndex));
+      on_listWidgetElements_itemEntered(itf);
+    }
     
     //update the icon
     QIcon edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Line") );
