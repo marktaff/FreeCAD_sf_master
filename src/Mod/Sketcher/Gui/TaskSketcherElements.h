@@ -100,9 +100,8 @@ protected:
 
 private:
     QWidget* proxy;
-    bool inEditMode;
     Ui_TaskSketcherElements* ui;
-    QListWidgetItem * focusItem;
+    int focusItemIndex;
     
     bool inhibitSelectionUpdate;
 };
