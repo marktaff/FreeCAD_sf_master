@@ -1396,6 +1396,16 @@ void ViewProviderSketch::onSelectionChanged(const Gui::SelectionChanges& msg)
 		    }
 	    }
 	}
+	else if (msg.Type == Gui::SelectionChanges::RmvPreselect) {
+	    resetPreselectPoint();
+	    edit->PreselectCurve = -1;
+	    edit->PreselectCross = -1;
+	    edit->PreselectConstraint = -1;
+	    if (edit->sketchHandler)
+		edit->sketchHandler->applyCursor();
+	    this->updateColor();
+
+	}
 
     }
 }
