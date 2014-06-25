@@ -550,6 +550,9 @@ void TaskSketcherElements::on_listWidgetElements_filterChanged(){
 		ui->comboBoxElementFilter->count();
       
     ui->comboBoxElementFilter->setCurrentIndex(element);
+    
+    Gui::Selection().rmvPreselect();
+    
 
     if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count()){
       ElementItem * itf=static_cast<ElementItem*>(ui->listWidgetElements->item(focusItemIndex));
