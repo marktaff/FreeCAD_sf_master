@@ -556,6 +556,17 @@ void TaskSketcherElements::on_listWidgetElements_filterChanged(){
 
     if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count()){
       ElementItem * itf=static_cast<ElementItem*>(ui->listWidgetElements->item(focusItemIndex));
+      int vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(itf->ElementNbr,Sketcher::mid);
+      
+      if(vertex==-1 && element==3)
+      {
+	// if it is a line and we've got midpoint in the filter go to the next element
+	element = (ui->comboBoxElementFilter->currentIndex()+1) % 
+		ui->comboBoxElementFilter->count();
+      
+	ui->comboBoxElementFilter->setCurrentIndex(element);
+      }
+      
       on_listWidgetElements_itemEntered(itf);
     }
     
