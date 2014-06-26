@@ -484,6 +484,8 @@ void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *it
     ElementItem *it = dynamic_cast<ElementItem*>(item);
     if (!item) return;
     
+    Gui::Selection().rmvPreselect();
+    
     ui->listWidgetElements->setFocus();
     
     focusItemIndex=ui->listWidgetElements->row(item);
