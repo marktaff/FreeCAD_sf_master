@@ -528,6 +528,7 @@ void TaskSketcherElements::slotElementsChanged(void)
     QIcon sp( Gui::BitmapFactory().pixmap("Sketcher_Element_StartingPoint") );
     QIcon ep( Gui::BitmapFactory().pixmap("Sketcher_Element_EndPoint") );
     QIcon mp( Gui::BitmapFactory().pixmap("Sketcher_Element_MidPoint") );
+    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
 
     assert(sketchView);
     // Build up ListView with the elements
@@ -540,8 +541,13 @@ void TaskSketcherElements::slotElementsChanged(void)
     
     int i=1;
     for(std::vector< Part::Geometry * >::const_iterator it= vals.begin();it!=vals.end();++it,++i){
+      int vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,static_cast<Sketcher::PointPos>(element));
+      bool ispoint=((*it)->getTypeId() == Part::GeomPoint::getClassTypeId());      
       name = tr("Element")+QString::fromLatin1("%1").arg(i);
-      ui->listWidgetElements->addItem(new ElementItem(element==0?edge:element==1?sp:element==2?ep:mp,name,i-1));  
+      
+      ui->listWidgetElements->addItem(new ElementItem(
+	(ispoint && element!=1) ? none : (vertex==-1 && element !=0)? none :
+	element==0 ? edge : element==1 ? sp : element==2 ? ep : mp,name,i-1));  
     }
 }
 
@@ -577,9 +583,21 @@ void TaskSketcherElements::on_listWidgetElements_filterChanged(){
     QIcon sp( Gui::BitmapFactory().pixmap("Sketcher_Element_StartingPoint") );
     QIcon ep( Gui::BitmapFactory().pixmap("Sketcher_Element_EndPoint") );
     QIcon mp( Gui::BitmapFactory().pixmap("Sketcher_Element_MidPoint") );
+    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
+
     
-    for (int i=0;i<ui->listWidgetElements->count(); i++) 
-	ui->listWidgetElements->item(i)->setIcon(element==0?edge:element==1?sp:element==2?ep:mp);
+    for (int i=0;i<ui->listWidgetElements->count(); i++) {
+      int geoid=static_cast<ElementItem *>(ui->listWidgetElements->item(i))->ElementNbr;
+      int vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(
+	geoid,
+	static_cast<Sketcher::PointPos>(element));
+      
+      bool ispoint=(sketchView->getSketchObject()->getGeometry(geoid)->getTypeId() == Part::GeomPoint::getClassTypeId());      
+
+      ui->listWidgetElements->item(i)->setIcon(
+	(ispoint && element!=1) ? none : (vertex==-1 && element !=0)? none :
+	element==0 ? edge : element==1 ? sp : element==2 ? ep : mp);
+    }    
     
     inhibitSelectionUpdate=true;
     on_listWidgetElements_itemSelectionChanged();
