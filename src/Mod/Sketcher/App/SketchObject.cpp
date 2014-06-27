@@ -425,6 +425,18 @@ int SketchObject::addConstraint(const Constraint *constraint)
 {
     const std::vector< Constraint * > &vals = this->Constraints.getValues();
 
+    for (std::vector<Constraint *>::const_iterator it=vals.begin();
+         it != vals.end(); ++it) {
+      if( (*it)->Type == constraint->Type &&
+	  (*it)->First == constraint->First &&
+	  (*it)->Second == constraint->Second &&
+	  (*it)->Third == constraint->Third &&
+	  (*it)->FirstPos == constraint->FirstPos &&
+	  (*it)->SecondPos == constraint->SecondPos &&
+	  (*it)->ThirdPos == constraint->ThirdPos )
+	    return this->Constraints.getSize()-1;
+    }
+    
     std::vector< Constraint * > newVals(vals);
     Constraint *constNew = constraint->clone();
     newVals.push_back(constNew);
