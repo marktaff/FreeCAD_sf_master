@@ -427,7 +427,8 @@ int SketchObject::addConstraint(const Constraint *constraint)
 
     for (std::vector<Constraint *>::const_iterator it=vals.begin();
          it != vals.end(); ++it) {
-      if( (*it)->Type == constraint->Type &&
+      if( constraint->Type == Sketcher::Coincident &&
+	  (*it)->Type == constraint->Type &&
 	  (*it)->First == constraint->First &&
 	  (*it)->Second == constraint->Second &&
 	  (*it)->Third == constraint->Third &&
