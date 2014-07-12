@@ -67,13 +67,13 @@ void ElementView::FUNC(){								\
 class ElementItem : public QListWidgetItem
 {
 public:
-    ElementItem(const QIcon & icon, const QString & text,int ConstNbr)
-        : QListWidgetItem(icon,text),ElementNbr(ConstNbr),isLineSelected(false),
+    ElementItem(const QIcon & icon, const QString & text,int ConstNbr, Base::Type geometryType)
+        : QListWidgetItem(icon,text),ElementNbr(ConstNbr),GeometryType(geometryType),isLineSelected(false),
 	  isStartingPointSelected(false),isEndPointSelected(false),isMidPointSelected(false)
     {
     }
-    ElementItem(const QString & text,int ConstNbr)
-        : QListWidgetItem(text),ElementNbr(ConstNbr),isLineSelected(false),
+    ElementItem(const QString & text,int ConstNbr, Base::Type geometryType)
+        : QListWidgetItem(text),ElementNbr(ConstNbr),GeometryType(geometryType),isLineSelected(false),
 	  isStartingPointSelected(false),isEndPointSelected(false),isMidPointSelected(false)
     {
     }
@@ -86,6 +86,7 @@ public:
     bool isStartingPointSelected;
     bool isEndPointSelected;
     bool isMidPointSelected;
+    Base::Type GeometryType;
 };
 
 ElementView::ElementView(QWidget *parent)
@@ -216,13 +217,19 @@ TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
        );
     QObject::connect(
         ui->listWidgetElements, SIGNAL(onFilterChange()),
-        this                     , SLOT  (on_listWidgetElements_filterChanged())
+        this                     , SLOT  (on_listWidgetElements_shiftPressed())
+       );
+    QObject::connect(
+        ui->comboBoxElementFilter, SIGNAL(currentIndexChanged(int)),
+        this                     , SLOT  (on_listWidgetElements_currentFilterChanged(int))
        );
     
     connectionElementsChanged = sketchView->signalElementsChanged.connect(
         boost::bind(&SketcherGui::TaskSketcherElements::slotElementsChanged, this));
     
     this->groupLayout()->addWidget(proxy);
+    
+    ui->comboBoxElementFilter->setCurrentIndex(0);
 
     slotElementsChanged();
 }
@@ -244,11 +251,11 @@ void TaskSketcherElements::onSelectionChanged(const Gui::SelectionChanges& msg)
 	// update widget
 	int countItems = ui->listWidgetElements->count();
 	for (int i=0; i < countItems; i++) {
-	    ElementItem* item = static_cast<ElementItem*> (ui->listWidgetElements->item(i));
-		item->isLineSelected=false;
-		item->isStartingPointSelected=false;
-		item->isEndPointSelected=false;
-		item->isMidPointSelected=false;		
+	  ElementItem* item = static_cast<ElementItem*> (ui->listWidgetElements->item(i));
+	  item->isLineSelected=false;
+	  item->isStartingPointSelected=false;
+	  item->isEndPointSelected=false;
+	  item->isMidPointSelected=false;		
 	}
 	
     }
@@ -406,20 +413,11 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
 	
 	if(multipleselection==false && ite!=itf)
 	{
-	  switch(element){
-	    case 0:		
-		ite->isLineSelected=false;
-		break;
-	    case 1:
-		ite->isStartingPointSelected=false;
-		break;
-	    case 2:
-		ite->isEndPointSelected=false;
-		break;
-	    case 3:
-		ite->isMidPointSelected=false;
-		break;	
-	  }
+	
+	  ite->isLineSelected=false;
+	  ite->isStartingPointSelected=false;
+	  ite->isEndPointSelected=false;
+	  ite->isMidPointSelected=false;
 	  
 	}
 	
@@ -524,10 +522,17 @@ void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *it
 
 void TaskSketcherElements::slotElementsChanged(void)
 { 
-    QIcon edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Line") );
-    QIcon sp( Gui::BitmapFactory().pixmap("Sketcher_Element_StartingPoint") );
-    QIcon ep( Gui::BitmapFactory().pixmap("Sketcher_Element_EndPoint") );
-    QIcon mp( Gui::BitmapFactory().pixmap("Sketcher_Element_MidPoint") );
+    QIcon Sketcher_Element_Arc_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_Edge") );
+    QIcon Sketcher_Element_Arc_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_EndPoint") );
+    QIcon Sketcher_Element_Arc_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_MidPoint") );
+    QIcon Sketcher_Element_Arc_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_StartingPoint") );
+    QIcon Sketcher_Element_Circle_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Circle_Edge") );
+    QIcon Sketcher_Element_Circle_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Circle_MidPoint") );
+    QIcon Sketcher_Element_Line_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_Edge") );
+    QIcon Sketcher_Element_Line_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_EndPoint") );
+    QIcon Sketcher_Element_Line_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_StartingPoint") );
+    QIcon Sketcher_Element_Point_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Point_StartingPoint") );
+
     QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
 
     assert(sketchView);
@@ -535,73 +540,137 @@ void TaskSketcherElements::slotElementsChanged(void)
     const std::vector< Part::Geometry * > &vals = sketchView->getSketchObject()->Geometry.getValues();
     
     ui->listWidgetElements->clear();
-    QString name;
 
     int element = ui->comboBoxElementFilter->currentIndex();
     
     int i=1;
     for(std::vector< Part::Geometry * >::const_iterator it= vals.begin();it!=vals.end();++it,++i){
-      int vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,static_cast<Sketcher::PointPos>(element));
-      bool ispoint=((*it)->getTypeId() == Part::GeomPoint::getClassTypeId());      
-      name = tr("Element")+QString::fromLatin1("%1").arg(i);
+      Base::Type type = (*it)->getTypeId();      
       
       ui->listWidgetElements->addItem(new ElementItem(
-	(ispoint && element!=1) ? none : (vertex==-1 && element !=0)? none :
-	element==0 ? edge : element==1 ? sp : element==2 ? ep : mp,name,i-1));  
+	(type == Part::GeomPoint::getClassTypeId() 	&& element==1) ? Sketcher_Element_Point_StartingPoint :
+	(type == Part::GeomLineSegment::getClassTypeId()  && element==0) ? Sketcher_Element_Line_Edge :
+	(type == Part::GeomLineSegment::getClassTypeId()  && element==1) ? Sketcher_Element_Line_StartingPoint :
+	(type == Part::GeomLineSegment::getClassTypeId()  && element==2) ? Sketcher_Element_Line_EndPoint :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==0) ? Sketcher_Element_Arc_Edge :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==1) ? Sketcher_Element_Arc_StartingPoint :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==2) ? Sketcher_Element_Arc_EndPoint :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==3) ? Sketcher_Element_Arc_MidPoint :
+	(type == Part::GeomCircle::getClassTypeId()	&& element==0) ? Sketcher_Element_Circle_Edge :
+	(type == Part::GeomCircle::getClassTypeId()	&& element==3) ? Sketcher_Element_Circle_MidPoint :
+	none,
+	type == Part::GeomPoint::getClassTypeId() 	? QString::fromLatin1("%1-").arg(i)+tr("Point") :
+	type == Part::GeomLineSegment::getClassTypeId()	? QString::fromLatin1("%1-").arg(i)+tr("Line") :
+	type == Part::GeomArcOfCircle::getClassTypeId()	? QString::fromLatin1("%1-").arg(i)+tr("Arc") :
+	type == Part::GeomCircle::getClassTypeId()	? QString::fromLatin1("%1-").arg(i)+tr("Circle") :
+	QString::fromLatin1("%1-").arg(i)+tr("Other"),
+	i-1, type));  
     }
 }
 
 
-void TaskSketcherElements::on_listWidgetElements_filterChanged(){
-  
-    int element = (ui->comboBoxElementFilter->currentIndex()+1) % 
-		ui->comboBoxElementFilter->count();
-      
-    ui->comboBoxElementFilter->setCurrentIndex(element);
+void TaskSketcherElements::on_listWidgetElements_shiftPressed()
+{
+    int element;
     
-    Gui::Selection().rmvPreselect();
-    
-
+    // calculate next element type on shift press according to entered/preselected element
+    // This is the aka fast-forward functionality
     if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count()){
+      
       ElementItem * itf=static_cast<ElementItem*>(ui->listWidgetElements->item(focusItemIndex));
-      int vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(itf->ElementNbr,Sketcher::mid);
       
-      if(vertex==-1 && element==3)
+      Base::Type type = itf->GeometryType;
+      
+      element = ui->comboBoxElementFilter->currentIndex(); // currently selected type index
+      
+      switch(element)
       {
-	// if it is a line and we've got midpoint in the filter go to the next element
-	element = (ui->comboBoxElementFilter->currentIndex()+1) % 
-		ui->comboBoxElementFilter->count();
-      
-	ui->comboBoxElementFilter->setCurrentIndex(element);
+	case 0: // Edge
+	  element =	( type == Part::GeomCircle::getClassTypeId() ) ? 3 : 1;
+	  break;
+	case 1: // StartingPoint
+	  element =	( type == Part::GeomCircle::getClassTypeId() ) ? 3 : 
+			( type == Part::GeomPoint::getClassTypeId()  ) ? 1 : 2;
+	  break;
+	case 2: // EndPoint
+	  element =	( type == Part::GeomLineSegment::getClassTypeId() ) ? 0 :
+			( type == Part::GeomPoint::getClassTypeId()  ) ? 1 : 3;
+	  break;
+	case 3: // MidPoint
+	  element =	( type == Part::GeomPoint::getClassTypeId()  ) ? 1 : 0;
+	  break;
+	default:
+	  element = 0;
       }
+           
+      ui->comboBoxElementFilter->setCurrentIndex(element);
+      
+      Gui::Selection().rmvPreselect();
       
       on_listWidgetElements_itemEntered(itf);
     }
+    else{
+      element = (ui->comboBoxElementFilter->currentIndex()+1) % 
+		ui->comboBoxElementFilter->count();
+		
+      ui->comboBoxElementFilter->setCurrentIndex(element);
+      
+      Gui::Selection().rmvPreselect();
+    }
     
     //update the icon
-    QIcon edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Line") );
-    QIcon sp( Gui::BitmapFactory().pixmap("Sketcher_Element_StartingPoint") );
-    QIcon ep( Gui::BitmapFactory().pixmap("Sketcher_Element_EndPoint") );
-    QIcon mp( Gui::BitmapFactory().pixmap("Sketcher_Element_MidPoint") );
-    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
-
+    updateIcons(element);
     
-    for (int i=0;i<ui->listWidgetElements->count(); i++) {
-      int geoid=static_cast<ElementItem *>(ui->listWidgetElements->item(i))->ElementNbr;
-      int vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(
-	geoid,
-	static_cast<Sketcher::PointPos>(element));
-      
-      bool ispoint=(sketchView->getSketchObject()->getGeometry(geoid)->getTypeId() == Part::GeomPoint::getClassTypeId());      
+    updatePreselection();
+}
 
-      ui->listWidgetElements->item(i)->setIcon(
-	(ispoint && element!=1) ? none : (vertex==-1 && element !=0)? none :
-	element==0 ? edge : element==1 ? sp : element==2 ? ep : mp);
-    }    
+void TaskSketcherElements::on_listWidgetElements_currentFilterChanged ( int index )
+{
+    Gui::Selection().rmvPreselect();
     
+    updateIcons(index);
+  
+    updatePreselection();
+  
+}    
+
+void TaskSketcherElements::updatePreselection()
+{
     inhibitSelectionUpdate=true;
     on_listWidgetElements_itemSelectionChanged();
     inhibitSelectionUpdate=false;
+}
+
+void TaskSketcherElements::updateIcons(int element)
+{
+    QIcon Sketcher_Element_Arc_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_Edge") );
+    QIcon Sketcher_Element_Arc_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_EndPoint") );
+    QIcon Sketcher_Element_Arc_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_MidPoint") );
+    QIcon Sketcher_Element_Arc_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_StartingPoint") );
+    QIcon Sketcher_Element_Circle_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Circle_Edge") );
+    QIcon Sketcher_Element_Circle_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Circle_MidPoint") );
+    QIcon Sketcher_Element_Line_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_Edge") );
+    QIcon Sketcher_Element_Line_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_EndPoint") );
+    QIcon Sketcher_Element_Line_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_StartingPoint") );
+    QIcon Sketcher_Element_Point_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Point_StartingPoint") );
+    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
+    
+    for (int i=0;i<ui->listWidgetElements->count(); i++) {
+      Base::Type type = static_cast<ElementItem *>(ui->listWidgetElements->item(i))->GeometryType;
+
+      ui->listWidgetElements->item(i)->setIcon(
+	(type == Part::GeomPoint::getClassTypeId() 	&& element==1) ? Sketcher_Element_Point_StartingPoint :
+	(type == Part::GeomLineSegment::getClassTypeId()  && element==0) ? Sketcher_Element_Line_Edge :
+	(type == Part::GeomLineSegment::getClassTypeId()  && element==1) ? Sketcher_Element_Line_StartingPoint :
+	(type == Part::GeomLineSegment::getClassTypeId()  && element==2) ? Sketcher_Element_Line_EndPoint :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==0) ? Sketcher_Element_Arc_Edge :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==1) ? Sketcher_Element_Arc_StartingPoint :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==2) ? Sketcher_Element_Arc_EndPoint :
+	(type == Part::GeomArcOfCircle::getClassTypeId() 	&& element==3) ? Sketcher_Element_Arc_MidPoint :
+	(type == Part::GeomCircle::getClassTypeId()	&& element==0) ? Sketcher_Element_Circle_Edge :
+	(type == Part::GeomCircle::getClassTypeId()	&& element==3) ? Sketcher_Element_Circle_MidPoint :
+	none);
+    }
 }
 
 void TaskSketcherElements::changeEvent(QEvent *e)
