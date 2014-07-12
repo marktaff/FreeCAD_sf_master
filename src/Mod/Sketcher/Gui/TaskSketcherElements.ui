@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>176</width>
+    <width>183</width>
     <height>388</height>
    </rect>
   </property>
@@ -30,22 +30,22 @@
        </property>
        <item>
         <property name="text">
-         <string>Lines</string>
+         <string>Edge</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>StartPoint</string>
+         <string>Starting Point</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>EndPoint</string>
+         <string>End Point</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>MidPoint</string>
+         <string>Center Point</string>
         </property>
        </item>
       </widget>
@@ -62,7 +62,7 @@
    <item>
     <widget class="QLabel" name="Explanation">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&amp;quot;Ctrl&amp;quot;: multiple selection&lt;/p&gt;&lt;p&gt;&amp;quot;Shift&amp;quot;: change type&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&amp;quot;Ctrl&amp;quot;: multiple selection&lt;/p&gt;&lt;p&gt;&amp;quot;Shift&amp;quot;: next valid type&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>

@@ -86,11 +86,14 @@ public:
 
 private:
     void slotElementsChanged(void);
+    void updateIcons(int element);
+    void updatePreselection();
 
 public Q_SLOTS:
     void on_listWidgetElements_itemSelectionChanged(void); 
     void on_listWidgetElements_itemEntered(QListWidgetItem *item);
-    void on_listWidgetElements_filterChanged();
+    void on_listWidgetElements_shiftPressed();
+    void on_listWidgetElements_currentFilterChanged ( int index );
 
 protected:
     void changeEvent(QEvent *e);
