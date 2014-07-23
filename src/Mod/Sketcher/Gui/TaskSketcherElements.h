@@ -47,7 +47,8 @@ public:
 
         
 Q_SIGNALS:
-    void onFilterChange();  
+    void onFilterChange();
+    void signalCloseShape();
     
 protected:
     void contextMenuEvent (QContextMenuEvent* event);
@@ -55,6 +56,7 @@ protected:
 
 protected Q_SLOTS:
     void deleteSelectedItems();
+    // Constraints
     void doHorizontalDistance();
     void doVerticalDistance();
     void doHorizontalConstraint();
@@ -70,6 +72,13 @@ protected Q_SLOTS:
     void doPointOnObjectConstraint();
     void doSymetricConstraint();
     void doTangentConstraint();
+    // Other Commands
+    void doToggleConstruction();    
+    // Acelerators
+    void doCloseShape();
+    void doConnect();
+
+    void doSelectConstraints();
 
 };
 
@@ -88,6 +97,7 @@ private:
     void slotElementsChanged(void);
     void updateIcons(int element);
     void updatePreselection();
+    void clearWidget();
 
 public Q_SLOTS:
     void on_listWidgetElements_itemSelectionChanged(void); 
@@ -97,6 +107,7 @@ public Q_SLOTS:
 
 protected:
     void changeEvent(QEvent *e);
+    void leaveEvent ( QEvent * event );
     ViewProviderSketch *sketchView;
     typedef boost::BOOST_SIGNALS_NAMESPACE::connection Connection;
     Connection connectionElementsChanged;

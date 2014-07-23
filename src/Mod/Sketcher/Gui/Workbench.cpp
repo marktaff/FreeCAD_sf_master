@@ -105,6 +105,10 @@ Gui::MenuItem* Workbench::setupMenuBar() const
           << "Sketcher_ConstrainDistance"
           << "Sketcher_ConstrainRadius"
           << "Sketcher_ConstrainAngle";
+	  
+    Gui::MenuItem* consaccel = new Gui::MenuItem();
+    consaccel->setCommand("Sketcher accelerators");
+    *consaccel << "Sketcher_CloseShape";
 
     *sketch
         << "Sketcher_NewSketch"
@@ -167,6 +171,10 @@ Gui::ToolBarItem* Workbench::setupToolBars() const
           << "Sketcher_ConstrainDistance"
           << "Sketcher_ConstrainRadius"
           << "Sketcher_ConstrainAngle";
+
+    Gui::ToolBarItem* consaccel = new Gui::ToolBarItem(root);
+    consaccel->setCommand("Sketcher accelerators");
+    *consaccel << "Sketcher_CloseShape";
      return root;
 }
 

@@ -67,21 +67,34 @@ void ElementView::FUNC(){								\
 class ElementItem : public QListWidgetItem
 {
 public:
-    ElementItem(const QIcon & icon, const QString & text,int ConstNbr, Base::Type geometryType)
-        : QListWidgetItem(icon,text),ElementNbr(ConstNbr),GeometryType(geometryType),isLineSelected(false),
+    ElementItem(	const QIcon & icon, const QString & text, int elementnr, 
+		int startingVertex, int midVertex, int endVertex,
+		Base::Type geometryType)
+        : QListWidgetItem(icon,text),ElementNbr(elementnr),
+	  StartingVertex(startingVertex), MidVertex(midVertex), EndVertex(endVertex),
+	  GeometryType(geometryType),isLineSelected(false),
 	  isStartingPointSelected(false),isEndPointSelected(false),isMidPointSelected(false)
     {
+          
     }
-    ElementItem(const QString & text,int ConstNbr, Base::Type geometryType)
-        : QListWidgetItem(text),ElementNbr(ConstNbr),GeometryType(geometryType),isLineSelected(false),
+    ElementItem( const QString & text,int elementnr,
+		int startingVertex, int midVertex, int endVertex,
+		Base::Type geometryType)
+        : QListWidgetItem(text),ElementNbr(elementnr),
+	  StartingVertex(startingVertex), MidVertex(midVertex), EndVertex(endVertex),
+	  GeometryType(geometryType),isLineSelected(false),
 	  isStartingPointSelected(false),isEndPointSelected(false),isMidPointSelected(false)
     {
+      
     }
     ~ElementItem()
     {
     }
 
     int ElementNbr;
+    int StartingVertex;
+    int MidVertex;
+    int EndVertex;
     bool isLineSelected;
     bool isStartingPointSelected;
     bool isEndPointSelected;
@@ -104,6 +117,7 @@ void ElementView::contextMenuEvent (QContextMenuEvent* event)
     QListWidgetItem* item = currentItem();
     QList<QListWidgetItem *> items = selectedItems();
 
+    // CONTEXT_ITEM(ICONSTR,NAMESTR,FUNC,KEY)
     CONTEXT_ITEM("Constraint_PointOnPoint","Point Coincidence",doPointCoincidence,Qt::Key_C)
     CONTEXT_ITEM("Constraint_PointOnObject","Point on Object",doPointOnObjectConstraint,Qt::Key_Q)
     CONTEXT_ITEM("Constraint_Vertical","Vertical Constraint",doVerticalConstraint,Qt::Key_V)
@@ -121,11 +135,22 @@ void ElementView::contextMenuEvent (QContextMenuEvent* event)
     CONTEXT_ITEM("Constraint_InternalAngle","Angle Constraint",doAngleConstraint,Qt::Key_A)
     
     QAction* sep = menu.addSeparator();
+    
+    CONTEXT_ITEM("Sketcher_AlterConstruction","Toggle construction line",doToggleConstruction,Qt::Key_T)
+    
+    QAction* sep1 = menu.addSeparator();
+    
+    CONTEXT_ITEM("Sketcher_CloseShape","Close Shape",doCloseShape,Qt::Key_N)
+    CONTEXT_ITEM("Sketcher_ConnectLines","Connect",doConnect,Qt::Key_M)
+    CONTEXT_ITEM("Sketcher_SelectConstraints","Select Constraints",doSelectConstraints,Qt::Key_M)
+    
+    QAction* sep2 = menu.addSeparator();
         
     QAction* remove = menu.addAction(tr("Delete"), this, SLOT(deleteSelectedItems()),
         QKeySequence(QKeySequence::Delete));
     remove->setEnabled(!items.isEmpty());
 
+    menu.menuAction()->setIconVisibleInMenu(true);
     
     menu.exec(event->globalPos());
 }
@@ -145,6 +170,11 @@ CONTEXT_MEMBER_DEF("Sketcher_ConstrainEqual",doEqualConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_ConstrainPointOnObject",doPointOnObjectConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_ConstrainSymmetric",doSymetricConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_ConstrainTangent",doTangentConstraint)
+CONTEXT_MEMBER_DEF("Sketcher_CloseShape",doCloseShape)
+CONTEXT_MEMBER_DEF("Sketcher_ConnectLines",doConnect)
+CONTEXT_MEMBER_DEF("Sketcher_ToggleConstruction",doToggleConstruction)
+CONTEXT_MEMBER_DEF("Sketcher_SelectConstraints",doSelectConstraints)
+
 
 
 void ElementView::deleteSelectedItems()
@@ -187,6 +217,7 @@ void ElementView::keyPressEvent(QKeyEvent * event)
       CONTEXT_SHORTCUT(Qt::Key_Z,doLengthConstraint)
       CONTEXT_SHORTCUT(Qt::Key_X,doRadiusConstraint)
       CONTEXT_SHORTCUT(Qt::Key_A,doAngleConstraint)
+      CONTEXT_SHORTCUT(Qt::Key_N,doCloseShape)
       default:
 	QListWidget::keyPressEvent( event );
 	break;
@@ -244,20 +275,7 @@ void TaskSketcherElements::onSelectionChanged(const Gui::SelectionChanges& msg)
 {
     std::string temp;
     if (msg.Type == Gui::SelectionChanges::ClrSelection) {
-        ui->listWidgetElements->blockSignals(true);
-        ui->listWidgetElements->clearSelection ();
-        ui->listWidgetElements->blockSignals(false);
-	
-	// update widget
-	int countItems = ui->listWidgetElements->count();
-	for (int i=0; i < countItems; i++) {
-	  ElementItem* item = static_cast<ElementItem*> (ui->listWidgetElements->item(i));
-	  item->isLineSelected=false;
-	  item->isStartingPointSelected=false;
-	  item->isEndPointSelected=false;
-	  item->isMidPointSelected=false;		
-	}
-	
+	clearWidget();
     }
     else if (msg.Type == Gui::SelectionChanges::AddSelection ||
              msg.Type == Gui::SelectionChanges::RmvSelection) {
@@ -448,7 +466,7 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
 	
 	if(ite->isStartingPointSelected){
 	  ss.str(std::string());
-	  vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(ite->ElementNbr,Sketcher::start);
+	  vertex= ite->StartingVertex;
 	  if(vertex!=-1){
 	    ss << "Vertex" << vertex + 1;
 	    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
@@ -457,7 +475,7 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
 	
 	if(ite->isEndPointSelected){
 	  ss.str(std::string());
-	  vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(ite->ElementNbr,Sketcher::end);
+	  vertex= ite->EndVertex;
 	  if(vertex!=-1){
 	    ss << "Vertex" << vertex + 1;
 	    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
@@ -466,7 +484,7 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
 	
 	if(ite->isMidPointSelected){
 	  ss.str(std::string());
-	  vertex= sketchView->getSketchObject()->getVertexIndexGeoPos(ite->ElementNbr,Sketcher::mid);
+	  vertex= ite->MidVertex;
 	  if(vertex!=-1){
 	    ss << "Vertex" << vertex + 1;
 	    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
@@ -520,6 +538,13 @@ void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *it
     
 }
 
+void TaskSketcherElements::leaveEvent ( QEvent * event )
+{
+  Gui::Selection().rmvPreselect();
+  ui->listWidgetElements->clearFocus();
+  //Base::leaveEvent(event);
+}
+
 void TaskSketcherElements::slotElementsChanged(void)
 { 
     QIcon Sketcher_Element_Arc_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Arc_Edge") );
@@ -559,12 +584,16 @@ void TaskSketcherElements::slotElementsChanged(void)
 	(type == Part::GeomCircle::getClassTypeId()	&& element==0) ? Sketcher_Element_Circle_Edge :
 	(type == Part::GeomCircle::getClassTypeId()	&& element==3) ? Sketcher_Element_Circle_MidPoint :
 	none,
-	type == Part::GeomPoint::getClassTypeId() 	? QString::fromLatin1("%1-").arg(i)+tr("Point") :
-	type == Part::GeomLineSegment::getClassTypeId()	? QString::fromLatin1("%1-").arg(i)+tr("Line") :
-	type == Part::GeomArcOfCircle::getClassTypeId()	? QString::fromLatin1("%1-").arg(i)+tr("Arc") :
-	type == Part::GeomCircle::getClassTypeId()	? QString::fromLatin1("%1-").arg(i)+tr("Circle") :
-	QString::fromLatin1("%1-").arg(i)+tr("Other"),
-	i-1, type));  
+	type == Part::GeomPoint::getClassTypeId() 	? tr("Point") + QString::fromLatin1("(Edge%1)").arg(i) :
+	type == Part::GeomLineSegment::getClassTypeId()	? tr("Line") + QString::fromLatin1("(Edge%1)").arg(i) :
+	type == Part::GeomArcOfCircle::getClassTypeId()	? tr("Arc") + QString::fromLatin1("(Edge%1)").arg(i) :
+	type == Part::GeomCircle::getClassTypeId()	? tr("Circle") + QString::fromLatin1("(Edge%1)").arg(i) :
+	tr("Other") + QString::fromLatin1("(Edge%1)").arg(i),
+	i-1,
+	sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,Sketcher::start),
+	sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,Sketcher::mid),
+	sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,Sketcher::end),
+	type));  
     }
 }
 
@@ -624,6 +653,7 @@ void TaskSketcherElements::on_listWidgetElements_shiftPressed()
     updatePreselection();
 }
 
+
 void TaskSketcherElements::on_listWidgetElements_currentFilterChanged ( int index )
 {
     Gui::Selection().rmvPreselect();
@@ -639,6 +669,23 @@ void TaskSketcherElements::updatePreselection()
     inhibitSelectionUpdate=true;
     on_listWidgetElements_itemSelectionChanged();
     inhibitSelectionUpdate=false;
+}
+
+void TaskSketcherElements::clearWidget()
+{
+    ui->listWidgetElements->blockSignals(true);
+    ui->listWidgetElements->clearSelection ();
+    ui->listWidgetElements->blockSignals(false);
+    
+    // update widget
+    int countItems = ui->listWidgetElements->count();
+    for (int i=0; i < countItems; i++) {
+      ElementItem* item = static_cast<ElementItem*> (ui->listWidgetElements->item(i));
+      item->isLineSelected=false;
+      item->isStartingPointSelected=false;
+      item->isEndPointSelected=false;
+      item->isMidPointSelected=false;		
+    }
 }
 
 void TaskSketcherElements::updateIcons(int element)
