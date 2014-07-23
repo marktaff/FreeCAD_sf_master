@@ -75,6 +75,9 @@ Gui::MenuItem* Workbench::setupMenuBar() const
     cons->setCommand("Sketcher constraints");
     addSketcherWorkbenchConstraints(*cons);
 
+    Gui::MenuItem* consaccel = new Gui::MenuItem();
+    consaccel->setCommand("Sketcher accelerators");
+    *consaccel << "Sketcher_CloseShape";
 
     addSketcherWorkbenchSketchActions( *sketch );
     *sketch << geom
