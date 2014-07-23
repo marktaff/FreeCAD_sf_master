@@ -130,7 +130,7 @@ void ElementView::contextMenuEvent (QContextMenuEvent* event)
     CONTEXT_ITEM("Sketcher_ConstrainLock","Lock Constraint",doLockConstraint,Qt::Key_B)    
     CONTEXT_ITEM("Constraint_HorizontalDistance","Horizontal Distance",doHorizontalDistance,Qt::Key_K)
     CONTEXT_ITEM("Constraint_VerticalDistance","Vertical Distance",doVerticalDistance,Qt::Key_I)
-    CONTEXT_ITEM("Constraint_Length","Length Constraint",doLengthConstraint,Qt::Key_Z)
+    CONTEXT_ITEM("Constraint_Length","Length Constraint",doLengthConstraint,Qt::Key_M)
     CONTEXT_ITEM("Constraint_Radius","Radius Constraint",doRadiusConstraint,Qt::Key_X)
     CONTEXT_ITEM("Constraint_InternalAngle","Angle Constraint",doAngleConstraint,Qt::Key_A)
     
@@ -198,9 +198,13 @@ void ElementView::keyPressEvent(QKeyEvent * event)
 {
     switch (event->key())
     {
-      case Qt::Key_Shift:
+//       case Qt::Key_Shift:
+// 	// signal
+// 	onFilterChange();
+// 	break;
+      case Qt::Key_Z:
 	// signal
-	onFilterChange();
+	onFilterShortcutPressed();
 	break;
       CONTEXT_SHORTCUT(Qt::Key_C,doPointCoincidence)
       CONTEXT_SHORTCUT(Qt::Key_Q,doPointOnObjectConstraint)
@@ -214,7 +218,7 @@ void ElementView::keyPressEvent(QKeyEvent * event)
       CONTEXT_SHORTCUT(Qt::Key_B,doLockConstraint)
       CONTEXT_SHORTCUT(Qt::Key_K,doHorizontalDistance)
       CONTEXT_SHORTCUT(Qt::Key_I,doVerticalDistance)
-      CONTEXT_SHORTCUT(Qt::Key_Z,doLengthConstraint)
+      CONTEXT_SHORTCUT(Qt::Key_M,doLengthConstraint)
       CONTEXT_SHORTCUT(Qt::Key_X,doRadiusConstraint)
       CONTEXT_SHORTCUT(Qt::Key_A,doAngleConstraint)
       CONTEXT_SHORTCUT(Qt::Key_N,doCloseShape)
@@ -227,7 +231,8 @@ void ElementView::keyPressEvent(QKeyEvent * event)
 
 TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
     : TaskBox(Gui::BitmapFactory().pixmap("document-new"),tr("Elements"),true, 0),
-    sketchView(sketchView), inhibitSelectionUpdate(false), focusItemIndex(-1)
+    sketchView(sketchView), inhibitSelectionUpdate(false), focusItemIndex(-1),
+    isNamingBoxChecked(false), isautoSwitchBoxChecked(false)
 {
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
@@ -247,13 +252,22 @@ TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
         this                     , SLOT  (on_listWidgetElements_itemEntered(QListWidgetItem *))
        );
     QObject::connect(
-        ui->listWidgetElements, SIGNAL(onFilterChange()),
-        this                     , SLOT  (on_listWidgetElements_shiftPressed())
+        ui->listWidgetElements, SIGNAL(onFilterShortcutPressed()),
+        this                     , SLOT  (on_listWidgetElements_filterShortcutPressed())
        );
     QObject::connect(
         ui->comboBoxElementFilter, SIGNAL(currentIndexChanged(int)),
         this                     , SLOT  (on_listWidgetElements_currentFilterChanged(int))
        );
+    QObject::connect(
+        ui->namingBox, SIGNAL(stateChanged(int)),
+        this                     , SLOT  (on_namingBox_stateChanged(int))
+       );
+    QObject::connect(
+        ui->autoSwitchBox, SIGNAL(stateChanged(int)),
+        this                     , SLOT  (on_autoSwitchBox_stateChanged(int))
+       );
+
     
     connectionElementsChanged = sketchView->signalElementsChanged.connect(
         boost::bind(&SketcherGui::TaskSketcherElements::slotElementsChanged, this));
@@ -261,6 +275,9 @@ TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
     this->groupLayout()->addWidget(proxy);
     
     ui->comboBoxElementFilter->setCurrentIndex(0);
+    
+    ui->namingBox->setCheckState(Qt::Unchecked);
+    ui->autoSwitchBox->setCheckState(Qt::Checked);
 
     slotElementsChanged();
 }
@@ -504,7 +521,7 @@ void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *it
     
     ui->listWidgetElements->setFocus();
     
-    focusItemIndex=ui->listWidgetElements->row(item);
+    int tempitemindex=ui->listWidgetElements->row(item);
     
     std::string doc_name = sketchView->getSketchObject()->getDocument()->getName();
     std::string obj_name = sketchView->getSketchObject()->getNameInDocument();
@@ -516,7 +533,18 @@ void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *it
      */
     std::stringstream ss;
     
+        
+    // Edge Auto-Switch functionality
+    if(isautoSwitchBoxChecked && tempitemindex!=focusItemIndex){
+      ui->listWidgetElements->blockSignals(true);
+      ui->comboBoxElementFilter->setCurrentIndex(0);
+      ui->listWidgetElements->blockSignals(false);
+    }
+    
     int element=ui->comboBoxElementFilter->currentIndex();
+		  
+    focusItemIndex=tempitemindex;
+    
     int vertex;
     
     switch(element)
@@ -584,11 +612,21 @@ void TaskSketcherElements::slotElementsChanged(void)
 	(type == Part::GeomCircle::getClassTypeId()	&& element==0) ? Sketcher_Element_Circle_Edge :
 	(type == Part::GeomCircle::getClassTypeId()	&& element==3) ? Sketcher_Element_Circle_MidPoint :
 	none,
-	type == Part::GeomPoint::getClassTypeId() 	? tr("Point") + QString::fromLatin1("(Edge%1)").arg(i) :
-	type == Part::GeomLineSegment::getClassTypeId()	? tr("Line") + QString::fromLatin1("(Edge%1)").arg(i) :
-	type == Part::GeomArcOfCircle::getClassTypeId()	? tr("Arc") + QString::fromLatin1("(Edge%1)").arg(i) :
-	type == Part::GeomCircle::getClassTypeId()	? tr("Circle") + QString::fromLatin1("(Edge%1)").arg(i) :
-	tr("Other") + QString::fromLatin1("(Edge%1)").arg(i),
+	type == Part::GeomPoint::getClassTypeId() 	? ( isNamingBoxChecked ? 
+							    (tr("Point") + QString::fromLatin1("(Edge%1)").arg(i)):
+							    (QString::fromLatin1("%1-").arg(i)+tr("Point"))) 	:
+	type == Part::GeomLineSegment::getClassTypeId()	? ( isNamingBoxChecked ? 
+							    (tr("Line") + QString::fromLatin1("(Edge%1)").arg(i)):
+							    (QString::fromLatin1("%1-").arg(i)+tr("Line"))) 	:
+	type == Part::GeomArcOfCircle::getClassTypeId()	? ( isNamingBoxChecked ? 
+							    (tr("Arc") + QString::fromLatin1("(Edge%1)").arg(i)):
+							    (QString::fromLatin1("%1-").arg(i)+tr("Arc"))) 	:
+	type == Part::GeomCircle::getClassTypeId()	? ( isNamingBoxChecked ? 
+							    (tr("Circle") + QString::fromLatin1("(Edge%1)").arg(i)):
+							    (QString::fromLatin1("%1-").arg(i)+tr("Circle"))) 	:
+	( isNamingBoxChecked ? 
+	  (tr("Other") + QString::fromLatin1("(Edge%1)").arg(i)):
+	  (QString::fromLatin1("%1-").arg(i)+tr("Other"))),
 	i-1,
 	sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,Sketcher::start),
 	sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,Sketcher::mid),
@@ -598,7 +636,7 @@ void TaskSketcherElements::slotElementsChanged(void)
 }
 
 
-void TaskSketcherElements::on_listWidgetElements_shiftPressed()
+void TaskSketcherElements::on_listWidgetElements_filterShortcutPressed()
 {
     int element;
     
@@ -653,6 +691,18 @@ void TaskSketcherElements::on_listWidgetElements_shiftPressed()
     updatePreselection();
 }
 
+
+void TaskSketcherElements::on_namingBox_stateChanged(int state)
+{
+      isNamingBoxChecked=(state==Qt::Checked);
+      slotElementsChanged();
+}
+
+void TaskSketcherElements::on_autoSwitchBox_stateChanged(int state)
+{
+      isautoSwitchBoxChecked=(state==Qt::Checked);
+      ui->comboBoxElementFilter->setCurrentIndex(0);
+}
 
 void TaskSketcherElements::on_listWidgetElements_currentFilterChanged ( int index )
 {
