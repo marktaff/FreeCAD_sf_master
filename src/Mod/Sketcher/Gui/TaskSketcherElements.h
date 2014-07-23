@@ -47,7 +47,7 @@ public:
 
         
 Q_SIGNALS:
-    void onFilterChange();
+    void onFilterShortcutPressed();
     void signalCloseShape();
     
 protected:
@@ -102,8 +102,10 @@ private:
 public Q_SLOTS:
     void on_listWidgetElements_itemSelectionChanged(void); 
     void on_listWidgetElements_itemEntered(QListWidgetItem *item);
-    void on_listWidgetElements_shiftPressed();
+    void on_listWidgetElements_filterShortcutPressed();
     void on_listWidgetElements_currentFilterChanged ( int index );
+    void on_namingBox_stateChanged(int state);
+    void on_autoSwitchBox_stateChanged(int state);
 
 protected:
     void changeEvent(QEvent *e);
@@ -116,6 +118,9 @@ private:
     QWidget* proxy;
     Ui_TaskSketcherElements* ui;
     int focusItemIndex;
+    
+    bool isNamingBoxChecked;
+    bool isautoSwitchBoxChecked;
     
     bool inhibitSelectionUpdate;
 };
