@@ -70,7 +70,7 @@ CmdSketcherCloseShape::CmdSketcherCloseShape()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CloseShape";
-    sAccel          = "N";
+    sAccel          = "CTRL+SHIFT+S";
     eType           = ForEdit;
 }
 
@@ -165,8 +165,8 @@ CmdSketcherConnect::CmdSketcherConnect()
     sToolTipText    = QT_TR_NOOP("Link end point of element with next elements' starting point");
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
-    sPixmap         = "Sketcher_CloseShape";
-    sAccel          = "N";
+    sPixmap         = "Sketcher_ConnectLines";
+    sAccel          = "CTRL+SHIFT+K";
     eType           = ForEdit;
 }
 
@@ -243,7 +243,7 @@ CmdSketcherSelectConstraints::CmdSketcherSelectConstraints()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_SelectConstraints";
-    sAccel          = "M";
+    sAccel          = "CTRL+SHIFT+C";
     eType           = ForEdit;
 }
 
@@ -309,7 +309,7 @@ CmdSketcherSelectOrigin::CmdSketcherSelectOrigin()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_SelectOrigin";
-    sAccel          = "M";
+    sAccel          = "CTRL+SHIFT+O";
     eType           = ForEdit;
 }
 
@@ -354,7 +354,7 @@ CmdSketcherSelectVerticalAxis::CmdSketcherSelectVerticalAxis()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_SelectVerticalAxis";
-    sAccel          = "M";
+    sAccel          = "CTRL+SHIFT+V";
     eType           = ForEdit;
 }
 
@@ -399,7 +399,7 @@ CmdSketcherSelectHorizontalAxis::CmdSketcherSelectHorizontalAxis()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_SelectHorizontalAxis";
-    sAccel          = "M";
+    sAccel          = "CTRL+SHIFT+H";
     eType           = ForEdit;
 }
 

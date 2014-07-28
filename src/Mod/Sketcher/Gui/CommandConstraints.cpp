@@ -732,7 +732,7 @@ CmdSketcherConstrainPointOnObject::CmdSketcherConstrainPointOnObject()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_PointOnObject";
-    sAccel          = "O";
+    sAccel          = "SHIFT+O";
     eType           = ForEdit;
 }
 
@@ -1080,7 +1080,7 @@ CmdSketcherConstrainParallel::CmdSketcherConstrainParallel()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Parallel";
-    sAccel          = "P";
+    sAccel          = "SHIFT+P";
     eType           = ForEdit;
 }
 
