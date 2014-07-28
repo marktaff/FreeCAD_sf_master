@@ -45,15 +45,20 @@ using namespace std;
 using namespace SketcherGui;
 using namespace Sketcher;
 
-bool isConstraintAcceleratorActive(Gui::Document *doc)
+bool isSketcherAcceleratorActive(Gui::Document *doc, bool actsOnSelection )
 {
     if (doc)
         // checks if a Sketch Viewprovider is in Edit and is in no special mode
         if (doc->getInEdit() && doc->getInEdit()->isDerivedFrom(SketcherGui::ViewProviderSketch::getClassTypeId()))
             if (dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit())
                 ->getSketchMode() == ViewProviderSketch::STATUS_NONE)
-                if (Gui::Selection().countObjectsOfType(Sketcher::SketchObject::getClassTypeId()) > 0)
-                    return true;
+                if (!actsOnSelection)
+		  return true;
+		else{
+		  if(Gui::Selection().countObjectsOfType(Sketcher::SketchObject::getClassTypeId()) > 0)
+		      return true;
+		}
+		  
     return false;
 }
 
@@ -149,7 +154,7 @@ void CmdSketcherCloseShape::activated(int iMsg)
 
 bool CmdSketcherCloseShape::isActive(void)
 {
-    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), true );
 }
 
 
@@ -227,7 +232,7 @@ void CmdSketcherConnect::activated(int iMsg)
 
 bool CmdSketcherConnect::isActive(void)
 {
-    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), true );
 }
 
 // Select Constraints of selected elements
@@ -293,7 +298,7 @@ void CmdSketcherSelectConstraints::activated(int iMsg)
 
 bool CmdSketcherSelectConstraints::isActive(void)
 {
-    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), true );
 }
 
 // Select Origin
@@ -315,16 +320,15 @@ CmdSketcherSelectOrigin::CmdSketcherSelectOrigin()
 
 void CmdSketcherSelectOrigin::activated(int iMsg)
 {
-    // get the selection
-    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
-    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
-
-    // only one sketch with its subelements are allowed to be selected
-    if (selection.size() != 1) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Select elements from a single sketch."));
-        return;
-    }
+    Gui::Document * doc= getActiveGuiDocument();
+    
+    SketcherGui::ViewProviderSketch* vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
+    
+    Sketcher::SketchObject* Obj= vp->getSketchObject();
+    
+//    ViewProviderSketch * vp = static_cast<ViewProviderSketch *>(Gui::Application::Instance->getViewProvider(docobj));
+    
+//    Sketcher::SketchObject* Obj = vp->getSketchObject();  
     
     std::string doc_name = Obj->getDocument()->getName();
     std::string obj_name = Obj->getNameInDocument();
@@ -332,13 +336,16 @@ void CmdSketcherSelectOrigin::activated(int iMsg)
     
     ss << "RootPoint";
     
-    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+    if(Gui::Selection().isSelected(doc_name.c_str(), obj_name.c_str(), ss.str().c_str()))
+      Gui::Selection().rmvSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+    else
+      Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
 
 }
 
 bool CmdSketcherSelectOrigin::isActive(void)
 {
-    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), false );
 }
 
 // Select Vertical Axis
@@ -360,16 +367,11 @@ CmdSketcherSelectVerticalAxis::CmdSketcherSelectVerticalAxis()
 
 void CmdSketcherSelectVerticalAxis::activated(int iMsg)
 {
-    // get the selection
-    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
-    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
-
-    // only one sketch with its subelements are allowed to be selected
-    if (selection.size() != 1) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Select elements from a single sketch."));
-        return;
-    }
+    Gui::Document * doc= getActiveGuiDocument();
+    
+    SketcherGui::ViewProviderSketch* vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
+    
+    Sketcher::SketchObject* Obj= vp->getSketchObject();
     
     std::string doc_name = Obj->getDocument()->getName();
     std::string obj_name = Obj->getNameInDocument();
@@ -377,13 +379,16 @@ void CmdSketcherSelectVerticalAxis::activated(int iMsg)
     
     ss << "V_Axis";
     
-    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+    if(Gui::Selection().isSelected(doc_name.c_str(), obj_name.c_str(), ss.str().c_str()))
+      Gui::Selection().rmvSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+    else
+      Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
 
 }
 
 bool CmdSketcherSelectVerticalAxis::isActive(void)
 {
-    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), false );
 }
 
 // Select Horizontal Axis
@@ -405,16 +410,11 @@ CmdSketcherSelectHorizontalAxis::CmdSketcherSelectHorizontalAxis()
 
 void CmdSketcherSelectHorizontalAxis::activated(int iMsg)
 {
-    // get the selection
-    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
-    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
-
-    // only one sketch with its subelements are allowed to be selected
-    if (selection.size() != 1) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Select elements from a single sketch."));
-        return;
-    }
+        Gui::Document * doc= getActiveGuiDocument();
+    
+    SketcherGui::ViewProviderSketch* vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
+    
+    Sketcher::SketchObject* Obj= vp->getSketchObject();
     
     std::string doc_name = Obj->getDocument()->getName();
     std::string obj_name = Obj->getNameInDocument();
@@ -422,13 +422,16 @@ void CmdSketcherSelectHorizontalAxis::activated(int iMsg)
     
     ss << "H_Axis";
     
-    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+    if(Gui::Selection().isSelected(doc_name.c_str(), obj_name.c_str(), ss.str().c_str()))
+      Gui::Selection().rmvSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+    else
+      Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
 
 }
 
 bool CmdSketcherSelectHorizontalAxis::isActive(void)
 {
-    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), false );
 }
 
 // Add Accelerator Commands
