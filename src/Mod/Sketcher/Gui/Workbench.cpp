@@ -108,8 +108,13 @@ Gui::MenuItem* Workbench::setupMenuBar() const
 	  
     Gui::MenuItem* consaccel = new Gui::MenuItem();
     consaccel->setCommand("Sketcher accelerators");
-    *consaccel << "Sketcher_CloseShape";
-
+    *consaccel 	<< "Sketcher_CloseShape"
+		<< "Sketcher_ConnectLines"
+		<< "Sketcher_SelectConstraints"
+		<< "Sketcher_SelectOrigin"
+		<< "Sketcher_SelectVerticalAxis"
+		<< "Sketcher_SelectHorizontalAxis";
+		
     *sketch
         << "Sketcher_NewSketch"
         << "Sketcher_LeaveSketch"
@@ -119,6 +124,7 @@ Gui::MenuItem* Workbench::setupMenuBar() const
         << "Sketcher_ValidateSketch"
         << geom
         << cons
+        << consaccel
     ;
 
     return root;

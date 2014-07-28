@@ -50,18 +50,21 @@
 using namespace SketcherGui;
 using namespace Gui::TaskView;
 
-#define CONTEXT_ITEM(ICONSTR,NAMESTR,FUNC,KEY) 						\
+/// Inserts a QAction into an existing menu
+/// ICONSTR is the string of the icon in the resource file
+/// NAMESTR is the text appearing in the contextual menuAction
+/// CMDSTR is the string registered in the commandManager
+/// FUNC is the name of the member function to be executed on selection of the menu item
+#define CONTEXT_ITEM(ICONSTR,NAMESTR,CMDSTR,FUNC) 						\
 QIcon icon_ ## FUNC( Gui::BitmapFactory().pixmap(ICONSTR) ); 					\
     QAction* constr_ ## FUNC = menu.addAction(icon_ ## FUNC,tr(NAMESTR), this, SLOT(FUNC()), 	\
-        QKeySequence(KEY));								\
+        QKeySequence(QString::fromUtf8(Gui::Application::Instance->commandManager().getCommandByName(CMDSTR)->getAccel())));								\
     constr_ ## FUNC->setEnabled(!items.isEmpty());
 
+/// Defines the member function corresponding to the CONTEXT_ITEM macro
 #define CONTEXT_MEMBER_DEF(CMDSTR,FUNC) 							\
 void ElementView::FUNC(){								\
    Gui::Application::Instance->commandManager().runCommandByName(CMDSTR);}
-
-#define CONTEXT_SHORTCUT(KEY,FUNC) 							\
-         case KEY : FUNC();break;
 	 
 // helper class to store additional information about the listWidget entry.
 class ElementItem : public QListWidgetItem
@@ -118,35 +121,35 @@ void ElementView::contextMenuEvent (QContextMenuEvent* event)
     QList<QListWidgetItem *> items = selectedItems();
 
     // CONTEXT_ITEM(ICONSTR,NAMESTR,FUNC,KEY)
-    CONTEXT_ITEM("Constraint_PointOnPoint","Point Coincidence",doPointCoincidence,Qt::Key_C)
-    CONTEXT_ITEM("Constraint_PointOnObject","Point on Object",doPointOnObjectConstraint,Qt::Key_Q)
-    CONTEXT_ITEM("Constraint_Vertical","Vertical Constraint",doVerticalConstraint,Qt::Key_V)
-    CONTEXT_ITEM("Constraint_Horizontal","Horizontal Constraint",doHorizontalConstraint,Qt::Key_H)
-    CONTEXT_ITEM("Constraint_Parallel","Parallel Constraint",doParallelConstraint,Qt::Key_Y)
-    CONTEXT_ITEM("Constraint_Perpendicular","Perpendicular Constraint",doPerpendicularConstraint,Qt::Key_G)
-    CONTEXT_ITEM("Constraint_Tangent","Tangent Constraint",doTangentConstraint,Qt::Key_W)
-    CONTEXT_ITEM("Constraint_EqualLength","Equal Length",doEqualConstraint,Qt::Key_J)
-    CONTEXT_ITEM("Constraint_Symmetric","Symetric",doSymetricConstraint,Qt::Key_S)
-    CONTEXT_ITEM("Sketcher_ConstrainLock","Lock Constraint",doLockConstraint,Qt::Key_B)    
-    CONTEXT_ITEM("Constraint_HorizontalDistance","Horizontal Distance",doHorizontalDistance,Qt::Key_K)
-    CONTEXT_ITEM("Constraint_VerticalDistance","Vertical Distance",doVerticalDistance,Qt::Key_I)
-    CONTEXT_ITEM("Constraint_Length","Length Constraint",doLengthConstraint,Qt::Key_M)
-    CONTEXT_ITEM("Constraint_Radius","Radius Constraint",doRadiusConstraint,Qt::Key_X)
-    CONTEXT_ITEM("Constraint_InternalAngle","Angle Constraint",doAngleConstraint,Qt::Key_A)
+    CONTEXT_ITEM("Constraint_PointOnPoint","Point Coincidence","Sketcher_ConstrainCoincident",doPointCoincidence)
+    CONTEXT_ITEM("Constraint_PointOnObject","Point on Object","Sketcher_ConstrainPointOnObject",doPointOnObjectConstraint)
+    CONTEXT_ITEM("Constraint_Vertical","Vertical Constraint","Sketcher_ConstrainVertical", doVerticalConstraint)
+    CONTEXT_ITEM("Constraint_Horizontal","Horizontal Constraint","Sketcher_ConstrainHorizontal",doHorizontalConstraint)
+    CONTEXT_ITEM("Constraint_Parallel","Parallel Constraint","Sketcher_ConstrainParallel",doParallelConstraint)
+    CONTEXT_ITEM("Constraint_Perpendicular","Perpendicular Constraint","Sketcher_ConstrainPerpendicular",doPerpendicularConstraint)
+    CONTEXT_ITEM("Constraint_Tangent","Tangent Constraint","Sketcher_ConstrainTangent",doTangentConstraint)
+    CONTEXT_ITEM("Constraint_EqualLength","Equal Length","Sketcher_ConstrainEqual",doEqualConstraint)
+    CONTEXT_ITEM("Constraint_Symmetric","Symetric","Sketcher_ConstrainSymmetric",doSymetricConstraint)
+    CONTEXT_ITEM("Sketcher_ConstrainLock","Lock Constraint","Sketcher_ConstrainLock",doLockConstraint)    
+    CONTEXT_ITEM("Constraint_HorizontalDistance","Horizontal Distance","Sketcher_ConstrainDistanceX",doHorizontalDistance)
+    CONTEXT_ITEM("Constraint_VerticalDistance","Vertical Distance","Sketcher_ConstrainDistanceY",doVerticalDistance)
+    CONTEXT_ITEM("Constraint_Length","Length Constraint","Sketcher_ConstrainDistance",doLengthConstraint)
+    CONTEXT_ITEM("Constraint_Radius","Radius Constraint","Sketcher_ConstrainRadius",doRadiusConstraint)
+    CONTEXT_ITEM("Constraint_InternalAngle","Angle Constraint","Sketcher_ConstrainAngle",doAngleConstraint)
     
     QAction* sep = menu.addSeparator();
     
-    CONTEXT_ITEM("Sketcher_AlterConstruction","Toggle construction line",doToggleConstruction,Qt::Key_T)
+    CONTEXT_ITEM("Sketcher_AlterConstruction","Toggle construction line","Sketcher_ToggleConstruction",doToggleConstruction)
     
     QAction* sep1 = menu.addSeparator();
     
-    CONTEXT_ITEM("Sketcher_CloseShape","Close Shape",doCloseShape,Qt::Key_N)
-    CONTEXT_ITEM("Sketcher_ConnectLines","Connect",doConnect,Qt::Key_M)
-    CONTEXT_ITEM("Sketcher_SelectConstraints","Select Constraints",doSelectConstraints,Qt::Key_M)
-    CONTEXT_ITEM("Sketcher_SelectOrigin","Select Origin",doSelectOrigin,Qt::Key_M)
-    CONTEXT_ITEM("Sketcher_SelectHorizontalAxis","Select Horizontal Axis",doSelectHAxis,Qt::Key_M)
-    CONTEXT_ITEM("Sketcher_SelectVerticalAxis","Select Vertical Axis",doSelectVAxis,Qt::Key_M)
-    
+    CONTEXT_ITEM("Sketcher_CloseShape","Close Shape","Sketcher_CloseShape",doCloseShape)
+    CONTEXT_ITEM("Sketcher_ConnectLines","Connect","Sketcher_ConnectLines",doConnect)
+    CONTEXT_ITEM("Sketcher_SelectConstraints","Select Constraints","Sketcher_SelectConstraints",doSelectConstraints)
+    CONTEXT_ITEM("Sketcher_SelectOrigin","Select Origin","Sketcher_SelectOrigin",doSelectOrigin)
+    CONTEXT_ITEM("Sketcher_SelectHorizontalAxis","Select Horizontal Axis","Sketcher_SelectHorizontalAxis",doSelectHAxis)
+    CONTEXT_ITEM("Sketcher_SelectVerticalAxis","Select Vertical Axis","Sketcher_SelectVerticalAxis",doSelectVAxis)
+        
     QAction* sep2 = menu.addSeparator();
         
     QAction* remove = menu.addAction(tr("Delete"), this, SLOT(deleteSelectedItems()),
@@ -202,30 +205,10 @@ void ElementView::keyPressEvent(QKeyEvent * event)
 {
     switch (event->key())
     {
-//       case Qt::Key_Shift:
-// 	// signal
-// 	onFilterChange();
-// 	break;
       case Qt::Key_Z:
 	// signal
 	onFilterShortcutPressed();
 	break;
-      CONTEXT_SHORTCUT(Qt::Key_C,doPointCoincidence)
-      CONTEXT_SHORTCUT(Qt::Key_Q,doPointOnObjectConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_V,doVerticalConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_H,doHorizontalConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_Y,doParallelConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_G,doPerpendicularConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_W,doTangentConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_J,doEqualConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_S,doSymetricConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_B,doLockConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_K,doHorizontalDistance)
-      CONTEXT_SHORTCUT(Qt::Key_I,doVerticalDistance)
-      CONTEXT_SHORTCUT(Qt::Key_M,doLengthConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_X,doRadiusConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_A,doAngleConstraint)
-      CONTEXT_SHORTCUT(Qt::Key_N,doCloseShape)
       default:
 	QListWidget::keyPressEvent( event );
 	break;
