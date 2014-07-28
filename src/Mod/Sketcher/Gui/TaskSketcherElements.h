@@ -77,6 +77,9 @@ protected Q_SLOTS:
     // Acelerators
     void doCloseShape();
     void doConnect();
+    void doSelectOrigin();
+    void doSelectHAxis();
+    void doSelectVAxis();
 
     void doSelectConstraints();
 

@@ -143,6 +143,9 @@ void ElementView::contextMenuEvent (QContextMenuEvent* event)
     CONTEXT_ITEM("Sketcher_CloseShape","Close Shape",doCloseShape,Qt::Key_N)
     CONTEXT_ITEM("Sketcher_ConnectLines","Connect",doConnect,Qt::Key_M)
     CONTEXT_ITEM("Sketcher_SelectConstraints","Select Constraints",doSelectConstraints,Qt::Key_M)
+    CONTEXT_ITEM("Sketcher_SelectOrigin","Select Origin",doSelectOrigin,Qt::Key_M)
+    CONTEXT_ITEM("Sketcher_SelectHorizontalAxis","Select Horizontal Axis",doSelectHAxis,Qt::Key_M)
+    CONTEXT_ITEM("Sketcher_SelectVerticalAxis","Select Vertical Axis",doSelectVAxis,Qt::Key_M)
     
     QAction* sep2 = menu.addSeparator();
         
@@ -174,8 +177,9 @@ CONTEXT_MEMBER_DEF("Sketcher_CloseShape",doCloseShape)
 CONTEXT_MEMBER_DEF("Sketcher_ConnectLines",doConnect)
 CONTEXT_MEMBER_DEF("Sketcher_ToggleConstruction",doToggleConstruction)
 CONTEXT_MEMBER_DEF("Sketcher_SelectConstraints",doSelectConstraints)
-
-
+CONTEXT_MEMBER_DEF("Sketcher_SelectOrigin",doSelectOrigin)
+CONTEXT_MEMBER_DEF("Sketcher_SelectHorizontalAxis",doSelectHAxis)
+CONTEXT_MEMBER_DEF("Sketcher_SelectVerticalAxis",doSelectVAxis)
 
 void ElementView::deleteSelectedItems()
 {

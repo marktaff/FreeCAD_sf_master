@@ -296,6 +296,140 @@ bool CmdSketcherSelectConstraints::isActive(void)
     return isConstraintAcceleratorActive( getActiveGuiDocument() );
 }
 
+// Select Origin
+DEF_STD_CMD_A(CmdSketcherSelectOrigin);
+
+CmdSketcherSelectOrigin::CmdSketcherSelectOrigin()
+    :Command("Sketcher_SelectOrigin")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Select Origin");
+    sToolTipText    = QT_TR_NOOP("Select the origin point");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_SelectOrigin";
+    sAccel          = "M";
+    eType           = ForEdit;
+}
+
+void CmdSketcherSelectOrigin::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select elements from a single sketch."));
+        return;
+    }
+    
+    std::string doc_name = Obj->getDocument()->getName();
+    std::string obj_name = Obj->getNameInDocument();
+    std::stringstream ss;
+    
+    ss << "RootPoint";
+    
+    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+
+}
+
+bool CmdSketcherSelectOrigin::isActive(void)
+{
+    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+}
+
+// Select Vertical Axis
+DEF_STD_CMD_A(CmdSketcherSelectVerticalAxis);
+
+CmdSketcherSelectVerticalAxis::CmdSketcherSelectVerticalAxis()
+    :Command("Sketcher_SelectVerticalAxis")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Select Vertical Axis");
+    sToolTipText    = QT_TR_NOOP("Select the vertical axis");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_SelectVerticalAxis";
+    sAccel          = "M";
+    eType           = ForEdit;
+}
+
+void CmdSketcherSelectVerticalAxis::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select elements from a single sketch."));
+        return;
+    }
+    
+    std::string doc_name = Obj->getDocument()->getName();
+    std::string obj_name = Obj->getNameInDocument();
+    std::stringstream ss;
+    
+    ss << "V_Axis";
+    
+    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+
+}
+
+bool CmdSketcherSelectVerticalAxis::isActive(void)
+{
+    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+}
+
+// Select Horizontal Axis
+DEF_STD_CMD_A(CmdSketcherSelectHorizontalAxis);
+
+CmdSketcherSelectHorizontalAxis::CmdSketcherSelectHorizontalAxis()
+    :Command("Sketcher_SelectHorizontalAxis")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Select Horizontal Axis");
+    sToolTipText    = QT_TR_NOOP("Select the horizontal axis");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_SelectHorizontalAxis";
+    sAccel          = "M";
+    eType           = ForEdit;
+}
+
+void CmdSketcherSelectHorizontalAxis::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select elements from a single sketch."));
+        return;
+    }
+    
+    std::string doc_name = Obj->getDocument()->getName();
+    std::string obj_name = Obj->getNameInDocument();
+    std::stringstream ss;
+    
+    ss << "H_Axis";
+    
+    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+
+}
+
+bool CmdSketcherSelectHorizontalAxis::isActive(void)
+{
+    return isConstraintAcceleratorActive( getActiveGuiDocument() );
+}
 
 // Add Accelerator Commands
 void CreateSketcherCommandsConstraintAccel(void)
@@ -305,4 +439,7 @@ void CreateSketcherCommandsConstraintAccel(void)
     rcCmdMgr.addCommand(new CmdSketcherCloseShape());
     rcCmdMgr.addCommand(new CmdSketcherConnect());
     rcCmdMgr.addCommand(new CmdSketcherSelectConstraints());
+    rcCmdMgr.addCommand(new CmdSketcherSelectOrigin());
+    rcCmdMgr.addCommand(new CmdSketcherSelectVerticalAxis());
+    rcCmdMgr.addCommand(new CmdSketcherSelectHorizontalAxis());
 }
