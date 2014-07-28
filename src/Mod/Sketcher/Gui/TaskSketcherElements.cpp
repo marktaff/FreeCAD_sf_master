@@ -236,7 +236,7 @@ void ElementView::keyPressEvent(QKeyEvent * event)
 TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
     : TaskBox(Gui::BitmapFactory().pixmap("document-new"),tr("Elements"),true, 0),
     sketchView(sketchView), inhibitSelectionUpdate(false), focusItemIndex(-1),
-    isNamingBoxChecked(false), isautoSwitchBoxChecked(false)
+    isNamingBoxChecked(false), isautoSwitchBoxChecked(false), previouslySelectedItemIndex(-1)
 {
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
@@ -415,7 +415,8 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
     else
       itf=NULL;
     
-    bool multipleselection=true;
+    bool multipleselection=true; // ctrl type of selection in listWidget
+    bool multipleconsecutiveselection=false; // shift type of selection in listWidget
     
     if(!inhibitSelectionUpdate){	
       if(itf!=NULL) {
@@ -435,10 +436,20 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
 	} 
       }
       
-      if(QApplication::keyboardModifiers()==Qt::ControlModifier)// multiple selection?
+      if(QApplication::keyboardModifiers()==Qt::ControlModifier)// multiple ctrl selection?
 	multipleselection=true;
       else
 	multipleselection=false;
+      
+      if(QApplication::keyboardModifiers()==Qt::ShiftModifier)// multiple shift selection?
+	multipleconsecutiveselection=true;
+      else
+	multipleconsecutiveselection=false;
+      
+      if(multipleselection && multipleconsecutiveselection){ // ctrl takes priority over shift functionality
+	multipleselection=true;
+	multipleconsecutiveselection=false;
+      }
     }      
     
     std::string doc_name = sketchView->getSketchObject()->getDocument()->getName();
@@ -450,14 +461,35 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
     for (int i=0;i<ui->listWidgetElements->count(); i++) {
 	ElementItem * ite=static_cast<ElementItem*>(ui->listWidgetElements->item(i));
 	
-	if(multipleselection==false && ite!=itf)
+	if(multipleselection==false && multipleconsecutiveselection==false && ite!=itf)
 	{
-	
 	  ite->isLineSelected=false;
 	  ite->isStartingPointSelected=false;
 	  ite->isEndPointSelected=false;
 	  ite->isMidPointSelected=false;
-	  
+	}
+	
+	if(multipleconsecutiveselection==true)
+	{
+	    if(	(( i>focusItemIndex && i<previouslySelectedItemIndex ) ||
+		( i<focusItemIndex && i>previouslySelectedItemIndex )) &&
+		previouslySelectedItemIndex>=0){
+	      // select the element of the Item
+	      	switch(element){
+		  case 0:		
+		      ite->isLineSelected=true;
+		      break;
+		  case 1:
+		      ite->isStartingPointSelected=true;
+		      break;
+		  case 2:
+		      ite->isEndPointSelected=true;
+		      break;
+		  case 3:
+		      ite->isMidPointSelected=true;
+		      break;	
+		}
+	    }
 	}
 	
 	// first update the listwidget
@@ -514,6 +546,9 @@ void TaskSketcherElements::on_listWidgetElements_itemSelectionChanged(void)
     }
     this->blockConnection(block);
     ui->listWidgetElements->blockSignals(false);
+    
+    if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count())
+      previouslySelectedItemIndex=focusItemIndex;
 }
 
 void TaskSketcherElements::on_listWidgetElements_itemEntered(QListWidgetItem *item)
@@ -644,6 +679,8 @@ void TaskSketcherElements::on_listWidgetElements_filterShortcutPressed()
 {
     int element;
     
+    previouslySelectedItemIndex=-1; // Shift selection on list widget implementation
+    
     // calculate next element type on shift press according to entered/preselected element
     // This is the aka fast-forward functionality
     if(focusItemIndex>-1 && focusItemIndex<ui->listWidgetElements->count()){
@@ -710,6 +747,8 @@ void TaskSketcherElements::on_autoSwitchBox_stateChanged(int state)
 
 void TaskSketcherElements::on_listWidgetElements_currentFilterChanged ( int index )
 {
+    previouslySelectedItemIndex=-1; // Shift selection on list widget implementation
+    
     Gui::Selection().rmvPreselect();
     
     updateIcons(index);
