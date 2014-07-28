@@ -121,6 +121,7 @@ private:
     QWidget* proxy;
     Ui_TaskSketcherElements* ui;
     int focusItemIndex;
+    int previouslySelectedItemIndex;
     
     bool isNamingBoxChecked;
     bool isautoSwitchBoxChecked;
