@@ -584,7 +584,7 @@ CmdSketcherConstrainDistance::CmdSketcherConstrainDistance()
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Length";
-    sAccel          = "D";
+    sAccel          = "SHIFT+D";
     eType           = ForEdit;
 }
 
