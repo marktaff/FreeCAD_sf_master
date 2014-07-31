@@ -156,6 +156,10 @@
         <file>icons/Sketcher_Sketch.svg</file>
         <file>icons/Sketcher_Trimming.svg</file>
         <file>icons/Sketcher_ViewSketch.svg</file>
+        <file>icons/Sketcher_CloseShape.svg</file>
+        <file>icons/Sketcher_ConnectLines.svg</file>
+        <file>icons/Sketcher_SelectConstraints.svg</file>
+        <file>icons/Sketcher_SelectOrigin.svg</file>
         <file>icons/Sketcher_ProfilesHexagon1.svg</file>
         <file>icons/Sketcher_Element_Line_Edge.svg</file>
         <file>icons/Sketcher_Element_Line_StartingPoint.svg</file>
@@ -167,6 +171,8 @@
         <file>icons/Sketcher_Element_Point_StartingPoint.svg</file>
         <file>icons/Sketcher_Element_Circle_MidPoint.svg</file>
         <file>icons/Sketcher_Element_Circle_Edge.svg</file>
+        <file>icons/Sketcher_SelectHorizontalAxis.svg</file>
+        <file>icons/Sketcher_SelectVerticalAxis.svg</file>
         <file>icons/small/Constraint_Concentric_sm.xpm</file>
         <file>icons/small/Constraint_EqualLength_sm.xpm</file>
         <file>icons/small/Constraint_ExternalAngle_sm.xpm</file>
@@ -190,6 +196,10 @@
         <file>icons/small/Constraint_Tangent_sm.xpm</file>
         <file>icons/small/Constraint_VerticalDistance_sm.xpm</file>
         <file>icons/small/Constraint_Vertical_sm.xpm</file>
+        <file>icons/small/Sketcher_CloseShape.xpm</file>
+        <file>icons/small/Sketcher_ConnectLines.xpm</file>
+        <file>icons/small/Sketcher_SelectOrigin.xpm</file>
+        <file>icons/small/Sketcher_SelectHorizontalAxis.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_EndPoint_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_MidPoint_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Circle_Edge_sm.xpm</file>
@@ -198,6 +208,8 @@
         <file>icons/small/Sketcher_Element_Line_EndPoint_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Line_StartingPoint_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Point_StartingPoint_sm.xpm</file>
+        <file>icons/small/Sketcher_SelectVerticalAxis.xpm</file>
+        <file>icons/small/Sketcher_SelectConstraints.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_Edge_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_StartingPoint_sm.xpm</file>
         <file>translations/Sketcher_af.qm</file>
