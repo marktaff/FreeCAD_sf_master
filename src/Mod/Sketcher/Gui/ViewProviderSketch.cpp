@@ -1407,7 +1407,7 @@ void ViewProviderSketch::onSelectionChanged(const Gui::SelectionChanges& msg)
 			      resetPreselectPoint();
 			      edit->PreselectCurve = GeoId;
 			      edit->PreselectCross = -1;
-			      edit->PreselectConstraint = -1;
+			      edit->PreselectConstraintSet.clear();
 			      if (edit->sketchHandler)
 				  edit->sketchHandler->applyCursor();
 			      this->updateColor();
@@ -1418,7 +1418,7 @@ void ViewProviderSketch::onSelectionChanged(const Gui::SelectionChanges& msg)
 			      setPreselectPoint(PtIndex);
 			      edit->PreselectCurve = -1;
 			      edit->PreselectCross = -1;
-			      edit->PreselectConstraint = -1;
+			      edit->PreselectConstraintSet.clear();
 			      if (edit->sketchHandler)
 				  edit->sketchHandler->applyCursor();
 			      this->updateColor();
@@ -1430,7 +1430,7 @@ void ViewProviderSketch::onSelectionChanged(const Gui::SelectionChanges& msg)
 	    resetPreselectPoint();
 	    edit->PreselectCurve = -1;
 	    edit->PreselectCross = -1;
-	    edit->PreselectConstraint = -1;
+	    edit->PreselectConstraintSet.clear();
 	    if (edit->sketchHandler)
 		edit->sketchHandler->applyCursor();
 	    this->updateColor();
