@@ -25,6 +25,15 @@
      </item>
      <item>
       <widget class="QComboBox" name="comboBoxElementFilter">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="locale">
+        <locale language="English" country="UnitedStates"/>
+       </property>
+       <property name="editable">
+        <bool>false</bool>
+       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>

@@ -608,7 +608,7 @@ void TaskSketcherElements::slotElementsChanged(void)
     QIcon Sketcher_Element_Line_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_StartingPoint") );
     QIcon Sketcher_Element_Point_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Point_StartingPoint") );
 
-    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
+    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_Element_SelectionTypeInvalid") );
 
     assert(sketchView);
     // Build up ListView with the elements
@@ -776,7 +776,7 @@ void TaskSketcherElements::updateIcons(int element)
     QIcon Sketcher_Element_Line_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_EndPoint") );
     QIcon Sketcher_Element_Line_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Line_StartingPoint") );
     QIcon Sketcher_Element_Point_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Point_StartingPoint") );
-    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_ConstrainLock") );
+    QIcon none( Gui::BitmapFactory().pixmap("Sketcher_Element_SelectionTypeInvalid") );
     
     for (int i=0;i<ui->listWidgetElements->count(); i++) {
       Base::Type type = static_cast<ElementItem *>(ui->listWidgetElements->item(i))->GeometryType;

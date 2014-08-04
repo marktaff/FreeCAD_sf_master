@@ -14,8 +14,8 @@
    height="64px"
    id="svg2726"
    sodipodi:version="0.32"
-   inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="Sketcher_CreatePoint.svg"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="Sketcher_Element_Point_StartingPoint.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.1"
    inkscape:export-filename="/home/yorik/Sources/FreeCAD/src/Mod/Sketcher/Gui/Resources/icons/Sketcher_CreatePoint.svg.png"
@@ -113,10 +113,10 @@
      showgrid="true"
      inkscape:document-units="px"
      inkscape:grid-bbox="true"
-     inkscape:window-width="1416"
-     inkscape:window-height="823"
-     inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-width="1680"
+     inkscape:window-height="995"
+     inkscape:window-x="-2"
+     inkscape:window-y="-3"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata2731">
@@ -126,7 +126,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -137,16 +137,6 @@
     <g
        id="g4289"
        transform="matrix(0.1621282,0,0,0.1621282,6.3605986,-66.108806)">
-      <path
-         d="m 245.71428,655.2193 c 0,26.82526 -21.74617,48.57143 -48.57143,48.57143 -26.82526,0 -48.57143,-21.74617 -48.57143,-48.57143 0,-26.82526 21.74617,-48.57143 48.57143,-48.57143 26.82526,0 48.57143,21.74617 48.57143,48.57143 z"
-         sodipodi:ry="48.57143"
-         sodipodi:rx="48.57143"
-         sodipodi:cy="655.2193"
-         sodipodi:cx="197.14285"
-         id="path3162-2"
-         style="opacity:0.67000002;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:5.09976673;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-         sodipodi:type="arc"
-         transform="matrix(-1.135537,-0.02584694,0.0257987,-1.13766,378.69194,1376.1392)" />
       <path
          d="m 245.71428,655.2193 c 0,26.82526 -21.74617,48.57143 -48.57143,48.57143 -26.82526,0 -48.57143,-21.74617 -48.57143,-48.57143 0,-26.82526 21.74617,-48.57143 48.57143,-48.57143 26.82526,0 48.57143,21.74617 48.57143,48.57143 z"
          sodipodi:ry="48.57143"
