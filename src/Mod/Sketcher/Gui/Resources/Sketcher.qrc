@@ -109,6 +109,7 @@
         <file>icons/small/Constraint_TangentToStart_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_StartingPoint_sm.xpm</file>
         <file>icons/small/Constraint_EqualLength_sm.xpm</file>
+        <file>icons/small/Sketcher_SelectConstraints_sm.xpm</file>
         <file>icons/small/Sketcher_SelectOrigin.xpm</file>
         <file>icons/small/Sketcher_Element_Circle_Edge_sm.xpm</file>
         <file>icons/small/Constraint_TangentToEnd_sm.xpm</file>
