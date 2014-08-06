@@ -75,42 +75,71 @@
         <file>icons/Constraint_Tangent.svg</file>
         <file>icons/Sketcher_CreatePolyline.svg</file>
         <file>icons/small/Constraint_Radius_sm.xpm</file>
+        <file>icons/small/Sketcher_CreatePolyline_sm.xpm</file>
         <file>icons/small/Constraint_HorizontalDistance_sm.xpm</file>
+        <file>icons/small/Sketcher_Create3PointCircle_sm.xpm</file>
         <file>icons/small/Constraint_PointOnEnd_sm.xpm</file>
+        <file>icons/small/Sketcher_Trimming_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Line_EndPoint_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateSlot_sm.xpm</file>
         <file>icons/small/Sketcher_ConstrainHorizontal_sm.xpm</file>
         <file>icons/small/Sketcher_ConnectLines.xpm</file>
         <file>icons/small/Constraint_PointToObject_sm.xpm</file>
+        <file>icons/small/Sketcher_ProfilesHexagon1_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_Edge_sm.xpm</file>
         <file>icons/small/Sketcher_SelectHorizontalAxis.xpm</file>
         <file>icons/small/Sketcher_Element_Line_Edge_sm.xpm</file>
         <file>icons/small/Constraint_Parallel_sm.xpm</file>
         <file>icons/small/Constraint_InternalAngle_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_EndPoint_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateTriangle_sm.xpm</file>
+        <file>icons/small/Sketcher_External_sm.xpm</file>
         <file>icons/small/Constraint_PointOnPoint_sm.xpm</file>
         <file>icons/small/Sketcher_SelectVerticalAxis.xpm</file>
         <file>icons/small/Constraint_VerticalDistance_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateOctagon_sm.xpm</file>
         <file>icons/small/Constraint_Length_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateSquare_sm.xpm</file>
+        <file>icons/small/Sketcher_AlterFillet_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateArc_sm.xpm</file>
         <file>icons/small/Sketcher_ConnectLines_sm.xpm</file>
         <file>icons/small/Constraint_PointOnStart_sm.xpm</file>
+        <file>icons/small/Sketcher_AlterConstruction_sm.xpm</file>
+        <file>icons/small/Sketcher_ViewSketch_sm.xpm</file>
         <file>icons/small/Constraint_PointOnObject_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateLine_sm.xpm</file>
+        <file>icons/small/Sketcher_DraftLine_sm.xpm</file>
         <file>icons/small/Sketcher_Element_SelectionTypeInvalid_sm.xpm</file>
         <file>icons/small/Constraint_Concentric_sm.xpm</file>
         <file>icons/small/Sketcher_ConstrainCoincident_sm.xpm</file>
         <file>icons/small/Constraint_Perpendicular_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateHeptagon_sm.xpm</file>
+        <file>icons/small/Sketcher_SelectOrigin_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateRectangle_sm.xpm</file>
+        <file>icons/small/Sketcher_NewSketch_sm.xpm</file>
+        <file>icons/small/Sketcher_LeaveSketch_sm.xpm</file>
         <file>icons/small/Constraint_PointOnMidPoint_sm.xpm</file>
         <file>icons/small/Constraint_Lock_sm.xpm</file>
+        <file>icons/small/Sketcher_MapSketch_sm.xpm</file>
+        <file>icons/small/Sketcher_CreatePentagon_sm.xpm</file>
         <file>icons/small/Constraint_ExternalAngle_sm.xpm</file>
         <file>icons/small/Sketcher_CloseShape.xpm</file>
         <file>icons/small/Sketcher_Element_Point_StartingPoint_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateText_sm.xpm</file>
+        <file>icons/small/Sketcher_Sketch_sm.xpm</file>
         <file>icons/small/Constraint_Horizontal_sm.xpm</file>
         <file>icons/small/Sketcher_ConstrainParallel_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Circle_MidPoint_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateHexagon_sm.xpm</file>
+        <file>icons/small/Sketcher_Create3PointArc_sm.xpm</file>
         <file>icons/small/Constraint_TangentToStart_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Arc_StartingPoint_sm.xpm</file>
         <file>icons/small/Constraint_EqualLength_sm.xpm</file>
         <file>icons/small/Sketcher_SelectConstraints_sm.xpm</file>
         <file>icons/small/Sketcher_SelectOrigin.xpm</file>
+        <file>icons/small/Sketcher_CreatePoint_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateFillet_sm.xpm</file>
+        <file>icons/small/Sketcher_CreateCircle_sm.xpm</file>
         <file>icons/small/Sketcher_Element_Circle_Edge_sm.xpm</file>
         <file>icons/small/Constraint_TangentToEnd_sm.xpm</file>
         <file>icons/small/Sketcher_CloseShape_sm.xpm</file>
@@ -120,7 +149,10 @@
         <file>icons/small/Sketcher_SelectConstraints.xpm</file>
         <file>icons/small/Sketcher_Element_Line_StartingPoint_sm.xpm</file>
         <file>icons/small/Constraint_Vertical_sm.xpm</file>
+        <file>icons/small/Sketcher_SelectHorizontalAxis_sm.xpm</file>
         <file>icons/small/Sketcher_ConstrainLock_sm.xpm</file>
+        <file>icons/small/Sketcher_SelectVerticalAxis_sm.xpm</file>
+        <file>icons/small/Sketcher_EditSketch_sm.xpm</file>
         <file>icons/small/Constraint_Tangent_sm.xpm</file>
         <file>icons/small/Sketcher_ConstrainDistance_sm.xpm</file>
         <file>translations/Sketcher_es-ES.qm</file>
