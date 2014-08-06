@@ -139,6 +139,7 @@ void CmdSketcherCloseShape::activated(int iMsg)
                 geo2->getTypeId() == Part::GeomLineSegment::getClassTypeId() ) {
                 QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
                     QObject::tr("Closing a shape formed by exactly two lines makes no sense."));
+                abortCommand();
                 return;
             }
 
