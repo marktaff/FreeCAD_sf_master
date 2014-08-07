@@ -3823,6 +3823,29 @@ void ViewProviderSketch::unsetEdit(int ModNum)
 
     // when pressing ESC make sure to close the dialog
     Gui::Control().closeDialog();
+    
+    // Lets try to add properties here
+
+            
+//     const std::vector< Sketcher::Constraint * > &vals = getSketchObject()->Constraints.getValues();
+// 
+//     for(std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it!=vals.end();++it){
+//         if (!(*it)->Name.empty() && // Named constraint
+//             ((*it)->Type == Sketcher::Distance || // Datum constraint
+//             (*it)->Type == Sketcher::DistanceX ||
+//             (*it)->Type == Sketcher::DistanceY ||
+//             (*it)->Type == Sketcher::Radius ||
+//             (*it)->Type == Sketcher::Angle)) {
+//                 
+//             //propertyData.addProperty(this, #_prop_, &this->_prop_, (_group_),(_type_),(_Docu_));
+//             App::PropertyDistance pd;
+//             pd.setValue((*it)->Value);
+//             pd.setContainer(this);
+//             propertyData.addProperty(this,(*it)->Name.c_str(),&pd,"Sketcher Constraints",(App::PropertyType)(App::Prop_None),(*it)->Name.c_str());
+//         }
+// 
+//     }
+    
 }
 
 void ViewProviderSketch::setEditViewer(Gui::View3DInventorViewer* viewer, int ModNum)
