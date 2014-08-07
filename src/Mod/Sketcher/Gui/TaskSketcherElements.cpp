@@ -726,6 +726,7 @@ void TaskSketcherElements::on_autoSwitchBox_stateChanged(int state)
 {
       isautoSwitchBoxChecked=(state==Qt::Checked);
       ui->comboBoxElementFilter->setCurrentIndex(0);
+      ui->comboBoxElementFilter->setEnabled(!isautoSwitchBoxChecked);
 }
 
 void TaskSketcherElements::on_listWidgetElements_currentFilterChanged ( int index )
