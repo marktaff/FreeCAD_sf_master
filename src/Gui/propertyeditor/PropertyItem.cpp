@@ -85,6 +85,12 @@ void PropertyItem::setPropertyData(const std::vector<App::Property*>& items)
             ro &= (parent->isReadOnly(*it) || (*it)->StatusBits.test(2));
     }
     this->setReadOnly(ro);
+    
+    initialize();
+}
+
+void PropertyItem::initialize()
+{
 }
 
 const std::vector<App::Property*>& PropertyItem::getPropertyData() const
@@ -302,13 +308,19 @@ bool PropertyItem::setData (const QVariant& value)
         PropertyItem* parent = this->parent();
         if (!parent || !parent->parent())
             return false;
-        parent->setProperty(qPrintable(objectName()),value);
+        parent->setQTProperty(qPrintable(objectName()),value);
         return true;
     }
     else {
         setValue(value);
         return true;
     }
+}
+
+bool PropertyItem::setQTProperty(const char* name, const QVariant & value)
+{
+    this->setProperty(name,value);
+    
 }
 
 Qt::ItemFlags PropertyItem::flags(int column) const
