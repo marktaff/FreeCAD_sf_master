@@ -62,7 +62,7 @@ public:
     virtual int getSize(void) const;
     
     const char* getEditorName(void) const {
-        return "Gui::PropertyEditor::PropertyConstraintListItem";
+        return "SketcherGui::PropertyConstraintListItem";
     }
 
     /** Sets the property

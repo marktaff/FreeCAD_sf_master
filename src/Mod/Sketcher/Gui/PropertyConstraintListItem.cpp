@@ -55,11 +55,10 @@
 
 #include "PropertyConstraintListItem.h"
 
-//namespace Sketcher {
-namespace Gui {
-namespace PropertyEditor {
 
-TYPESYSTEM_SOURCE(Gui::PropertyEditor::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
+using namespace SketcherGui;
+
+TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
 
 PropertyConstraintListItem::PropertyConstraintListItem()
 {
@@ -111,5 +110,3 @@ QVariant PropertyConstraintListItem::editorData(QWidget *editor) const
     return QVariant(sb->value());
 }
 
-}
-}

@@ -39,10 +39,8 @@
 
 #include <Gui/propertyeditor/PropertyItem.h>
 
-//namespace Sketcher {
 
-namespace Gui {
-namespace PropertyEditor {
+namespace SketcherGui {
 
 class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::PropertyItem
 {
@@ -61,7 +59,7 @@ protected:
     PropertyConstraintListItem();
 };
 
-}
-}
+} //namespace SketcherGui
+
 
 #endif
