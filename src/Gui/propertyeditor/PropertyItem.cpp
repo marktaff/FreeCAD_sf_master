@@ -164,6 +164,11 @@ QVariant PropertyItem::value(const App::Property* /*prop*/) const
     return QVariant();
 }
 
+void PropertyItem::buildUp(const App::Property*)
+{
+    
+}
+
 void PropertyItem::setValue(const QVariant& /*value*/)
 {
 }
@@ -289,6 +294,24 @@ QVariant PropertyItem::data(int column, int role) const
             return toolTip(propertyItems[0]);
         else
             return QVariant();
+    }
+}
+
+void PropertyItem::buildUp(int column, int role)
+{
+        // property name
+    if (column != 0) {
+
+        // no properties set
+        if (propertyItems.empty()) {
+            return;
+        }
+        if (role == Qt::EditRole) {
+            buildUp(propertyItems[0]);
+        }
+        else if (role == Qt::DisplayRole){
+            buildUp(propertyItems[0]);
+        }
     }
 }
 

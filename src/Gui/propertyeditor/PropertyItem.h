@@ -87,6 +87,8 @@ public:
     Qt::ItemFlags flags(int column) const;
     int row() const;
     void reset();
+    
+    void buildUp(int column, int role);
 
 protected:
     PropertyItem();
@@ -98,6 +100,8 @@ protected:
     virtual void setValue(const QVariant&);
     QString pythonIdentifier(const App::Property*) const;
 
+    virtual void buildUp(const App::Property*);
+    
 private:
     QString propName;
     QVariant propData;

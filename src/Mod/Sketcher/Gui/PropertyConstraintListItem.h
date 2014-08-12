@@ -27,6 +27,7 @@
 #include <QPointer>
 #include <QItemEditorFactory>
 #include <vector>
+#include <QList>
 
 #include <Base/Type.h>
 #include <Base/Vector3D.h>
@@ -54,9 +55,14 @@ protected:
     virtual QVariant toString(const QVariant&) const;
     virtual QVariant value(const App::Property*) const;
     virtual void setValue(const QVariant&);
+    virtual void buildUp(const App::Property*);
 
 protected:
     PropertyConstraintListItem();
+    void fillInSubProperties(const App::Property* prop, QString &valuestr) const;
+    
+protected:
+    QList<Gui::PropertyEditor::PropertyUnitItem> propertyUnitItem;
 };
 
 } //namespace SketcherGui
