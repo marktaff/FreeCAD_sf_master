@@ -45,6 +45,7 @@ namespace SketcherGui {
 
 class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::PropertyItem
 {
+    Q_OBJECT
     TYPESYSTEM_HEADER();
 
     virtual QWidget* createEditor(QWidget* parent, const QObject* receiver, const char* method) const;
@@ -56,12 +57,13 @@ protected:
     virtual QVariant value(const App::Property*) const;
     virtual void setValue(const QVariant&);
     virtual void buildUp(const App::Property*);
-
+    
 protected:
     PropertyConstraintListItem();
     void fillInSubProperties(const App::Property* prop, QString &valuestr) const;
     
 protected:
+    Gui::PropertyEditor::PropertyUnitItem * dummy;
     QList<Gui::PropertyEditor::PropertyUnitItem> propertyUnitItem;
 };
 

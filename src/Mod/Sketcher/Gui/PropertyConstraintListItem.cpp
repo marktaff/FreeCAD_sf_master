@@ -65,17 +65,22 @@ TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::
 
 PropertyConstraintListItem::PropertyConstraintListItem()
 {
+    // this constructor code is only needed to make the + at the right of Constraints appear
+    dummy = static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
+    dummy->setParent(this);
+    dummy->setPropertyName(QLatin1String("dummy"));
+    this->appendChild(dummy);
 }
 
 QVariant PropertyConstraintListItem::toString(const QVariant& prop) const
 {
-    QString str;
+    /*QString str;
     for (std::vector<App::Property*>::iterator it = propertyItems.begin(); it != propertyItems.end(); ++it){
         
-    }
+    }*/
    
 
-    return QVariant(QString::fromUtf8(""));
+    return prop;//QVariant(QString::fromUtf8(""));
 }
 
 QVariant PropertyConstraintListItem::value(const App::Property* prop) const
@@ -142,6 +147,7 @@ void PropertyConstraintListItem::buildUp(const App::Property* prop)
             mp->setParent(this);
             mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
             this->appendChild(mp); 
+            
             //propertyUnitItems.append(*mp);
             
 
@@ -155,9 +161,10 @@ void PropertyConstraintListItem::buildUp(const App::Property* prop)
             //propertyData.addProperty(this,(*it)->Name.c_str(),&pd,"Sketcher Constraints",(App::PropertyType)(App::Prop_None),(*it)->Name.c_str());
         }
 
-    }
-    
+    }    
 }
+
+
 
 void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, QString &valuestr) const
 {   
@@ -208,3 +215,5 @@ void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, 
     }
     valuestr+=QString::fromAscii("]");
 }
+
+#include "moc_PropertyConstraintListItem.cpp"

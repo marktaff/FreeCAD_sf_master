@@ -36,6 +36,7 @@ set(SketcherGui_MOC_HDRS
     TaskDlgEditSketch.h
     SketchOrientationDialog.h
     SketcherSettings.h
+    PropertyConstraintListItem.h
 )
 fc_wrap_cpp(SketcherGui_MOC_SRCS ${SketcherGui_MOC_HDRS})
 SOURCE_GROUP("Moc" FILES ${SketcherGui_MOC_SRCS})
