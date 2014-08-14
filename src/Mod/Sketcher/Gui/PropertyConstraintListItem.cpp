@@ -61,6 +61,24 @@
 using namespace SketcherGui;
 using namespace Gui::PropertyEditor;
 
+TYPESYSTEM_SOURCE(SketcherGui::PropertyDynamicUnitItem, Gui::PropertyEditor::PropertyUnitItem);
+
+PropertyDynamicUnitItem::PropertyDynamicUnitItem()
+{
+}
+
+void PropertyDynamicUnitItem::setValue(const QVariant& value)
+{
+    if (!value.canConvert<Base::Quantity>())
+        return;
+    const Base::Quantity& val = value.value<Base::Quantity>();
+
+    QString unit = QString::fromLatin1("'%1 %2'").arg(val.getValue()).arg(val.getUnit().getString()); 
+    setPropertyValue(unit);
+}
+
+
+
 TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
 
 PropertyConstraintListItem::PropertyConstraintListItem()
@@ -166,7 +184,7 @@ void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, 
             }
             
             
-            PropertyUnitItem* mp=static_cast<PropertyUnitItem *>(PropertyUnitItem::create());
+            PropertyDynamicUnitItem* mp=static_cast<PropertyDynamicUnitItem *>(PropertyDynamicUnitItem::create());
             mp->setParent(const_cast<PropertyConstraintListItem *>(this));
             mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
             

@@ -30,9 +30,6 @@
 #include <QList>
 
 #include <Base/Type.h>
-#include <Base/Vector3D.h>
-#include <Base/Matrix.h>
-#include <Base/Placement.h>
 #include <Base/Quantity.h>
 #include <Base/UnitsApi.h>
 #include <App/PropertyStandard.h>
@@ -43,6 +40,16 @@
 
 namespace SketcherGui {
 
+class GuiExport PropertyDynamicUnitItem: public Gui::PropertyEditor::PropertyUnitItem
+{
+    TYPESYSTEM_HEADER();
+
+protected:
+    virtual void setValue(const QVariant&);
+
+    PropertyDynamicUnitItem();
+};
+    
 class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::PropertyItem
 {
     Q_OBJECT
@@ -63,7 +70,7 @@ protected:
     
 protected:
     Gui::PropertyEditor::PropertyUnitItem * dummy;
-    QList<Gui::PropertyEditor::PropertyUnitItem> propertyUnitItem;
+    QList<SketcherGui::PropertyDynamicUnitItem> propertyUnitItem;
 };
 
 } //namespace SketcherGui
