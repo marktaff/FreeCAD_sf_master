@@ -128,46 +128,11 @@ QVariant PropertyConstraintListItem::editorData(QWidget *editor) const
     return QVariant(le->text());
 }
 
-void PropertyConstraintListItem::buildUp(const App::Property* prop)
-{
-    this->reset();
-    
-    const std::vector< Sketcher::Constraint * > &vals = static_cast<const Sketcher::PropertyConstraintList*>(prop)->getValues();
-
-    for(std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it!=vals.end();++it){
-        if (!(*it)->Name.empty() && // Named constraint
-            ((*it)->Type == Sketcher::Distance || // Datum constraint
-            (*it)->Type == Sketcher::DistanceX ||
-            (*it)->Type == Sketcher::DistanceY ||
-            (*it)->Type == Sketcher::Radius ||
-            (*it)->Type == Sketcher::Angle)) {
-            
-        
-            PropertyUnitItem* mp=static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
-            mp->setParent(this);
-            mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
-            this->appendChild(mp); 
-            
-            //propertyUnitItems.append(*mp);
-            
-
-           
-        
-            
-            //propertyData.addProperty(this, #_prop_, &this->_prop_, (_group_),(_type_),(_Docu_));
-            //App::PropertyDistance pd;
-            //pd.setValue((*it)->Value);
-            //pd.setContainer(this);
-            //propertyData.addProperty(this,(*it)->Name.c_str(),&pd,"Sketcher Constraints",(App::PropertyType)(App::Prop_None),(*it)->Name.c_str());
-        }
-
-    }    
-}
-
-
 
 void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, QString &valuestr) const
 {   
+    const_cast<PropertyConstraintListItem *>(this)->reset();
+    
     const std::vector< Sketcher::Constraint * > &vals = static_cast<const Sketcher::PropertyConstraintList*>(prop)->getValues();
 
     valuestr=QString::fromAscii("[");
@@ -182,34 +147,32 @@ void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, 
             (*it)->Type == Sketcher::Angle)) {
             i++;
         
-            /*PropertyUnitItem* mp=static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
-            mp->setParent(this);
-            mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
-            this->appendChild(mp); */
-            //propertyUnitItems.append(*mp);
-            
+            Base::Quantity pval;
             switch((*it)->Type){
                 case Sketcher::Angle:
+                    pval=Base::Quantity((*it)->Value, Base::Unit::Angle);
                     valuestr+= i==1? 
-                        Base::Quantity((*it)->Value, Base::Unit::Angle).getUserString():
+                        pval.getUserString():
                         QString::fromAscii("  ") +
-                        Base::Quantity((*it)->Value, Base::Unit::Angle).getUserString();
+                        pval.getUserString();
                     break;
                 default:
+                    pval=Base::Quantity((*it)->Value, Base::Unit::Length);
                     valuestr+= i==1?
-                        Base::Quantity((*it)->Value, Base::Unit::Length).getUserString():
+                        pval.getUserString():
                         QString::fromAscii("  ") +
-                        Base::Quantity((*it)->Value, Base::Unit::Length).getUserString();
+                        pval.getUserString();
                     break;
             }
-           
-        
             
-            //propertyData.addProperty(this, #_prop_, &this->_prop_, (_group_),(_type_),(_Docu_));
-            //App::PropertyDistance pd;
-            //pd.setValue((*it)->Value);
-            //pd.setContainer(this);
-            //propertyData.addProperty(this,(*it)->Name.c_str(),&pd,"Sketcher Constraints",(App::PropertyType)(App::Prop_None),(*it)->Name.c_str());
+            
+            PropertyUnitItem* mp=static_cast<PropertyUnitItem *>(PropertyUnitItem::create());
+            mp->setParent(const_cast<PropertyConstraintListItem *>(this));
+            mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
+            
+            const_cast<PropertyConstraintListItem *>(this)->appendChild(mp);
+            const_cast<PropertyConstraintListItem *>(this)->setProperty((*it)->Name.c_str(),QVariant::fromValue<Base::Quantity>(pval));
+            
         }
 
     }

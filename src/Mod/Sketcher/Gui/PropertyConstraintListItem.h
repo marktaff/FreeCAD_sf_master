@@ -56,7 +56,6 @@ protected:
     virtual QVariant toString(const QVariant&) const;
     virtual QVariant value(const App::Property*) const;
     virtual void setValue(const QVariant&);
-    virtual void buildUp(const App::Property*);
     
 protected:
     PropertyConstraintListItem();
