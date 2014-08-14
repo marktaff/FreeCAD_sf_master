@@ -68,7 +68,6 @@ QVariant PropertyModel::data ( const QModelIndex & index, int role ) const
         return QVariant();
 
     PropertyItem *item = static_cast<PropertyItem*>(index.internalPointer());
-    item->buildUp(index.column(), role);
     return item->data(index.column(), role);
 }
 
@@ -80,7 +79,6 @@ bool PropertyModel::setData(const QModelIndex& index, const QVariant & value, in
     // we check whether the data has really changed, otherwise we ignore it
     if (role == Qt::EditRole) {
         PropertyItem *item = static_cast<PropertyItem*>(index.internalPointer());
-        item->buildUp(index.column(), role);
         QVariant data = item->data(index.column(), role);
         if (data.type() == QVariant::Double && value.type() == QVariant::Double) {
             // since we store some properties as floats we get some round-off
