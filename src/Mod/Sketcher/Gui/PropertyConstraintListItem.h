@@ -43,6 +43,11 @@ namespace SketcherGui {
 class GuiExport PropertyDynamicUnitItem: public Gui::PropertyEditor::PropertyUnitItem
 {
     TYPESYSTEM_HEADER();
+    
+public:
+
+    //pointer needed
+    //void onSetValue(const char * name,QVariant value);
 
 protected:
     virtual void setValue(const QVariant&);
