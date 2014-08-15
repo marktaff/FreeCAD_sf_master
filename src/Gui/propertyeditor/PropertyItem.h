@@ -83,7 +83,7 @@ public:
     void setPropertyName(const QString&);
     void setPropertyValue(const QString&);
     QVariant data(int column, int role) const;
-    bool setData (const QVariant& value);
+    virtual bool setData (const QVariant& value);
     Qt::ItemFlags flags(int column) const;
     int row() const;
     void reset();

@@ -45,17 +45,21 @@ class GuiExport PropertyDynamicUnitItem: public Gui::PropertyEditor::PropertyUni
     TYPESYSTEM_HEADER();
     
 public:
-
-    //pointer needed
-    //void onSetValue(const char * name,QVariant value);
+    virtual bool setData (const QVariant& value);
 
 protected:
     virtual void setValue(const QVariant&);
 
     PropertyDynamicUnitItem();
 };
-    
-class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::PropertyItem
+
+class GuiExport DynamicPropertyParentItem: public Gui::PropertyEditor::PropertyItem
+{
+public:
+    virtual void setDynamicProperty( const char * name, const QVariant & value )=0;
+};
+
+class GuiExport PropertyConstraintListItem: public DynamicPropertyParentItem
 {
     Q_OBJECT
     TYPESYSTEM_HEADER();
@@ -63,6 +67,8 @@ class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::Property
     virtual QWidget* createEditor(QWidget* parent, const QObject* receiver, const char* method) const;
     virtual void setEditorData(QWidget *editor, const QVariant& data) const;
     virtual QVariant editorData(QWidget *editor) const;
+    
+    virtual void setDynamicProperty( const char * name, const QVariant & value );
 
 protected:
     virtual QVariant toString(const QVariant&) const;

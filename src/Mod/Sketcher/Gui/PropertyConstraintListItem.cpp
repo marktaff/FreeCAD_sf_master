@@ -67,6 +67,22 @@ PropertyDynamicUnitItem::PropertyDynamicUnitItem()
 {
 }
 
+bool PropertyDynamicUnitItem::setData (const QVariant& value)
+{
+    if(this->parent()->getTypeId().isDerivedFrom(DynamicPropertyParentItem::getClassTypeId())){
+
+        DynamicPropertyParentItem * parent = static_cast<DynamicPropertyParentItem *>(this->parent());
+        
+        if (!parent || !parent->parent())
+            return false;
+    
+        parent->setDynamicProperty(qPrintable(objectName()),value);
+        return true;
+    }
+
+    return false;
+ 
+}
 void PropertyDynamicUnitItem::setValue(const QVariant& value)
 {
     if (!value.canConvert<Base::Quantity>())
@@ -79,7 +95,7 @@ void PropertyDynamicUnitItem::setValue(const QVariant& value)
 
 
 
-TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
+TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, DynamicPropertyParentItem);
 
 PropertyConstraintListItem::PropertyConstraintListItem()
 {
@@ -89,6 +105,8 @@ PropertyConstraintListItem::PropertyConstraintListItem()
     dummy->setPropertyName(QLatin1String("dummy"));
     this->appendChild(dummy);
 }
+
+
 
 QVariant PropertyConstraintListItem::toString(const QVariant& prop) const
 {
@@ -146,6 +164,29 @@ QVariant PropertyConstraintListItem::editorData(QWidget *editor) const
     return QVariant(le->text());
 }
 
+void PropertyConstraintListItem::setDynamicProperty( const char * name, const QVariant & value )
+{
+    const Sketcher::PropertyConstraintList* item=static_cast<const Sketcher::PropertyConstraintList*>(getPropertyData()[0]);
+    
+    const std::vector< Sketcher::Constraint * > &vals = item->getValues();
+    
+    std::string sname(name);
+    
+    int i=0;
+    for(std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it!=vals.end();++it,++i){
+
+        if((*it)->Name==sname){
+            
+            const Base::Quantity& val = value.value<Base::Quantity>();
+            
+            const_cast<Sketcher::Constraint *>((*it))->Value=val.getValue();
+            
+            const_cast<Sketcher::PropertyConstraintList*>(item)->set1Value(i,(*it));
+            return;
+  
+        }
+    }
+}
 
 void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, QString &valuestr) const
 {   
