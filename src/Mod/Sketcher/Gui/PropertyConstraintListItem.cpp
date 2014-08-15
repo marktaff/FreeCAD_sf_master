@@ -61,17 +61,17 @@
 using namespace SketcherGui;
 using namespace Gui::PropertyEditor;
 
-TYPESYSTEM_SOURCE(SketcherGui::PropertyDynamicUnitItem, Gui::PropertyEditor::PropertyUnitItem);
+TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintUnitItem, Gui::PropertyEditor::PropertyUnitItem);
 
-PropertyDynamicUnitItem::PropertyDynamicUnitItem()
+PropertyConstraintUnitItem::PropertyConstraintUnitItem()
 {
 }
 
-bool PropertyDynamicUnitItem::setData (const QVariant& value)
+bool PropertyConstraintUnitItem::setData (const QVariant& value)
 {
-    if(this->parent()->getTypeId().isDerivedFrom(DynamicPropertyParentItem::getClassTypeId())){
+    if(this->parent()->getTypeId().isDerivedFrom(PropertyConstraintListItem::getClassTypeId())){
 
-        DynamicPropertyParentItem * parent = static_cast<DynamicPropertyParentItem *>(this->parent());
+        PropertyConstraintListItem * parent = static_cast<PropertyConstraintListItem *>(this->parent());
         
         if (!parent || !parent->parent())
             return false;
@@ -83,7 +83,7 @@ bool PropertyDynamicUnitItem::setData (const QVariant& value)
     return false;
  
 }
-void PropertyDynamicUnitItem::setValue(const QVariant& value)
+void PropertyConstraintUnitItem::setValue(const QVariant& value)
 {
     if (!value.canConvert<Base::Quantity>())
         return;
@@ -95,7 +95,7 @@ void PropertyDynamicUnitItem::setValue(const QVariant& value)
 
 
 
-TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, DynamicPropertyParentItem);
+TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
 
 PropertyConstraintListItem::PropertyConstraintListItem()
 {
@@ -131,12 +131,7 @@ QVariant PropertyConstraintListItem::value(const App::Property* prop) const
 
 void PropertyConstraintListItem::setValue(const QVariant& value)
 {
-    ;
-    /*if (!value.canConvert(QVariant::Double))
-        return;
-    double val = value.toDouble();
-    QString data = QString::fromAscii("%1").arg(val,0,'f',decimals());
-    setPropertyValue(data);*/
+
 }
 
 QWidget* PropertyConstraintListItem::createEditor(QWidget* parent, const QObject* receiver, const char* method) const
@@ -150,12 +145,7 @@ QWidget* PropertyConstraintListItem::createEditor(QWidget* parent, const QObject
 void PropertyConstraintListItem::setEditorData(QWidget *editor, const QVariant& data) const
 {
     QLineEdit* le = qobject_cast<QLineEdit*>(editor);
-    const Base::Vector3d& value = data.value<Base::Vector3d>();
-    QString text = QString::fromAscii("[%1 %2 %3]")
-        .arg(QLocale::system().toString(value.x, 'f', 2))
-        .arg(QLocale::system().toString(value.y, 'f', 2))
-        .arg(QLocale::system().toString(value.z, 'f', 2));
-    le->setText(text);
+    le->setText(data.toString());
 }
 
 QVariant PropertyConstraintListItem::editorData(QWidget *editor) const
@@ -225,7 +215,7 @@ void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, 
             }
             
             
-            PropertyDynamicUnitItem* mp=static_cast<PropertyDynamicUnitItem *>(PropertyDynamicUnitItem::create());
+            PropertyConstraintUnitItem* mp=static_cast<PropertyConstraintUnitItem *>(PropertyConstraintUnitItem::create());
             mp->setParent(const_cast<PropertyConstraintListItem *>(this));
             mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
             

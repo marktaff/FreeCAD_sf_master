@@ -40,7 +40,7 @@
 
 namespace SketcherGui {
 
-class GuiExport PropertyDynamicUnitItem: public Gui::PropertyEditor::PropertyUnitItem
+class GuiExport PropertyConstraintUnitItem: public Gui::PropertyEditor::PropertyUnitItem
 {
     TYPESYSTEM_HEADER();
     
@@ -50,16 +50,11 @@ public:
 protected:
     virtual void setValue(const QVariant&);
 
-    PropertyDynamicUnitItem();
+    PropertyConstraintUnitItem();
 };
 
-class GuiExport DynamicPropertyParentItem: public Gui::PropertyEditor::PropertyItem
-{
-public:
-    virtual void setDynamicProperty( const char * name, const QVariant & value )=0;
-};
 
-class GuiExport PropertyConstraintListItem: public DynamicPropertyParentItem
+class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::PropertyItem
 {
     Q_OBJECT
     TYPESYSTEM_HEADER();
@@ -68,6 +63,7 @@ class GuiExport PropertyConstraintListItem: public DynamicPropertyParentItem
     virtual void setEditorData(QWidget *editor, const QVariant& data) const;
     virtual QVariant editorData(QWidget *editor) const;
     
+public:
     virtual void setDynamicProperty( const char * name, const QVariant & value );
 
 protected:
@@ -81,7 +77,7 @@ protected:
     
 protected:
     Gui::PropertyEditor::PropertyUnitItem * dummy;
-    QList<SketcherGui::PropertyDynamicUnitItem> propertyUnitItem;
+    QList<SketcherGui::PropertyConstraintUnitItem> propertyUnitItem;
 };
 
 } //namespace SketcherGui
