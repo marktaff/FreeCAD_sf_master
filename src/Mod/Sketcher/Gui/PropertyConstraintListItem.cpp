@@ -65,6 +65,7 @@ TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintUnitItem, Gui::PropertyEditor::
 
 PropertyConstraintUnitItem::PropertyConstraintUnitItem()
 {
+    
 }
 
 bool PropertyConstraintUnitItem::setData (const QVariant& value)
@@ -76,7 +77,8 @@ bool PropertyConstraintUnitItem::setData (const QVariant& value)
         if (!parent || !parent->parent())
             return false;
     
-        parent->setDynamicProperty(qPrintable(objectName()),value);
+        //parent->setDynamicProperty(qPrintable(objectName()),value);
+        parent->setDynamicProperty(this->propertyName().toStdString().c_str(),value);    
         return true;
     }
 
@@ -97,13 +99,14 @@ void PropertyConstraintUnitItem::setValue(const QVariant& value)
 
 TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
 
-PropertyConstraintListItem::PropertyConstraintListItem()
+PropertyConstraintListItem::PropertyConstraintListItem():isInit(false)
 {
     // this constructor code is only needed to make the + at the right of Constraints appear
     dummy = static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
     dummy->setParent(this);
     dummy->setPropertyName(QLatin1String("dummy"));
     this->appendChild(dummy);
+    
 }
 
 
@@ -180,7 +183,8 @@ void PropertyConstraintListItem::setDynamicProperty( const char * name, const QV
 
 void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, QString &valuestr) const
 {   
-    const_cast<PropertyConstraintListItem *>(this)->reset();
+    if(!isInit)
+        const_cast<PropertyConstraintListItem *>(this)->reset();
     
     const std::vector< Sketcher::Constraint * > &vals = static_cast<const Sketcher::PropertyConstraintList*>(prop)->getValues();
 
@@ -214,18 +218,25 @@ void PropertyConstraintListItem::fillInSubProperties(const App::Property* prop, 
                     break;
             }
             
-            
-            PropertyConstraintUnitItem* mp=static_cast<PropertyConstraintUnitItem *>(PropertyConstraintUnitItem::create());
-            mp->setParent(const_cast<PropertyConstraintListItem *>(this));
-            mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
-            
-            const_cast<PropertyConstraintListItem *>(this)->appendChild(mp);
-            const_cast<PropertyConstraintListItem *>(this)->setProperty((*it)->Name.c_str(),QVariant::fromValue<Base::Quantity>(pval));
-            
+            if(!isInit){
+                PropertyConstraintUnitItem* mp=static_cast<PropertyConstraintUnitItem *>(PropertyConstraintUnitItem::create());
+                mp->setParent(const_cast<PropertyConstraintListItem *>(this));
+                mp->setPropertyName(QString::fromUtf8((*it)->Name.c_str()));
+                
+                const_cast<PropertyConstraintListItem *>(this)->appendChild(mp);
+                const_cast<PropertyConstraintListItem *>(this)->setProperty((*it)->Name.c_str(),QVariant::fromValue<Base::Quantity>(pval));
+            }
+            else{
+                const_cast<PropertyConstraintListItem *>(this)->setProperty((*it)->Name.c_str(),QVariant::fromValue<Base::Quantity>(pval));
+            }
         }
 
     }
+     if(!isInit)
+         const_cast<PropertyConstraintListItem *>(this)->isInit=true;
+     
     valuestr+=QString::fromAscii("]");
+    
 }
 
 #include "moc_PropertyConstraintListItem.cpp"

@@ -78,6 +78,7 @@ protected:
 protected:
     Gui::PropertyEditor::PropertyUnitItem * dummy;
     QList<SketcherGui::PropertyConstraintUnitItem> propertyUnitItem;
+    bool isInit;
 };
 
 } //namespace SketcherGui
