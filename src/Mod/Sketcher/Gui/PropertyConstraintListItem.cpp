@@ -77,7 +77,6 @@ bool PropertyConstraintUnitItem::setData (const QVariant& value)
         if (!parent || !parent->parent())
             return false;
     
-        //parent->setDynamicProperty(qPrintable(objectName()),value);
         parent->setDynamicProperty(this->propertyName().toStdString().c_str(),value);    
         return true;
     }
@@ -85,16 +84,6 @@ bool PropertyConstraintUnitItem::setData (const QVariant& value)
     return false;
  
 }
-void PropertyConstraintUnitItem::setValue(const QVariant& value)
-{
-    if (!value.canConvert<Base::Quantity>())
-        return;
-    const Base::Quantity& val = value.value<Base::Quantity>();
-
-    QString unit = QString::fromLatin1("'%1 %2'").arg(val.getValue()).arg(val.getUnit().getString()); 
-    setPropertyValue(unit);
-}
-
 
 
 TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
@@ -113,13 +102,7 @@ PropertyConstraintListItem::PropertyConstraintListItem():isInit(false)
 
 QVariant PropertyConstraintListItem::toString(const QVariant& prop) const
 {
-    /*QString str;
-    for (std::vector<App::Property*>::iterator it = propertyItems.begin(); it != propertyItems.end(); ++it){
-        
-    }*/
-   
-
-    return prop;//QVariant(QString::fromUtf8(""));
+    return prop;
 }
 
 QVariant PropertyConstraintListItem::value(const App::Property* prop) const
@@ -128,13 +111,12 @@ QVariant PropertyConstraintListItem::value(const App::Property* prop) const
     
     QString valuestr;
     fillInSubProperties(prop,valuestr);
-    // double value = static_cast<const App::PropertyFloat*>(prop)->getValue();
+
     return QVariant(valuestr);
 }
 
 void PropertyConstraintListItem::setValue(const QVariant& value)
 {
-
 }
 
 QWidget* PropertyConstraintListItem::createEditor(QWidget* parent, const QObject* receiver, const char* method) const

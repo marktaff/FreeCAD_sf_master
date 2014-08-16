@@ -48,7 +48,6 @@ public:
     virtual bool setData (const QVariant& value);
 
 protected:
-    virtual void setValue(const QVariant&);
 
     PropertyConstraintUnitItem();
 };
