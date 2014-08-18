@@ -308,19 +308,13 @@ bool PropertyItem::setData (const QVariant& value)
         PropertyItem* parent = this->parent();
         if (!parent || !parent->parent())
             return false;
-        parent->setQTProperty(qPrintable(objectName()),value);
+        parent->setProperty(qPrintable(objectName()),value);
         return true;
     }
     else {
         setValue(value);
         return true;
     }
-}
-
-bool PropertyItem::setQTProperty(const char* name, const QVariant & value)
-{
-    this->setProperty(name,value);
-    
 }
 
 Qt::ItemFlags PropertyItem::flags(int column) const

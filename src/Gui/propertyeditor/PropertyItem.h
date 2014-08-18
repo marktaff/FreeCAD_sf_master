@@ -99,7 +99,6 @@ protected:
     QString pythonIdentifier(const App::Property*) const;
     
     virtual void initialize();
-    virtual bool setQTProperty(const char* name, const QVariant & value);
 
 private:
     QString propName;

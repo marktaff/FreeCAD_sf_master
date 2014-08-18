@@ -37,6 +37,7 @@
 
 #include <Gui/propertyeditor/PropertyItem.h>
 
+Q_DECLARE_METATYPE(QList<Base::Quantity>)
 
 namespace SketcherGui {
 
@@ -56,16 +57,14 @@ protected:
     virtual QVariant toString(const QVariant&) const;
     virtual QVariant value(const App::Property*) const;
     virtual void setValue(const QVariant&);
+    virtual bool event (QEvent* ev);
     
     virtual void initialize();
-    virtual bool setQTProperty(const char* name, const QVariant & value);
+    
     
 protected:
     PropertyConstraintListItem();
-    void fillInSubProperties(const App::Property* prop, QString &valuestr) const;
-    
-protected:
-    QList<Gui::PropertyEditor::PropertyUnitItem> propertyUnitItem;
+
 };
 
 } //namespace SketcherGui
