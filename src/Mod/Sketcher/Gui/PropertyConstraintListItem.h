@@ -43,11 +43,17 @@ namespace SketcherGui {
 class GuiExport PropertyConstraintListItem: public Gui::PropertyEditor::PropertyItem
 {
     Q_OBJECT
+    Q_PROPERTY(bool ConstraintFilter READ getConstraintFilter WRITE setConstraintFilter DESIGNABLE true USER true)
     TYPESYSTEM_HEADER();
+    
+    ~PropertyConstraintListItem();
 
     virtual QWidget* createEditor(QWidget* parent, const QObject* receiver, const char* method) const;
     virtual void setEditorData(QWidget *editor, const QVariant& data) const;
     virtual QVariant editorData(QWidget *editor) const;
+    
+    bool getConstraintFilter() const;
+    void setConstraintFilter(bool value);
     
 protected:
     virtual QVariant toString(const QVariant&) const;
@@ -55,12 +61,19 @@ protected:
     virtual void setValue(const QVariant&);
     virtual bool event (QEvent* ev);
     
-    virtual void initialize();
+    virtual void initialize();    
     
+    void applyFilter();
     
 protected:
     PropertyConstraintListItem();
     bool blockEvent;
+    
+    Gui::PropertyEditor::PropertyBoolItem * mConstraintFilter;
+    bool isDatumNamed;
+    
+    /*App::PropertyBool isDatumNamed;
+    std::vector<App::Property *> bProperties;*/
 
 };
 

@@ -41,6 +41,7 @@
 #include <App/PropertyGeo.h>
 #include <App/PropertyFile.h>
 #include <App/PropertyUnits.h>
+#include <App/PropertyStandard.h>
 #include <Gui/Application.h>
 #include <Gui/Control.h>
 #include <Gui/Document.h>
@@ -63,9 +64,37 @@ using namespace Gui::PropertyEditor;
 
 TYPESYSTEM_SOURCE(SketcherGui::PropertyConstraintListItem, Gui::PropertyEditor::PropertyItem);
 
-PropertyConstraintListItem::PropertyConstraintListItem()
+PropertyConstraintListItem::PropertyConstraintListItem():blockEvent(false)
 {
+    mConstraintFilter = static_cast<PropertyBoolItem *>(PropertyBoolItem::create());
+    mConstraintFilter->setParent(this);
+    mConstraintFilter->setPropertyName(QLatin1String("ConstraintFilter"));
+    this->appendChild(mConstraintFilter);
+       
+    ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/ConstraintPropertiesFilter");
     
+    isDatumNamed=hGrp->GetBool("ShowOnlyNamed", false);
+        
+}
+
+PropertyConstraintListItem::~PropertyConstraintListItem()
+{
+    ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/ConstraintPropertiesFilter");
+                    
+    hGrp->SetBool("ShowOnlyNamed", isDatumNamed);
+}
+
+bool PropertyConstraintListItem::getConstraintFilter() const
+{
+    return isDatumNamed;
+    
+}
+void PropertyConstraintListItem::setConstraintFilter(bool value)
+{
+    isDatumNamed=value;
+    blockEvent=true;
+    applyFilter();
+    blockEvent=false;
 }
 
 QVariant PropertyConstraintListItem::toString(const QVariant& prop) const
@@ -94,11 +123,12 @@ QVariant PropertyConstraintListItem::value(const App::Property* prop) const
     QList<Base::Quantity> quantities;
     const std::vector< Sketcher::Constraint * > &vals = static_cast<const Sketcher::PropertyConstraintList*>(prop)->getValues();
     for (std::vector< Sketcher::Constraint* >::const_iterator it = vals.begin();it != vals.end(); ++it, ++id) {
-        if ((*it)->Type == Sketcher::Distance || // Datum constraint
+        if (((*it)->Type == Sketcher::Distance || // Datum constraint
             (*it)->Type == Sketcher::DistanceX ||
             (*it)->Type == Sketcher::DistanceY ||
             (*it)->Type == Sketcher::Radius ||
-            (*it)->Type == Sketcher::Angle) {
+            (*it)->Type == Sketcher::Angle) &&
+            (isDatumNamed?!(*it)->Name.empty():true)) {
 
             Base::Quantity quant;
             if ((*it)->Type == Sketcher::Angle) {
@@ -124,7 +154,9 @@ QVariant PropertyConstraintListItem::value(const App::Property* prop) const
 
         }
     }
-
+//     self->blockEvent=true;
+//     self->setProperty("Show Only Named", QVariant(static_cast<App::PropertyBool *>(self->bProperties.front())->getValue()));
+//     self->blockEvent=false;
     
     return QVariant::fromValue< QList<Base::Quantity> >(quantities);
 
@@ -142,31 +174,41 @@ bool PropertyConstraintListItem::event (QEvent* ev)
             QDynamicPropertyChangeEvent* ce = static_cast<QDynamicPropertyChangeEvent*>(ev);
             QVariant prop = property(ce->propertyName());
             QString propName = QString::fromLatin1(ce->propertyName());
-            Base::Quantity quant = prop.value<Base::Quantity>();
-
-            int id = 0;
-            Sketcher::PropertyConstraintList* item = static_cast<Sketcher::PropertyConstraintList*>(getFirstProperty());
             
-            const std::vector< Sketcher::Constraint * > &vals = item->getValues();
-            for (std::vector< Sketcher::Constraint* >::const_iterator it = vals.begin();it != vals.end(); ++it, ++id) {
-                if ((*it)->Type == Sketcher::Distance || // Datum constraint
-                    (*it)->Type == Sketcher::DistanceX ||
-                    (*it)->Type == Sketcher::DistanceY ||
-                    (*it)->Type == Sketcher::Radius ||
-                    (*it)->Type == Sketcher::Angle) {
+            if(propName==QString::fromLatin1("Show Only Named")) {
+                // the filter changed we must rebuild the object
+                //static_cast<App::PropertyBool *>(bProperties.front())->setValue(prop.toBool());
+                //this->reset();
+                //initialize();
+            }
+            else{
+                
+                Base::Quantity quant = prop.value<Base::Quantity>();
+
+                int id = 0;
+                Sketcher::PropertyConstraintList* item = static_cast<Sketcher::PropertyConstraintList*>(getFirstProperty());
+                
+                const std::vector< Sketcher::Constraint * > &vals = item->getValues();
+                for (std::vector< Sketcher::Constraint* >::const_iterator it = vals.begin();it != vals.end(); ++it, ++id) {
+                    if ((*it)->Type == Sketcher::Distance || // Datum constraint
+                        (*it)->Type == Sketcher::DistanceX ||
+                        (*it)->Type == Sketcher::DistanceY ||
+                        (*it)->Type == Sketcher::Radius ||
+                        (*it)->Type == Sketcher::Angle) {
 
 
-                    // Get the name
-                    QString name = QString::fromStdString((*it)->Name);
-                    if (name.isEmpty())
-                        name = QString::fromLatin1("Constraint%1").arg(id+1);
-                    if (name == propName) {
-                        double datum = quant.getValue();
-                        if ((*it)->Type == Sketcher::Angle)
-                            datum = Base::toRadians<double>(datum);
-                        const_cast<Sketcher::Constraint *>((*it))->Value = datum;
-                        item->set1Value(id,(*it));
-                        break;
+                        // Get the name
+                        QString name = QString::fromStdString((*it)->Name);
+                        if (name.isEmpty())
+                            name = QString::fromLatin1("Constraint%1").arg(id+1);
+                        if (name == propName) {
+                            double datum = quant.getValue();
+                            if ((*it)->Type == Sketcher::Angle)
+                                datum = Base::toRadians<double>(datum);
+                            const_cast<Sketcher::Constraint *>((*it))->Value = datum;
+                            item->set1Value(id,(*it));
+                            break;
+                        }
                     }
                 }
             }
@@ -195,6 +237,43 @@ QVariant PropertyConstraintListItem::editorData(QWidget *editor) const
     return QVariant(le->text());
 }
 
+void PropertyConstraintListItem::applyFilter()
+{
+    const Sketcher::PropertyConstraintList* item=static_cast<const Sketcher::PropertyConstraintList*>(getPropertyData()[0]);
+    
+    const std::vector< Sketcher::Constraint * > &vals = item->getValues();
+       
+    int id = 1;
+    int childId = 0;
+
+    for (std::vector< Sketcher::Constraint* >::const_iterator it = vals.begin();it != vals.end(); ++it, ++id) {
+        if ((*it)->Type == Sketcher::Distance || // Datum constraint
+            (*it)->Type == Sketcher::DistanceX ||
+            (*it)->Type == Sketcher::DistanceY ||
+            (*it)->Type == Sketcher::Radius ||
+            (*it)->Type == Sketcher::Angle) {
+            childId++;
+            
+            // Get the name
+            
+            QString name = QString::fromLatin1("Constraint%1").arg(id);
+            
+            if((*it)->Name.empty()){
+                if (isDatumNamed){
+                    this->removeChild(childId);
+                }
+                else {
+                    PropertyUnitItem* item = static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
+                    item->setParent(this);
+                    item->setPropertyName(name);
+                    this->appendChild(item); 
+                }
+            }
+        }
+    }
+    
+}
+
 void PropertyConstraintListItem::initialize()
 {
     const Sketcher::PropertyConstraintList* item=static_cast<const Sketcher::PropertyConstraintList*>(getPropertyData()[0]);
@@ -204,11 +283,12 @@ void PropertyConstraintListItem::initialize()
     int id = 1;
 
     for (std::vector< Sketcher::Constraint* >::const_iterator it = vals.begin();it != vals.end(); ++it, ++id) {
-        if ((*it)->Type == Sketcher::Distance || // Datum constraint
+        if (((*it)->Type == Sketcher::Distance || // Datum constraint
             (*it)->Type == Sketcher::DistanceX ||
             (*it)->Type == Sketcher::DistanceY ||
             (*it)->Type == Sketcher::Radius ||
-            (*it)->Type == Sketcher::Angle) {
+            (*it)->Type == Sketcher::Angle) &&
+            (isDatumNamed?!(*it)->Name.empty():true)) {
 
             
             // Get the name

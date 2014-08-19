@@ -72,6 +72,12 @@ void PropertyItem::initialize()
 {
 }
 
+void PropertyItem::removeChild(int row)
+{
+    childItems.at(row)->setParent(NULL);
+    childItems.removeAt(row);
+}
+
 void PropertyItem::reset()
 {
     qDeleteAll(childItems);

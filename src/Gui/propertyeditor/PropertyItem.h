@@ -73,6 +73,7 @@ public:
     void setParent(PropertyItem* parent);
     PropertyItem *parent() const;
     void appendChild(PropertyItem *child);
+    void removeChild(int row);
 
     void setReadOnly(bool);
     bool isReadOnly() const;
