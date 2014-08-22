@@ -91,7 +91,7 @@ QVariant PropertyConstraintListItem::value(const App::Property* prop) const
 
             quantities.append(quant);
 
-            QString name = QString::fromStdString((*it)->Name);
+            QString name = QString::fromUtf8((*it)->Name.c_str());
             if (name.isEmpty())
                 name = QString::fromLatin1("Constraint%1").arg(id);
 
@@ -158,7 +158,7 @@ bool PropertyConstraintListItem::event (QEvent* ev)
                     (*it)->Type == Sketcher::Angle) {
 
                     // Get the name
-                    QString name = QString::fromStdString((*it)->Name);
+                    QString name = QString::fromUtf8((*it)->Name.c_str());
                     if (name.isEmpty())
                         name = QString::fromLatin1("Constraint%1").arg(id+1);
                     if (name == propName) {
@@ -217,7 +217,7 @@ void PropertyConstraintListItem::initialize()
             PropertyUnitItem* item = static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
 
             // Get the name
-            QString name = QString::fromStdString((*it)->Name);
+            QString name = QString::fromUtf8((*it)->Name.c_str());
             if (name.isEmpty()){            
                 name = QString::fromLatin1("Constraint%1").arg(id);
                 item->setPropertyName(name);
