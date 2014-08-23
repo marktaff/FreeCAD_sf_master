@@ -2244,29 +2244,26 @@ void ViewProviderSketch::drawConstraintIcons()
         thisIcon.infoPtr = infoPtr;
         
         if((*it)->Type==Symmetric) {
-            if((*it)->ThirdPos==Sketcher::none) {
-                int geo3 = (*it)->Third;
-                const Part::GeomLineSegment * ls = dynamic_cast<const Part::GeomLineSegment *>(getSketchObject()->getGeometry(geo3));
-                
-                Base::Vector3d startingpoint = ls->getStartPoint();
-                Base::Vector3d endpoint = ls->getEndPoint();
-                
-                double x0,y0,x1,y1;
-                SbVec3f pos0(startingpoint.x,startingpoint.y,startingpoint.z);
-                SbVec3f pos1(endpoint.x,endpoint.y,endpoint.z);
-                
-                Gui::MDIView *mdi = Gui::Application::Instance->activeDocument()->getActiveView();
-                Gui::View3DInventorViewer *viewer = static_cast<Gui::View3DInventor *>(mdi)->getViewer();
-                SoCamera* pCam = viewer->getCamera();
-                if (!pCam) return;
-                
-                SbViewVolume  vol = pCam->getViewVolume();
-                
-                getCoordsOnSketchPlane(x0,y0,pos0,vol.getProjectionDirection());
-                getCoordsOnSketchPlane(x1,y1,pos1,vol.getProjectionDirection());
-                
-                thisIcon.iconRotation = atan2f((y1-y0),(x1-x0))*180/M_PI;
-            }
+            
+            Base::Vector3d startingpoint = getSketchObject()->getPoint((*it)->First,(*it)->FirstPos);
+            Base::Vector3d endpoint = getSketchObject()->getPoint((*it)->Second,(*it)->SecondPos);
+                       
+            double x0,y0,x1,y1;
+            SbVec3f pos0(startingpoint.x,startingpoint.y,startingpoint.z);
+            SbVec3f pos1(endpoint.x,endpoint.y,endpoint.z);
+            
+            Gui::MDIView *mdi = Gui::Application::Instance->activeDocument()->getActiveView();
+            Gui::View3DInventorViewer *viewer = static_cast<Gui::View3DInventor *>(mdi)->getViewer();
+            SoCamera* pCam = viewer->getCamera();
+            if (!pCam) return;
+            
+            SbViewVolume  vol = pCam->getViewVolume();
+            
+            getCoordsOnSketchPlane(x0,y0,pos0,vol.getProjectionDirection());
+            getCoordsOnSketchPlane(x1,y1,pos1,vol.getProjectionDirection());
+            
+            thisIcon.iconRotation = atan2f((y1-y0),(x1-x0))*180/M_PI;
+            
         }
         else {
             thisIcon.iconRotation = 0;
