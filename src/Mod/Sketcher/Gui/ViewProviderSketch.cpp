@@ -2262,7 +2262,7 @@ void ViewProviderSketch::drawConstraintIcons()
             getCoordsOnSketchPlane(x0,y0,pos0,vol.getProjectionDirection());
             getCoordsOnSketchPlane(x1,y1,pos1,vol.getProjectionDirection());
             
-            thisIcon.iconRotation = atan2f((y1-y0),(x1-x0))*180/M_PI;
+            thisIcon.iconRotation = -atan2f((y1-y0),(x1-x0))*180/M_PI;
             
         }
         else {
@@ -2537,17 +2537,18 @@ QImage ViewProviderSketch::renderConstrIcon(const QString &type,
     QTransform rotation;
     rotation.rotate(iconRotation);
        
-    QImage image = icon.transformed(rotation).copy(0, 0, icon.width() + labelWidth,
-                                                        icon.height() + pxBelowBase);
+    QImage roticon = icon.transformed(rotation);
+    QImage image = roticon.copy(0, 0, roticon.width() + labelWidth,
+                                                        roticon.height() + pxBelowBase);
 
     // Make a bounding box for the icon
     if(boundingBoxes)
-        boundingBoxes->push_back(QRect(0, 0, icon.width(), icon.height()));
+        boundingBoxes->push_back(QRect(0, 0, roticon.width(), roticon.height()));
 
     // Render the Icons
     QPainter qp(&image);
     qp.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    qp.fillRect(icon.rect(), iconColor);
+    qp.fillRect(roticon.rect(), iconColor);
 
     // Render constraint label if necessary
     if (!labels.join(QString()).isEmpty()) {
