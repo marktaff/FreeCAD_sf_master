@@ -69,9 +69,9 @@ namespace GCS
     class Ellipse
     {
     public:
-        Ellipse(){ radmin = 0;}
-        Point center; 
-        Point focus1; //+x
+        Ellipse(){radmaj = 0; radmin = 0;}
+        Point center;
+        double *radmaj;
         double *radmin;
     };
 

@@ -266,7 +266,7 @@ CmdSketcherCreateLine::CmdSketcherCreateLine()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create line");
     sToolTipText    = QT_TR_NOOP("Create a line in the sketch");
-    sWhatsThis      = "Sketcher_CreateLine";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateLine";
     sAccel          = "L";
@@ -472,7 +472,7 @@ CmdSketcherCreateRectangle::CmdSketcherCreateRectangle()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create rectangle");
     sToolTipText    = QT_TR_NOOP("Create a rectangle in the sketch");
-    sWhatsThis      = "Sketcher_CreateRectangle";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateRectangle";
     sAccel          = "R";
@@ -995,7 +995,7 @@ CmdSketcherCreatePolyline::CmdSketcherCreatePolyline()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create polyline");
     sToolTipText    = QT_TR_NOOP("Create a polyline in the sketch. 'M' Key cycles behaviour");
-    sWhatsThis      = "Sketcher_CreatePolyline";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreatePolyline";
     eType           = ForEdit;
@@ -1233,7 +1233,7 @@ CmdSketcherCreateArc::CmdSketcherCreateArc()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create arc by center");
     sToolTipText    = QT_TR_NOOP("Create an arc by its center and by its end points");
-    sWhatsThis      = "Sketcher_CreateArc";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateArc";
     eType           = ForEdit;
@@ -1507,7 +1507,7 @@ CmdSketcherCreate3PointArc::CmdSketcherCreate3PointArc()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create arc by three points");
     sToolTipText    = QT_TR_NOOP("Create an arc by its end points and a point along the arc");
-    sWhatsThis      = "Sketcher_Create3PointArc";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_Create3PointArc";
     eType           = ForEdit;
@@ -1533,7 +1533,7 @@ CmdSketcherCompCreateArc::CmdSketcherCompCreateArc()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create arc");
     sToolTipText    = QT_TR_NOOP("Create an arc in the sketcher");
-    sWhatsThis      = "Sketcher_CompCreateArc";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     eType           = ForEdit;
 }
@@ -1762,7 +1762,7 @@ CmdSketcherCreateCircle::CmdSketcherCreateCircle()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create circle");
     sToolTipText    = QT_TR_NOOP("Create a circle in the sketch");
-    sWhatsThis      = "Sketcher_CreateCircle";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateCircle";
     eType           = ForEdit;
@@ -1798,19 +1798,19 @@ static const char *cursor_createellipse[]={
 "......+.........................",
 "......+.........................",
 "......+.........................",
-"......+..............#####......",
-"..................###.....#.....",
-"...............###.......##.....",
-".............##..........##.....",
-"...........##............##.....",
-"..........##.....###....##......",
-".........##.....#.#.....#.......",
-"........##.....###....##........",
-"........##...........##.........",
-".......##..........###..........",
-"......##........####............",
-"......#.....####................",
-"......######....................",
+"......+........#######..........",
+"..............#.......#.........",
+"............##.........##.......",
+"..........##.............##.....",
+"........##.................##...",
+"......##.........###.........##.",
+"......#..........#.#..........#.",
+"......##.........###.........##.",
+"........##.................##...",
+"..........##.............##.....",
+"............##.........##.......",
+"..............#.......#.........",
+"...............#######..........",
 "................................",
 "................................",
 "................................",
@@ -1827,7 +1827,6 @@ public:
     enum SelectMode {
         STATUS_SEEK_First,      /**< enum value ----. */
         STATUS_SEEK_Second,     /**< enum value ----. */
-        STATUS_SEEK_Third,     /**< enum value ----. */        
         STATUS_Close
     };
 
@@ -1861,41 +1860,7 @@ public:
             float radius = (onSketchPos - EditCurve[0]).Length();
 
             SbString text;
-            text.sprintf(" (%.1fR,%.1fR)", radius,radius);
-            setPositionText(onSketchPos, text);
-
-            sketchgui->drawEdit(EditCurve);
-            if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
-                                   AutoConstraint::CURVE)) {
-                renderSuggestConstraintsCursor(sugConstr2);
-                return;
-            }
-        }
-        else if (Mode==STATUS_SEEK_Third) {
-            double rx0 = EditCurve[1].fX - EditCurve[0].fX;    // first semidiameter
-            double ry0 = EditCurve[1].fY - EditCurve[0].fY;     // first semidiameter
-                        
-            // angle between the major axis of the ellipse and the X axis
-            double a = (EditCurve[1]-EditCurve[0]).Length();
-            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
-            
-            // This is the angle at cursor point
-            double angleatpoint = acos((onSketchPos.fX-EditCurve[0].fX+(onSketchPos.fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
-            double b=(onSketchPos.fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
-                        
-            for (int i=1; i < 16; i++) {
-                double angle = i*M_PI/16.0;
-                double rx = a * cos(angle) * cos(phi) - b * sin(angle) * sin(phi); 
-                double ry = a * cos(angle) * sin(phi) + b * sin(angle) * cos(phi);
-                EditCurve[1+i] = Base::Vector2D(EditCurve[0].fX + rx, EditCurve[0].fY + ry);
-                EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
-            }
-            EditCurve[33] = EditCurve[1];
-            EditCurve[17] = EditCurve[16];
-
-            // Display radius for user
-            SbString text;
-            text.sprintf(" (%.1fR,%.1fR)", a, b);
+            text.sprintf(" (%.1fR)", radius);
             setPositionText(onSketchPos, text);
 
             sketchgui->drawEdit(EditCurve);
@@ -1913,13 +1878,8 @@ public:
         if (Mode==STATUS_SEEK_First){
             EditCurve[0] = onSketchPos;
             Mode = STATUS_SEEK_Second;
-        } 
-        else if(Mode==STATUS_SEEK_Second) {
+        } else {
             EditCurve[1] = onSketchPos;
-            Mode = STATUS_SEEK_Third;
-        } 
-        else {
-            EditCurve[2] = onSketchPos;
             Mode = STATUS_Close;
         }
         return true;
@@ -1928,53 +1888,21 @@ public:
     virtual bool releaseButton(Base::Vector2D onSketchPos)
     {
         if (Mode==STATUS_Close) {
+            double rx = EditCurve[1].fX - EditCurve[0].fX;
+            double ry = EditCurve[1].fY - EditCurve[0].fY;
             unsetCursor();
             resetPositionText();
-            
-            // angle between the major axis of the ellipse and the X axis
-            double a = (EditCurve[1]-EditCurve[0]).Length();
-            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
-            
-            // This is the angle at cursor point
-            double angleatpoint = acos((EditCurve[2].fX-EditCurve[0].fX+(EditCurve[2].fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
-            double b=(EditCurve[2].fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
-                        
-            Base::Vector2D majAxisDir,minAxisDir,minAxisPoint,majAxisPoint;
-            // We always create a CCW ellipse, because we want our XY reference system to be in the +X +Y direction
-            // Our normal will then always be in the +Z axis (local +Z axis of the sketcher)
-            
-            if(a>b)
-            {
-                // force second semidiameter to be perpendicular to first semidiamater
-                majAxisDir = EditCurve[1] - EditCurve[0];
-                Base::Vector2D perp(-majAxisDir.fY,majAxisDir.fX);
-                perp.Normalize();
-                perp.Scale(abs(b));
-                minAxisPoint = EditCurve[0]+perp;
-                majAxisPoint = EditCurve[0]+majAxisDir;
-            }
-            else {
-                // force second semidiameter to be perpendicular to first semidiamater
-                minAxisDir = EditCurve[1] - EditCurve[0];
-                Base::Vector2D perp(minAxisDir.fY,-minAxisDir.fX);
-                perp.Normalize();
-                perp.Scale(abs(b));
-                majAxisPoint = EditCurve[0]+perp; 
-                minAxisPoint = EditCurve[0]+minAxisDir;
-            }
-            
-            Gui::Command::openCommand("Add sketch ellipse");
+            Gui::Command::openCommand("Add sketch circle");
             Gui::Command::doCommand(Gui::Command::Doc,
-                "App.ActiveDocument.%s.addGeometry(Part.Ellipse"
-                "(App.Vector(%f,%f,0),App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
-                    sketchgui->getObject()->getNameInDocument(),
-                    majAxisPoint.fX, majAxisPoint.fY,                                    
-                    minAxisPoint.fX, minAxisPoint.fY,
-                    EditCurve[0].fX, EditCurve[0].fY);
+                "App.ActiveDocument.%s.addGeometry(Part.Circle"
+                "(App.Vector(%f,%f,0),App.Vector(0,0,1),%f))",
+                      sketchgui->getObject()->getNameInDocument(),
+                      EditCurve[0].fX, EditCurve[0].fY,
+                      sqrt(rx*rx + ry*ry));
 
             Gui::Command::commitCommand();
             Gui::Command::updateActive();
-            
+
             // add auto constraints for the center point
             if (sugConstr1.size() > 0) {
                 createAutoConstraints(sugConstr1, getHighestCurveIndex(), Sketcher::mid);
@@ -1983,7 +1911,7 @@ public:
 
             // add suggested constraints for circumference
             if (sugConstr2.size() > 0) {
-                //createAutoConstraints(sugConstr2, getHighestCurveIndex(), Sketcher::none);
+                createAutoConstraints(sugConstr2, getHighestCurveIndex(), Sketcher::none);
                 sugConstr2.clear();
             }
 
@@ -2229,7 +2157,7 @@ CmdSketcherCreate3PointCircle::CmdSketcherCreate3PointCircle()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create circle by three points");
     sToolTipText    = QT_TR_NOOP("Create a circle by 3 perimeter points");
-    sWhatsThis      = "Sketcher_Create3PointCircle";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_Create3PointCircle";
     eType           = ForEdit;
@@ -2255,7 +2183,7 @@ CmdSketcherCompCreateCircle::CmdSketcherCompCreateCircle()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create circle");
     sToolTipText    = QT_TR_NOOP("Create a circle in the sketcher");
-    sWhatsThis      = "Sketcher_CompCreateCircle";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     eType           = ForEdit;
 }
@@ -2431,7 +2359,7 @@ CmdSketcherCreatePoint::CmdSketcherCreatePoint()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create point");
     sToolTipText    = QT_TR_NOOP("Create a point in the sketch");
-    sWhatsThis      = "Sketcher_CreatePoint";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreatePoint";
     eType           = ForEdit;
@@ -2459,7 +2387,7 @@ CmdSketcherCreateText::CmdSketcherCreateText()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create text");
     sToolTipText    = QT_TR_NOOP("Create text in the sketch");
-    sWhatsThis      = "Sketcher_CreateText";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateText";
     eType           = ForEdit;
@@ -2486,7 +2414,7 @@ CmdSketcherCreateDraftLine::CmdSketcherCreateDraftLine()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create draft line");
     sToolTipText    = QT_TR_NOOP("Create a draft line in the sketch");
-    sWhatsThis      = "Sketcher_CreateDraftLine";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_DraftLine";
     eType           = ForEdit;
@@ -2734,7 +2662,7 @@ CmdSketcherCreateFillet::CmdSketcherCreateFillet()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create fillet");
     sToolTipText    = QT_TR_NOOP("Create a fillet between two lines or at a coincident point");
-    sWhatsThis      = "Sketcher_CreateFillet";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateFillet";
     sAccel          = "F";
@@ -2890,7 +2818,7 @@ CmdSketcherTrimming::CmdSketcherTrimming()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Trim edge");
     sToolTipText    = QT_TR_NOOP("Trim an edge with respect to the picked position");
-    sWhatsThis      = "Sketcher_Trimming";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_Trimming";
     sAccel          = "T";
@@ -3061,7 +2989,7 @@ CmdSketcherExternal::CmdSketcherExternal()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("External geometry");
     sToolTipText    = QT_TR_NOOP("Create an edge linked to an external geometry");
-    sWhatsThis      = "Sketcher_External";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_External";
     sAccel          = "E";
@@ -3325,7 +3253,7 @@ CmdSketcherCreateSlot::CmdSketcherCreateSlot()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create slot");
     sToolTipText    = QT_TR_NOOP("Create a slot in the sketch");
-    sWhatsThis      = "Sketcher_CreateSlot";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateSlot";
     sAccel          = "";
@@ -3524,7 +3452,7 @@ CmdSketcherCreateTriangle::CmdSketcherCreateTriangle()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create equilateral triangle");
     sToolTipText    = QT_TR_NOOP("Create an equilateral triangle in the sketch");
-    sWhatsThis      = "Sketcher_CreateTriangle";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateTriangle";
     sAccel          = "";
@@ -3549,7 +3477,7 @@ CmdSketcherCreateSquare::CmdSketcherCreateSquare()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create square");
     sToolTipText    = QT_TR_NOOP("Create a square in the sketch");
-    sWhatsThis      = "Sketcher_CreateSquare";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateSquare";
     sAccel          = "";
@@ -3574,7 +3502,7 @@ CmdSketcherCreatePentagon::CmdSketcherCreatePentagon()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create pentagon");
     sToolTipText    = QT_TR_NOOP("Create a pentagon in the sketch");
-    sWhatsThis      = "Sketcher_CreatePentagon";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreatePentagon";
     sAccel          = "";
@@ -3600,7 +3528,7 @@ CmdSketcherCreateHexagon::CmdSketcherCreateHexagon()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create hexagon");
     sToolTipText    = QT_TR_NOOP("Create a hexagon in the sketch");
-    sWhatsThis      = "Sketcher_CreateHexagon";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateHexagon";
     sAccel          = "";
@@ -3625,7 +3553,7 @@ CmdSketcherCreateHeptagon::CmdSketcherCreateHeptagon()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create heptagon");
     sToolTipText    = QT_TR_NOOP("Create a heptagon in the sketch");
-    sWhatsThis      = "Sketcher_CreateHeptagon";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateHeptagon";
     sAccel          = "";
@@ -3650,7 +3578,7 @@ CmdSketcherCreateOctagon::CmdSketcherCreateOctagon()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create octagon");
     sToolTipText    = QT_TR_NOOP("Create an octagon in the sketch");
-    sWhatsThis      = "Sketcher_CreateOctagon";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateOctagon";
     sAccel          = "";
@@ -3677,7 +3605,7 @@ CmdSketcherCompCreateRegularPolygon::CmdSketcherCompCreateRegularPolygon()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create regular polygon");
     sToolTipText    = QT_TR_NOOP("Create an regular polygon in the sketcher");
-    sWhatsThis      = "Sketcher_CompCreateRegularPolygon";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     eType           = ForEdit;
 }

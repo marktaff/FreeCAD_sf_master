@@ -125,7 +125,7 @@ namespace GCS
         int addConstraintCoordinateY(Point &p, double *y, int tagId=0);
         int addConstraintArcRules(Arc &a, int tagId=0);
         int addConstraintPointOnCircle(Point &p, Circle &c, int tagId=0);
-        int addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId=0);
+        int addConstraintPointOnEllipse(Point &p, Ellipse &c, int tagId=0);
         int addConstraintPointOnArc(Point &p, Arc &a, int tagId=0);
         int addConstraintPerpendicularLine2Arc(Point &p1, Point &p2, Arc &a,
                                                int tagId=0);
@@ -155,24 +155,14 @@ namespace GCS
                                         int tagId=0);
         int addConstraintCircleRadius(Circle &c, double *radius, int tagId=0);
         int addConstraintEllipseMajRadius(Ellipse &e, double *radmaj, int tagId=0);
-        int addConstraintEllipseMinRadius(Ellipse &e, double *radmin, int tagId=0);
-        int addConstraintEllipseAngleXU(Ellipse &e, double *angle, int tagId=0);
         int addConstraintArcRadius(Arc &a, double *radius, int tagId=0);
         int addConstraintEqualLength(Line &l1, Line &l2, double *length, int tagId=0);
         int addConstraintEqualRadius(Circle &c1, Circle &c2, int tagId=0);
-        int addConstraintEqualRadii(Ellipse &e1, Ellipse &e2, int tagId=0);
+        int addConstraintEqualRadMaj(Ellipse &e1, Ellipse &e2, int tagId=0);
         int addConstraintEqualRadius(Circle &c1, Arc &a2, int tagId=0);
         int addConstraintEqualRadius(Arc &a1, Arc &a2, int tagId=0);
         int addConstraintP2PSymmetric(Point &p1, Point &p2, Line &l, int tagId=0);
         int addConstraintP2PSymmetric(Point &p1, Point &p2, Point &p, int tagId=0);
-        
-        // internal alignment constraints
-        int addConstraintInternalAlignmentPoint2Ellipse(Ellipse &e, Point &p1, InternalAlignmentType alignmentType, int tagId=0);
-        int addConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
-        int addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
-        int addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId=0);
-        int addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, int tagId=0);
-        
         void rescaleConstraint(int id, double coeff);
 
         void declareUnknowns(VEC_pD &params);

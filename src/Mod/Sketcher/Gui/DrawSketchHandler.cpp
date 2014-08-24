@@ -255,10 +255,10 @@ int DrawSketchHandler::seekAutoConstraint(std::vector<AutoConstraint> &suggested
             double projDist = projPnt.Length();
 
             if ( (projDist < radius + tangDeviation ) && (projDist > radius - tangDeviation)) {
-                //Find if nearest
-                if (projDist < tangDeviation) {
+                // Find if nearest
+                if (projDist < smlTangDist) {
                     tangId = i;
-                    tangDeviation = projDist;
+                    smlTangDist = projDist;
                 }
             }
 

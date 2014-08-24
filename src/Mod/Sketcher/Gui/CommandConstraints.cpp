@@ -250,7 +250,7 @@ CmdSketcherConstrainHorizontal::CmdSketcherConstrainHorizontal()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain horizontally");
     sToolTipText    = QT_TR_NOOP("Create a horizontal constraint on the selected item");
-    sWhatsThis      = "Sketcher_ConstrainHorizontal";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Horizontal";
     sAccel          = "H";
@@ -342,7 +342,7 @@ CmdSketcherConstrainVertical::CmdSketcherConstrainVertical()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain vertically");
     sToolTipText    = QT_TR_NOOP("Create a vertical constraint on the selected item");
-    sWhatsThis      = "Sketcher_ConstrainVertical";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Vertical";
     sAccel          = "V";
@@ -434,7 +434,7 @@ CmdSketcherConstrainLock::CmdSketcherConstrainLock()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain lock");
     sToolTipText    = QT_TR_NOOP("Create a lock constraint on the selected item");
-    sWhatsThis      = "Sketcher_ConstrainLock";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_ConstrainLock";
     eType           = ForEdit;
@@ -506,7 +506,7 @@ CmdSketcherConstrainCoincident::CmdSketcherConstrainCoincident()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain coincident");
     sToolTipText    = QT_TR_NOOP("Create a coincident constraint on the selected item");
-    sWhatsThis      = "Sketcher_ConstrainCoincident";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_PointOnPoint";
     sAccel          = "C";
@@ -561,11 +561,11 @@ void CmdSketcherConstrainCoincident::activated(int iMsg)
         bool constraintExists=false;
 
         for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin(); it != vals.end(); ++it) {
-            if ((*it)->Type == Sketcher::Coincident && (
-               ((*it)->First == GeoId1 && (*it)->FirstPos == PosId1 &&
+            if ((*it)->Type == Sketcher::Coincident && 
+              ( (*it)->First == GeoId1 && (*it)->FirstPos == PosId1 && 
                 (*it)->Second == GeoId2 && (*it)->SecondPos == PosId2  ) ||
-               ((*it)->First == GeoId2 && (*it)->FirstPos == PosId2 &&
-                (*it)->Second == GeoId1 && (*it)->SecondPos == PosId1  ) ) ) {
+              ( (*it)->First == GeoId2 && (*it)->FirstPos == PosId2 && 
+                (*it)->Second == GeoId1 && (*it)->SecondPos == PosId1  ) ) {
                 constraintExists=true;
                 break;
             }
@@ -606,7 +606,7 @@ CmdSketcherConstrainDistance::CmdSketcherConstrainDistance()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain distance");
     sToolTipText    = QT_TR_NOOP("Fix a length of a line or the distance between a line and a vertex");
-    sWhatsThis      = "Sketcher_ConstrainDistance";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Length";
     sAccel          = "SHIFT+D";
@@ -753,7 +753,7 @@ CmdSketcherConstrainPointOnObject::CmdSketcherConstrainPointOnObject()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain point onto object");
     sToolTipText    = QT_TR_NOOP("Fix a point onto an object");
-    sWhatsThis      = "Sketcher_ConstrainPointOnObject";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_PointOnObject";
     sAccel          = "SHIFT+O";
@@ -803,8 +803,7 @@ void CmdSketcherConstrainPointOnObject::activated(int iMsg)
         // Currently only accepts line segments and circles
         if (geom->getTypeId() == Part::GeomLineSegment::getClassTypeId() ||
             geom->getTypeId() == Part::GeomCircle::getClassTypeId() || // TODO: ellipse
-            geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ||
-            geom->getTypeId() == Part::GeomEllipse::getClassTypeId() ) {
+            geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ) {
 
             openCommand("add point on object constraint");
             Gui::Command::doCommand(
@@ -836,7 +835,7 @@ CmdSketcherConstrainDistanceX::CmdSketcherConstrainDistanceX()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain horizontal distance");
     sToolTipText    = QT_TR_NOOP("Fix the horizontal distance between two points or line ends");
-    sWhatsThis      = "Sketcher_ConstrainDistanceX";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_HorizontalDistance";
     sAccel          = "SHIFT+H";
@@ -970,7 +969,7 @@ CmdSketcherConstrainDistanceY::CmdSketcherConstrainDistanceY()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain vertical distance");
     sToolTipText    = QT_TR_NOOP("Fix the vertical distance between two points or line ends");
-    sWhatsThis      = "Sketcher_ConstrainDistanceY";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_VerticalDistance";
     sAccel          = "SHIFT+V";
@@ -1102,7 +1101,7 @@ CmdSketcherConstrainParallel::CmdSketcherConstrainParallel()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain parallel");
     sToolTipText    = QT_TR_NOOP("Create a parallel constraint between two lines");
-    sWhatsThis      = "Sketcher_ConstrainParallel";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Parallel";
     sAccel          = "SHIFT+P";
@@ -1195,7 +1194,7 @@ CmdSketcherConstrainPerpendicular::CmdSketcherConstrainPerpendicular()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain perpendicular");
     sToolTipText    = QT_TR_NOOP("Create a perpendicular constraint between two lines");
-    sWhatsThis      = "Sketcher_ConstrainPerpendicular";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Perpendicular";
     sAccel          = "N";
@@ -1343,7 +1342,7 @@ CmdSketcherConstrainTangent::CmdSketcherConstrainTangent()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain tangent");
     sToolTipText    = QT_TR_NOOP("Create a tangent constraint between two entities");
-    sWhatsThis      = "Sketcher_ConstrainTangent";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Tangent";
     sAccel          = "T";
@@ -1451,7 +1450,7 @@ CmdSketcherConstrainRadius::CmdSketcherConstrainRadius()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain radius");
     sToolTipText    = QT_TR_NOOP("Fix the radius of a circle or an arc");
-    sWhatsThis      = "Sketcher_ConstrainRadius";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Radius";
     sAccel          = "R";
@@ -1616,6 +1615,7 @@ bool CmdSketcherConstrainRadius::isActive(void)
     return isCreateConstraintActive( getActiveGuiDocument() );
 }
 
+
 DEF_STD_CMD_A(CmdSketcherConstrainAngle);
 
 CmdSketcherConstrainAngle::CmdSketcherConstrainAngle()
@@ -1625,7 +1625,7 @@ CmdSketcherConstrainAngle::CmdSketcherConstrainAngle()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain angle");
     sToolTipText    = QT_TR_NOOP("Fix the angle of a line or the angle between two lines");
-    sWhatsThis      = "Sketcher_ConstrainAngle";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_InternalAngle";
     sAccel          = "A";
@@ -1764,6 +1764,7 @@ bool CmdSketcherConstrainAngle::isActive(void)
     return isCreateConstraintActive( getActiveGuiDocument() );
 }
 
+
 DEF_STD_CMD_A(CmdSketcherConstrainEqual);
 
 CmdSketcherConstrainEqual::CmdSketcherConstrainEqual()
@@ -1773,7 +1774,7 @@ CmdSketcherConstrainEqual::CmdSketcherConstrainEqual()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain equal");
     sToolTipText    = QT_TR_NOOP("Create an equality constraint between two lines or between circles and arcs");
-    sWhatsThis      = "Sketcher_ConstrainEqual";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_EqualLength";
     sAccel          = "E";
@@ -1883,7 +1884,7 @@ CmdSketcherConstrainSymmetric::CmdSketcherConstrainSymmetric()
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Constrain symmetrical");
     sToolTipText    = QT_TR_NOOP("Create a symmetry constraint between two points with respect to a line or a third point");
-    sWhatsThis      = "Sketcher_ConstrainSymmetric";
+    sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Constraint_Symmetric";
     sAccel          = "S";
@@ -2026,149 +2027,7 @@ bool CmdSketcherConstrainSymmetric::isActive(void)
     return isCreateConstraintActive( getActiveGuiDocument() );
 }
 
-DEF_STD_CMD_A(CmdSketcherConstrainInternalAlignment);
 
-CmdSketcherConstrainInternalAlignment::CmdSketcherConstrainInternalAlignment()
-    :Command("Sketcher_ConstrainInternalAlignment")
-{
-    sAppModule      = "Sketcher";
-    sGroup          = QT_TR_NOOP("Sketcher");
-    sMenuText       = QT_TR_NOOP("Constrain InternalAlignment");
-    sToolTipText    = QT_TR_NOOP("Constraint an element to be aligned with the internal geometry of another element");
-    sWhatsThis      = sToolTipText;
-    sStatusTip      = sToolTipText;
-    sPixmap         = "Constraint_Ellipse_Axis_Angle";
-    sAccel          = "Ctrl+A";
-    eType           = ForEdit;
-}
-
-void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
-{
-    // get the selection
-    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
-
-    // only one sketch with its subelements are allowed to be selected
-    if (selection.size() != 1) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Select at least one ellipse and one edge from the sketch."));
-        return;
-    }
-
-    // get the needed lists and objects
-    const std::vector<std::string> &SubNames = selection[0].getSubNames();
-    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
-
-    // go through the selected subelements
-    if (SubNames.size() < 2) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Select at least one ellipse and one edge from the sketch."));
-        return;
-    }
-
-    std::vector<int> pointids;
-    std::vector<int> lineids;
-    std::vector<int> ellipseids;
-    
-    bool hasAlreadyExternal = false;
-
-    for (std::vector<std::string>::const_iterator it=SubNames.begin(); it != SubNames.end(); ++it) {
-
-        int GeoId;
-        Sketcher::PointPos PosId;
-        getIdsFromName(*it, Obj, GeoId, PosId);
-        
-        if (GeoId < 0) {
-            if (GeoId == -1 || GeoId == -2) {
-                QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-                                     QObject::tr("Sketch axes cannot be used in internal alignment constraint"));
-                return;
-            }
-            else if (hasAlreadyExternal) {
-                checkBothExternal(-1,-2); // just for printing the error message
-                return;
-            }
-            else
-                hasAlreadyExternal = true;
-        }
-
-        const Part::Geometry *geo = Obj->getGeometry(GeoId);
-        
-        if (geo->getTypeId() == Part::GeomPoint::getClassTypeId())
-            pointids.push_back(GeoId);
-        else if (geo->getTypeId() == Part::GeomLineSegment::getClassTypeId())
-            lineids.push_back(GeoId);
-        else if (geo->getTypeId() == Part::GeomEllipse::getClassTypeId())
-            ellipseids.push_back(GeoId);
-        else {
-            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-                QObject::tr("Select two or more compatible edges"));
-            return;
-        }
-    }
-    
-    // TODO: this assumes there is one ellipse. Expand to more generic code.
-    //EllipseMajorDiameter    = 1,
-    //EllipseMinorDiameter    = 2,
-    //EllipseFocus1           = 3,
-    //EllipseFocus2           = 4
-
-    if (ellipseids.size()!=1) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("None of the geometries support internal alignment."));
-        return;
-    }
-    
-    if (pointids.size()>2) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Maximum 2 points are supported."));
-        return;
-    }
-    
-    if (lineids.size()>2) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Maximum 2 lines are supported."));
-        return;
-    }
-    
-    openCommand("add internal alignment constraint");
-    
-    if(pointids.size()>=1)
-    {
-        // focus 1
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],pointids[0]);
-    }
-    if(pointids.size()==2)
-    {
-        // focus 2
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],pointids[1]);
-    }
-    if(lineids.size()>=1)
-    {
-        // Major Diameter
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],lineids[0]);
-    }
-    if(lineids.size()==2)
-    {
-        // Minor Diameter
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],lineids[1]);
-    }
-
-    // finish the transaction and update
-    commitCommand();
-    updateActive();
-
-    // clear the selection (convenience)
-    getSelection().clearSelection();
-}
-
-bool CmdSketcherConstrainInternalAlignment::isActive(void)
-{
-    return isCreateConstraintActive( getActiveGuiDocument() );
-}
 
 void CreateSketcherCommandsConstraints(void)
 {
@@ -2189,5 +2048,4 @@ void CreateSketcherCommandsConstraints(void)
     rcCmdMgr.addCommand(new CmdSketcherConstrainEqual());
     rcCmdMgr.addCommand(new CmdSketcherConstrainPointOnObject());
     rcCmdMgr.addCommand(new CmdSketcherConstrainSymmetric());
-    rcCmdMgr.addCommand(new CmdSketcherConstrainInternalAlignment());
 }
