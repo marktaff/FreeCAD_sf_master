@@ -147,8 +147,8 @@ bool isSimpleVertex(const Sketcher::SketchObject* Obj, int GeoId, PointPos PosId
     if (geo->getTypeId() == Part::GeomPoint::getClassTypeId())
         return true;
     else if (PosId == Sketcher::mid &&
-             (geo->getTypeId() == Part::GeomCircle::getClassTypeId() ||
-              geo->getTypeId() == Part::GeomArcOfCircle::getClassTypeId()))
+             (geo->getTypeId() == Part::GeomCircle::getClassTypeId() || // TODO: ellipse
+              geo->getTypeId() == Part::GeomArcOfCircle::getClassTypeId())) 
         return true;
     else
         return false;
@@ -802,7 +802,7 @@ void CmdSketcherConstrainPointOnObject::activated(int iMsg)
 
         // Currently only accepts line segments and circles
         if (geom->getTypeId() == Part::GeomLineSegment::getClassTypeId() ||
-            geom->getTypeId() == Part::GeomCircle::getClassTypeId() ||
+            geom->getTypeId() == Part::GeomCircle::getClassTypeId() || // TODO: ellipse
             geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ) {
 
             openCommand("add point on object constraint");
@@ -1287,7 +1287,7 @@ void CmdSketcherConstrainPerpendicular::activated(int iMsg)
         }
         else if (geo2->getTypeId() != Part::GeomLineSegment::getClassTypeId() &&
                  geo2->getTypeId() != Part::GeomArcOfCircle::getClassTypeId() &&
-                 geo2->getTypeId() != Part::GeomCircle::getClassTypeId()) {
+                 geo2->getTypeId() != Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
             QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
                 QObject::tr("The selected edge should be an arc, line or circle."));
             return;
@@ -1490,7 +1490,7 @@ void CmdSketcherConstrainRadius::activated(int iMsg)
                 double radius = arc->getRadius();
                 geoIdRadiusMap.push_back(std::make_pair(GeoId, radius));
             }
-            else if (geom && geom->getTypeId() == Part::GeomCircle::getClassTypeId()) {
+            else if (geom && geom->getTypeId() == Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
                 const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(geom);
                 double radius = circle->getRadius();
                 geoIdRadiusMap.push_back(std::make_pair(GeoId, radius));
@@ -1838,7 +1838,7 @@ void CmdSketcherConstrainEqual::activated(int iMsg)
             lineSel = true;
         else if (geo->getTypeId() != Part::GeomArcOfCircle::getClassTypeId())
             arcSel = true;
-        else if (geo->getTypeId() != Part::GeomCircle::getClassTypeId())
+        else if (geo->getTypeId() != Part::GeomCircle::getClassTypeId()) // TODO: ellipse
             circSel = true;
         else {
             QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),

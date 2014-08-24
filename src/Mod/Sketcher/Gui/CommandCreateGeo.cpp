@@ -1777,7 +1777,181 @@ bool CmdSketcherCreateCircle::isActive(void)
 {
     return isCreateGeoActive(getActiveGuiDocument());
 }
+// ======================================================================================
 
+/* XPM */
+static const char *cursor_createellipse[]={
+"32 32 3 1",
+"+ c white",
+"# c red",
+". c None",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"................................",
+"+++++...+++++...................",
+"................................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+........#######..........",
+"..............#.......#.........",
+"............##.........##.......",
+"..........##.............##.....",
+"........##.................##...",
+"......##.........###.........##.",
+"......#..........#.#..........#.",
+"......##.........###.........##.",
+"........##.................##...",
+"..........##.............##.....",
+"............##.........##.......",
+"..............#.......#.........",
+"...............#######..........",
+"................................",
+"................................",
+"................................",
+"................................",
+"................................",
+"................................"};
+
+class DrawSketchHandlerEllipse : public DrawSketchHandler
+{
+public:
+    DrawSketchHandlerEllipse() : Mode(STATUS_SEEK_First),EditCurve(34){}
+    virtual ~DrawSketchHandlerEllipse(){}
+    /// mode table
+    enum SelectMode {
+        STATUS_SEEK_First,      /**< enum value ----. */
+        STATUS_SEEK_Second,     /**< enum value ----. */
+        STATUS_Close
+    };
+
+    virtual void activated(ViewProviderSketch *sketchgui)
+    {
+        setCursor(QPixmap(cursor_createellipse),7,7);
+    }
+
+    virtual void mouseMove(Base::Vector2D onSketchPos)
+    {
+        if (Mode==STATUS_SEEK_First) {
+            setPositionText(onSketchPos);
+            if (seekAutoConstraint(sugConstr1, onSketchPos, Base::Vector2D(0.f,0.f))) { // TODO: ellipse prio 1
+                renderSuggestConstraintsCursor(sugConstr1);
+                return;
+            }
+        }
+        else if (Mode==STATUS_SEEK_Second) {
+            double rx0 = onSketchPos.fX - EditCurve[0].fX;
+            double ry0 = onSketchPos.fY - EditCurve[0].fY;
+            for (int i=0; i < 16; i++) {
+                double angle = i*M_PI/16.0;
+                double rx = rx0 * cos(angle) + ry0 * sin(angle);
+                double ry = -rx0 * sin(angle) + ry0 * cos(angle);
+                EditCurve[1+i] = Base::Vector2D(EditCurve[0].fX + rx, EditCurve[0].fY + ry);
+                EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
+            }
+            EditCurve[33] = EditCurve[1];
+
+            // Display radius for user
+            float radius = (onSketchPos - EditCurve[0]).Length();
+
+            SbString text;
+            text.sprintf(" (%.1fR)", radius);
+            setPositionText(onSketchPos, text);
+
+            sketchgui->drawEdit(EditCurve);
+            if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
+                                   AutoConstraint::CURVE)) {
+                renderSuggestConstraintsCursor(sugConstr2);
+                return;
+            }
+        }
+        applyCursor();
+    }
+
+    virtual bool pressButton(Base::Vector2D onSketchPos)
+    {
+        if (Mode==STATUS_SEEK_First){
+            EditCurve[0] = onSketchPos;
+            Mode = STATUS_SEEK_Second;
+        } else {
+            EditCurve[1] = onSketchPos;
+            Mode = STATUS_Close;
+        }
+        return true;
+    }
+
+    virtual bool releaseButton(Base::Vector2D onSketchPos)
+    {
+        if (Mode==STATUS_Close) {
+            double rx = EditCurve[1].fX - EditCurve[0].fX;
+            double ry = EditCurve[1].fY - EditCurve[0].fY;
+            unsetCursor();
+            resetPositionText();
+            Gui::Command::openCommand("Add sketch circle");
+            Gui::Command::doCommand(Gui::Command::Doc,
+                "App.ActiveDocument.%s.addGeometry(Part.Circle"
+                "(App.Vector(%f,%f,0),App.Vector(0,0,1),%f))",
+                      sketchgui->getObject()->getNameInDocument(),
+                      EditCurve[0].fX, EditCurve[0].fY,
+                      sqrt(rx*rx + ry*ry));
+
+            Gui::Command::commitCommand();
+            Gui::Command::updateActive();
+
+            // add auto constraints for the center point
+            if (sugConstr1.size() > 0) {
+                createAutoConstraints(sugConstr1, getHighestCurveIndex(), Sketcher::mid);
+                sugConstr1.clear();
+            }
+
+            // add suggested constraints for circumference
+            if (sugConstr2.size() > 0) {
+                createAutoConstraints(sugConstr2, getHighestCurveIndex(), Sketcher::none);
+                sugConstr2.clear();
+            }
+
+            EditCurve.clear();
+            sketchgui->drawEdit(EditCurve);
+            sketchgui->purgeHandler(); // no code after this line, Handler get deleted in ViewProvider
+        }
+        return true;
+    }
+protected:
+    SelectMode Mode;
+    std::vector<Base::Vector2D> EditCurve;
+    std::vector<AutoConstraint> sugConstr1, sugConstr2;
+
+};
+
+DEF_STD_CMD_A(CmdSketcherCreateEllipse);
+
+CmdSketcherCreateEllipse::CmdSketcherCreateEllipse()
+  : Command("Sketcher_CreateEllipse")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Create ellipse");
+    sToolTipText    = QT_TR_NOOP("Create a ellipse in the sketch");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_CreateEllipse";
+    eType           = ForEdit;
+}
+
+void CmdSketcherCreateEllipse::activated(int iMsg)
+{
+    ActivateHandler(getActiveGuiDocument(),new DrawSketchHandlerEllipse() );
+}
+
+bool CmdSketcherCreateEllipse::isActive(void)
+{
+    return isCreateGeoActive(getActiveGuiDocument());
+}
 
 // ======================================================================================
 
@@ -2532,6 +2706,7 @@ namespace SketcherGui {
                     geom->getTypeId() == Part::GeomCircle::getClassTypeId()||
                     geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId())
                     return true;
+                // TODO: ellipse 
             }
             return  false;
         }
@@ -2612,6 +2787,7 @@ public:
             if (geom->getTypeId() == Part::GeomLineSegment::getClassTypeId() ||
                 geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ||
                 geom->getTypeId() == Part::GeomCircle::getClassTypeId()
+                // TODO: ellipse
             ) {
                 try {
                     Gui::Command::openCommand("Trim edge");
@@ -3544,6 +3720,7 @@ void CreateSketcherCommandsCreateGeo(void)
     rcCmdMgr.addCommand(new CmdSketcherCreateCircle());
     rcCmdMgr.addCommand(new CmdSketcherCreate3PointCircle());
     rcCmdMgr.addCommand(new CmdSketcherCompCreateCircle());
+    rcCmdMgr.addCommand(new CmdSketcherCreateEllipse());
     rcCmdMgr.addCommand(new CmdSketcherCreateLine());
     rcCmdMgr.addCommand(new CmdSketcherCreatePolyline());
     rcCmdMgr.addCommand(new CmdSketcherCreateRectangle());
