@@ -78,6 +78,7 @@ void Sketch::clear(void)
     Lines.clear();
     Arcs.clear();
     Circles.clear();
+    Ellipses.clear();
 
     // deleting the doubles allocated with new
     for (std::vector<double*>::iterator it = Parameters.begin(); it != Parameters.end(); ++it)
@@ -164,6 +165,10 @@ int Sketch::addGeometry(const Part::Geometry *geo, bool fixed)
         const GeomCircle *circle = dynamic_cast<const GeomCircle*>(geo);
         // create the definition struct for that geom
         return addCircle(*circle, fixed);
+    } else if (geo->getTypeId() == GeomEllipse::getClassTypeId()) { // add a ellipse
+        const GeomEllipse *circle = dynamic_cast<const GeomEllipse*>(geo);
+        // create the definition struct for that geom
+        return addEllipse(*circle, fixed);
     } else if (geo->getTypeId() == GeomArcOfCircle::getClassTypeId()) { // add an arc
         const GeomArcOfCircle *aoc = dynamic_cast<const GeomArcOfCircle*>(geo);
         // create the definition struct for that geom
@@ -384,8 +389,49 @@ int Sketch::addCircle(const Part::GeomCircle &cir, bool fixed)
     return Geoms.size()-1;
 }
 
-int Sketch::addEllipse(const Part::GeomEllipse &ellipse, bool fixed)
+int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
 {
+    std::vector<double *> &params = fixed ? FixParameters : Parameters;
+
+    // create our own copy
+    GeomEllipse *elips = static_cast<GeomEllipse*>(elip.clone());
+    // create the definition struct for that geom
+    GeoDef def;
+    def.geo  = elips;
+    def.type = Ellipse;
+
+    Base::Vector3d center = elips->getCenter();
+    double radmaj         = elips->getMajorRadius();
+    double radmin         = elips->getMinorRadius();
+
+    GCS::Point p1;
+
+    params.push_back(new double(center.x));
+    params.push_back(new double(center.y));
+    p1.x = params[params.size()-2];
+    p1.y = params[params.size()-1];
+
+    params.push_back(new double(radmaj));
+    params.push_back(new double(radmin));
+
+    def.midPointId = Points.size();
+    Points.push_back(p1);
+
+    // add the radius parameter
+    double *rmaj = params[params.size()-2];
+    double *rmin = params[params.size()-1];
+
+    // set the circle for later constraints
+    GCS::Ellipse e;
+    e.center = p1;
+    e.radmaj    = rmaj;
+    e.radmin    = rmin;
+    def.index = Ellipses.size();
+    Ellipses.push_back(e);
+
+    // store complete set
+    Geoms.push_back(def);
+
     // return the position of the newly added geometry
     return Geoms.size()-1;
 }
@@ -861,6 +907,14 @@ int Sketch::addPerpendicularConstraint(int geoId1, PointPos pos1, int geoId2)
             GCSsys.addConstraintPointOnLine(p2, l1, tag);
             return ConstraintsCounter;
         }
+        else if (Geoms[geoId2].type == Ellipse) {
+            GCS::Ellipse &c2 = Ellipses[Geoms[geoId2].index];
+            GCS::Point &p2 = Points[Geoms[geoId2].midPointId];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintPointOnEllipse(p1, c2, tag);
+            GCSsys.addConstraintPointOnLine(p2, l1, tag);
+            return ConstraintsCounter;
+        }
     }
     else if (Geoms[geoId1].type == Arc) {
         GCS::Arc &a1 = Arcs[Geoms[geoId1].index];
@@ -871,7 +925,8 @@ int Sketch::addPerpendicularConstraint(int geoId1, PointPos pos1, int geoId2)
             GCSsys.addConstraintPointOnLine(a1.center, l2, tag);
             return ConstraintsCounter;
         }
-        else if (Geoms[geoId2].type == Arc || Geoms[geoId2].type == Circle) {
+        else if (Geoms[geoId2].type == Arc || Geoms[geoId2].type == Circle || Geoms[geoId2].type == Ellipse) {
+            // TODO: ellipse real implementation
             int tag = ++ConstraintsCounter;
             GCS::Point &center = Points[Geoms[geoId2].midPointId];
             double *radius;
@@ -879,9 +934,13 @@ int Sketch::addPerpendicularConstraint(int geoId1, PointPos pos1, int geoId2)
                 GCS::Arc &a2 = Arcs[Geoms[geoId2].index];
                 radius = a2.rad;
             }
-            else {
+            else if (Geoms[geoId2].type == Circle) {
                 GCS::Circle &c2 = Circles[Geoms[geoId2].index];
                 radius = c2.rad;
+            }
+            else {
+                GCS::Ellipse &c2 = Ellipses[Geoms[geoId2].index];
+                radius = c2.radmaj;
             }
             if (pos1 == start)
                 GCSsys.addConstraintPerpendicularCircle2Arc(center, radius, a1, tag);
@@ -1026,6 +1085,12 @@ int Sketch::addTangentConstraint(int geoId1, int geoId2)
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintTangent(l, c, tag);
             return ConstraintsCounter;
+        } else if (Geoms[geoId2].type == Ellipse) {
+            // TODO: real implementation
+            GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintTangent(l, e, tag);
+            return ConstraintsCounter;
         }
     } else if (Geoms[geoId1].type == Circle) {
         GCS::Circle &c = Circles[Geoms[geoId1].index];
@@ -1034,18 +1099,44 @@ int Sketch::addTangentConstraint(int geoId1, int geoId2)
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintTangent(c, c2, tag);
             return ConstraintsCounter;
-        } else if (Geoms[geoId2].type == Arc) {
+        } else if (Geoms[geoId2].type == Ellipse) {
+            // TODO: real implementation
+            GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintTangent(e, c, tag);
+            return ConstraintsCounter;
+        }
+        else if (Geoms[geoId2].type == Arc) {
             GCS::Arc &a = Arcs[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintTangent(c, a, tag);
             return ConstraintsCounter;
         }
+    } else if (Geoms[geoId1].type == Ellipse) {
+        GCS::Ellipse &e = Ellipses[Geoms[geoId1].index];
+        // Todo: elipse real implementation
+        if (Geoms[geoId2].type == Circle) {
+            GCS::Circle &c = Circles[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintTangent(e, c, tag);
+            return ConstraintsCounter;
+        } else if (Geoms[geoId2].type == Arc) {
+            GCS::Arc &a = Arcs[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintTangent(e, a, tag);
+            return ConstraintsCounter;
+        }    
     } else if (Geoms[geoId1].type == Arc) {
         GCS::Arc &a = Arcs[Geoms[geoId1].index];
         if (Geoms[geoId2].type == Circle) {
             GCS::Circle &c = Circles[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintTangent(c, a, tag);
+            return ConstraintsCounter;
+        } else if (Geoms[geoId2].type == Ellipse) {
+            GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintTangent(e, a, tag);
             return ConstraintsCounter;
         } else if (Geoms[geoId2].type == Arc) {
             GCS::Arc &a2 = Arcs[Geoms[geoId2].index];
@@ -1096,6 +1187,13 @@ int Sketch::addTangentConstraint(int geoId1, PointPos pos1, int geoId2)
             GCSsys.addConstraintTangent(l1, c2, tag);
             return ConstraintsCounter;
         }
+        else if (Geoms[geoId2].type == Ellipse) {
+            GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintPointOnEllipse(p1, e, tag);
+            GCSsys.addConstraintTangent(l1, e, tag);
+            return ConstraintsCounter;
+        }
     }
     else if (Geoms[geoId1].type == Arc) {
         GCS::Arc &a1 = Arcs[Geoms[geoId1].index];
@@ -1123,6 +1221,18 @@ int Sketch::addTangentConstraint(int geoId1, PointPos pos1, int geoId2)
             else if (pos1 == end) {
                 int tag = ++ConstraintsCounter;
                 GCSsys.addConstraintTangentArc2Circle(a1, c2, tag);
+                return ConstraintsCounter;
+            }
+        } else if (Geoms[geoId2].type == Ellipse) {
+            GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
+            if (pos1 == start) {
+                int tag = ++ConstraintsCounter;
+                GCSsys.addConstraintTangentEllipse2Arc(e, a1, tag);
+                return ConstraintsCounter;
+            }
+            else if (pos1 == end) {
+                int tag = ++ConstraintsCounter;
+                GCSsys.addConstraintTangentArc2Ellipse(a1, e, tag);
                 return ConstraintsCounter;
             }
         }
@@ -1322,6 +1432,15 @@ int Sketch::addRadiusConstraint(int geoId, double value)
         GCSsys.addConstraintCircleRadius(c, radius, tag);
         return ConstraintsCounter;
     }
+    else if (Geoms[geoId].type == Ellipse) {
+        GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
+        // add the parameter for the radius
+        FixParameters.push_back(new double(value));
+        double *radmaj = FixParameters[FixParameters.size()-2];
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintEllipseMajRadius(e, radmaj, tag);
+        return ConstraintsCounter;
+    }
     else if (Geoms[geoId].type == Arc) {
         GCS::Arc &a = Arcs[Geoms[geoId].index];
         // add the parameter for the radius
@@ -1443,6 +1562,18 @@ int Sketch::addEqualConstraint(int geoId1, int geoId2)
             GCS::Circle &c2 = Circles[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintEqualRadius(c1, c2, tag);
+            return ConstraintsCounter;
+        }
+        else
+            std::swap(geoId1, geoId2);
+    }
+    
+    if (Geoms[geoId2].type == Ellipse) {
+        if (Geoms[geoId1].type == Ellipse) {
+            GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+            GCS::Ellipse &e2 = Ellipses[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintEqualRadMaj(e1, e2, tag);
             return ConstraintsCounter;
         }
         else
@@ -1596,6 +1727,14 @@ bool Sketch::updateGeometry()
                                          0.0)
                                );
                 circ->setRadius(*Circles[it->index].rad);
+            } else if (it->type == Ellipse) {
+                GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo);
+                ellipse->setCenter(Vector3d(*Points[it->midPointId].x,
+                                         *Points[it->midPointId].y,
+                                         0.0)
+                               );
+                ellipse->setMajorRadius(*Ellipses[it->index].radmaj);
+                ellipse->setMajorRadius(*Ellipses[it->index].radmin);
             }
         } catch (Base::Exception e) {
             Base::Console().Error("Updating geometry: Error build geometry(%d): %s\n",
@@ -1763,6 +1902,33 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             *p0.x = *center.x;
             *p0.y = *center.y + *c.rad;
             GCSsys.addConstraintPointOnCircle(p0,c,-1);
+            p1.x = &MoveParameters[2];
+            p1.y = &MoveParameters[3];
+            *p1.x = *center.x;
+            *p1.y = *center.y;
+            int i=GCSsys.addConstraintP2PCoincident(p1,center,-1);
+            GCSsys.rescaleConstraint(i-1, 0.01);
+            GCSsys.rescaleConstraint(i, 0.01);
+        }
+        } else if (Geoms[geoId].type == Ellipse) {
+            // TODO: Ellipse
+        GCS::Point &center = Points[Geoms[geoId].midPointId];
+        GCS::Point p0,p1;
+        if (pos == mid) {
+            MoveParameters.resize(2); // cx,cy
+            p0.x = &MoveParameters[0];
+            p0.y = &MoveParameters[1];
+            *p0.x = *center.x;
+            *p0.y = *center.y;
+            GCSsys.addConstraintP2PCoincident(p0,center,-1);
+        } else if (pos == none) {
+            MoveParameters.resize(4); // x,y,cx,cy
+            GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
+            p0.x = &MoveParameters[0];
+            p0.y = &MoveParameters[1];
+            *p0.x = *center.x;
+            *p0.y = *center.y + *e.radmaj;
+            GCSsys.addConstraintPointOnEllipse(p0,e,-1);
             p1.x = &MoveParameters[2];
             p1.y = &MoveParameters[3];
             *p1.x = *center.x;
