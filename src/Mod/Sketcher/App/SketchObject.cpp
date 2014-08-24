@@ -108,21 +108,28 @@ App::DocumentObjectExecReturn *SketchObject::execute(void)
     }
 
     Sketch sketch;
+    
+    Conflicting.clear();
+    Redundant.clear();
+    
     int dofs = sketch.setUpSketch(getCompleteGeometry(), Constraints.getValues(),
                                   getExternalGeometryCount());
     if (dofs < 0) { // over-constrained sketch
         std::string msg="Over-constrained sketch\n";
-        appendConflictMsg(sketch.getConflicting(), msg);
+        Conflicting=sketch.getConflicting();
+        appendConflictMsg(Conflicting, msg);
         return new App::DocumentObjectExecReturn(msg.c_str(),this);
     }
     if (sketch.hasConflicts()) { // conflicting constraints
         std::string msg="Sketch with conflicting constraints\n";
-        appendConflictMsg(sketch.getConflicting(), msg);
+        Conflicting=sketch.getConflicting();
+        appendConflictMsg(Conflicting, msg);
         return new App::DocumentObjectExecReturn(msg.c_str(),this);
     }
     if (sketch.hasRedundancies()) { // redundant constraints
         std::string msg="Sketch with redundant constraints\n";
-        appendRedundantMsg(sketch.getRedundant(), msg);
+        Redundant=sketch.getRedundant();
+        appendRedundantMsg(Redundant, msg);
         return new App::DocumentObjectExecReturn(msg.c_str(),this);
     }
 

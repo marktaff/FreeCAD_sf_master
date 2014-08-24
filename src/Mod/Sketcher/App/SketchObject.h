@@ -158,6 +158,9 @@ public:
     virtual int getAxisCount(void) const;
     /// retrieves an axis iterating through the construction lines of the sketch (indices start at 0)
     virtual Base::Axis getAxis(int axId) const;
+    
+    const std::vector<int> &getConflicting(void) const { return Conflicting; }
+    const std::vector<int> &getRedundant(void) const { return Redundant; }
 
 protected:
     /// get called by the container when a property has changed
@@ -170,6 +173,9 @@ private:
 
     std::vector<int> VertexId2GeoId;
     std::vector<PointPos> VertexId2PosId;
+    
+    std::vector<int> Conflicting;
+    std::vector<int> Redundant;
 };
 
 typedef App::FeaturePythonT<SketchObject> SketchObjectPython;
