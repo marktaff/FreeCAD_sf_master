@@ -217,6 +217,7 @@ protected:
     std::vector<GCS::Line>   Lines;
     std::vector<GCS::Arc>    Arcs;
     std::vector<GCS::Circle> Circles;
+    std::vector<GCS::Ellipse> Ellipses;
 
     bool isInitMove;
     bool isFine;

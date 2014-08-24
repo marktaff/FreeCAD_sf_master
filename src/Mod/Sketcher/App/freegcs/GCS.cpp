@@ -481,6 +481,12 @@ int System::addConstraintPointOnCircle(Point &p, Circle &c, int tagId)
     return addConstraintP2PDistance(p, c.center, c.rad, tagId);
 }
 
+int System::addConstraintPointOnEllipse(Point &p, Ellipse &c, int tagId)
+{
+    // TODO: Implement real constraint
+    return addConstraintP2PDistance(p, c.center, c.radmaj, tagId);
+}
+
 int System::addConstraintPointOnArc(Point &p, Arc &a, int tagId)
 {
     return addConstraintP2PDistance(p, a.center, a.rad, tagId);
@@ -552,6 +558,22 @@ int System::addConstraintTangent(Line &l, Circle &c, int tagId)
     return addConstraintP2LDistance(c.center, l, c.rad, tagId);
 }
 
+int System::addConstraintTangent(Line &l, Ellipse &c, int tagId)
+{
+    // TODO: real ellipse implementation
+    return addConstraintP2LDistance(c.center, l, c.radmaj, tagId);
+}
+
+int System::addConstraintTangent(Ellipse &e, Circle &c, int tagId)
+{
+    // TODO: elipse
+    double dx = *(c.center.x) - *(e.center.x);
+    double dy = *(c.center.y) - *(e.center.y);
+    double d = sqrt(dx*dx + dy*dy);
+    return addConstraintTangentCircumf(e.center, c.center, e.radmaj, c.rad,
+                                       (d < *e.radmaj || d < *c.rad), tagId);    
+}
+
 int System::addConstraintTangent(Line &l, Arc &a, int tagId)
 {
     return addConstraintP2LDistance(a.center, l, a.rad, tagId);
@@ -584,6 +606,16 @@ int System::addConstraintTangent(Circle &c, Arc &a, int tagId)
                                        (d < *c.rad || d < *a.rad), tagId);
 }
 
+int System::addConstraintTangent(Ellipse &e, Arc &a, int tagId)
+{
+    // TODO: elipse
+    double dx = *(a.center.x) - *(e.center.x);
+    double dy = *(a.center.y) - *(e.center.y);
+    double d = sqrt(dx*dx + dy*dy);
+    return addConstraintTangentCircumf(e.center, a.center, e.radmaj, a.rad,
+                                       (d < *e.radmaj || d < *a.rad), tagId);
+}
+
 int System::addConstraintTangentLine2Arc(Point &p1, Point &p2, Arc &a, int tagId)
 {
     addConstraintP2PCoincident(p2, a.start, tagId);
@@ -609,6 +641,18 @@ int System::addConstraintTangentCircle2Arc(Circle &c, Arc &a, int tagId)
         return addConstraintP2PAngle(c.center, a.start, a.startAngle, M_PI, tagId);
 }
 
+int System::addConstraintTangentEllipse2Arc(Ellipse &e, Arc &a, int tagId)
+{
+    // TODO: Ellipse
+    addConstraintPointOnEllipse(a.start, e, tagId);
+    double dx = *(a.start.x) - *(e.center.x);
+    double dy = *(a.start.y) - *(e.center.y);
+    if (dx * cos(*(a.startAngle)) + dy * sin(*(a.startAngle)) > 0)
+        return addConstraintP2PAngle(e.center, a.start, a.startAngle, 0, tagId);
+    else
+        return addConstraintP2PAngle(e.center, a.start, a.startAngle, M_PI, tagId);
+}
+
 int System::addConstraintTangentArc2Circle(Arc &a, Circle &c, int tagId)
 {
     addConstraintPointOnCircle(a.end, c, tagId);
@@ -618,6 +662,18 @@ int System::addConstraintTangentArc2Circle(Arc &a, Circle &c, int tagId)
         return addConstraintP2PAngle(c.center, a.end, a.endAngle, 0, tagId);
     else
         return addConstraintP2PAngle(c.center, a.end, a.endAngle, M_PI, tagId);
+}
+
+int System::addConstraintTangentArc2Ellipse(Arc &a, Ellipse &e, int tagId)
+{
+    // TODO: Ellipse
+    addConstraintPointOnEllipse(a.end, e, tagId);
+    double dx = *(a.end.x) - *(e.center.x);
+    double dy = *(a.end.y) - *(e.center.y);
+    if (dx * cos(*(a.endAngle)) + dy * sin(*(a.endAngle)) > 0)
+        return addConstraintP2PAngle(e.center, a.end, a.endAngle, 0, tagId);
+    else
+        return addConstraintP2PAngle(e.center, a.end, a.endAngle, M_PI, tagId);
 }
 
 int System::addConstraintTangentArc2Arc(Arc &a1, bool reverse1, Arc &a2, bool reverse2,
@@ -640,6 +696,12 @@ int System::addConstraintCircleRadius(Circle &c, double *radius, int tagId)
     return addConstraintEqual(c.rad, radius, tagId);
 }
 
+int System::addConstraintEllipseMajRadius(Ellipse &e, double *radmaj, int tagId)
+{
+    //TODO: Ellipse
+    return addConstraintEqual(e.radmaj, radmaj, tagId);
+}
+
 int System::addConstraintArcRadius(Arc &a, double *radius, int tagId)
 {
     return addConstraintEqual(a.rad, radius, tagId);
@@ -654,6 +716,11 @@ int System::addConstraintEqualLength(Line &l1, Line &l2, double *length, int tag
 int System::addConstraintEqualRadius(Circle &c1, Circle &c2, int tagId)
 {
     return addConstraintEqual(c1.rad, c2.rad, tagId);
+}
+
+int System::addConstraintEqualRadMaj(Ellipse &e1, Ellipse &e2, int tagId)
+{
+    return addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
 }
 
 int System::addConstraintEqualRadius(Circle &c1, Arc &a2, int tagId)

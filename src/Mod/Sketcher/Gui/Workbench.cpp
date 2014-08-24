@@ -136,12 +136,14 @@ inline void SketcherAddWorkspaceArcs<Gui::MenuItem>(Gui::MenuItem& geom){
     geom    << "Sketcher_CreateArc"
             << "Sketcher_Create3PointArc"
             << "Sketcher_CreateCircle"
-            << "Sketcher_Create3PointCircle";
+            << "Sketcher_Create3PointCircle"
+            << "Sketcher_CreateEllipse";
 }
 template <>
 inline void SketcherAddWorkspaceArcs<Gui::ToolBarItem>(Gui::ToolBarItem& geom){
     geom    << "Sketcher_CompCreateArc"
-            << "Sketcher_CompCreateCircle";
+            << "Sketcher_CompCreateCircle"
+            << "Sketcher_CreateEllipse";
 }
 template <typename T>
 void SketcherAddWorkspaceRegularPolygon(T& geom);
