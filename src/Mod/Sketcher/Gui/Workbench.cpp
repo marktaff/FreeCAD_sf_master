@@ -211,7 +211,8 @@ inline void SketcherAddWorkbenchTools<Gui::MenuItem>(Gui::MenuItem& consaccel){
 		<< "Sketcher_SelectVerticalAxis"
 		<< "Sketcher_SelectHorizontalAxis"
         << "Sketcher_SelectRedundantConstraints"
-        << "Sketcher_SelectConflictingConstraints";
+        << "Sketcher_SelectConflictingConstraints"
+        << "Sketcher_SelectElementsAssociatedWithConstraints";
 }
 template <>
 inline void SketcherAddWorkbenchTools<Gui::ToolBarItem>(Gui::ToolBarItem& consaccel){
@@ -219,7 +220,8 @@ inline void SketcherAddWorkbenchTools<Gui::ToolBarItem>(Gui::ToolBarItem& consac
         << "Sketcher_ConnectLines"
         << "Sketcher_SelectConstraints"
         << "Sketcher_SelectRedundantConstraints"
-        << "Sketcher_SelectConflictingConstraints";
+        << "Sketcher_SelectConflictingConstraints"
+        << "Sketcher_SelectElementsAssociatedWithConstraints";
 }
 
 template <typename T>
