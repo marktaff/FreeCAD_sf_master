@@ -514,7 +514,7 @@ CmdSketcherSelectConflictingConstraints::CmdSketcherSelectConflictingConstraints
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_SelectConflictingConstraints";
-    sAccel          = "CTRL+SHIFT+E";
+    sAccel          = "CTRL+SHIFT+F";
     eType           = ForEdit;
 }
 
@@ -556,6 +556,132 @@ bool CmdSketcherSelectConflictingConstraints::isActive(void)
     return isSketcherAcceleratorActive( getActiveGuiDocument(), false );
 }
 
+DEF_STD_CMD_A(CmdSketcherSelectElementsAssociatedWithConstraints);
+
+CmdSketcherSelectElementsAssociatedWithConstraints::CmdSketcherSelectElementsAssociatedWithConstraints()
+    :Command("Sketcher_SelectElementsAssociatedWithConstraints")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Select Elements associated with constraints");
+    sToolTipText    = QT_TR_NOOP("Select Elements associated with constraints");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_SelectElementsAssociatedWithConstraints";
+    sAccel          = "CTRL+SHIFT+E";
+    eType           = ForEdit;
+}
+
+void CmdSketcherSelectElementsAssociatedWithConstraints::activated(int iMsg)
+{
+    std::vector<Gui::SelectionObject> selection = Gui::Selection().getSelectionEx();
+    
+    
+    Gui::Document * doc= getActiveGuiDocument();
+    
+    SketcherGui::ViewProviderSketch* vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
+    
+    Sketcher::SketchObject* Obj= vp->getSketchObject();
+    
+    const std::vector<std::string> &SubNames = selection[0].getSubNames();
+    const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+    
+    getSelection().clearSelection();
+        
+    std::string doc_name = Obj->getDocument()->getName();
+    std::string obj_name = Obj->getNameInDocument();
+    std::stringstream ss;
+    
+    // go through the selected subelements
+    for (std::vector<std::string>::const_iterator it=SubNames.begin(); it != SubNames.end(); ++it) {
+        // only handle constraints
+        if (it->size() > 10 && it->substr(0,10) == "Constraint") {
+            int ConstrId = std::atoi(it->substr(10,4000).c_str()) - 1;
+            
+            if(ConstrId<vals.size()){
+                if(vals[ConstrId].First1!=Constraint::GeoUndef){
+                    ss.str(std::string());
+                    
+                    switch(vals[ConstrId].FirstPos)
+                    {
+                        case Sketcher::none:
+                            ss << "Edge" << vals[ConstrId].First;
+                            vals[ConstrId].First;
+                            break;
+                        case Sketcher::start:
+                            
+                        case Sketcher::end:
+                        case Sketcher::mid:    
+                            vals[ConstrId].First;
+                            break;                      
+                    }
+                                   
+                
+                Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                    
+                    
+                }
+            }
+            
+            
+            const Part::Geometry *geo = Obj->getGeometry(GeoId);
+            if (geo->getTypeId() != Part::GeomLineSegment::getClassTypeId()) {
+                QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Impossible constraint"),
+                                     QObject::tr("The selected edge is not a line segment"));
+                return;
+            }
+
+            // check if the edge has already a Horizontal or Vertical constraint
+            for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
+                 it != vals.end(); ++it) {
+                if ((*it)->Type == Sketcher::Horizontal && (*it)->First == GeoId){
+                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Double constraint"),
+                        QObject::tr("The selected edge has already a horizontal constraint!"));
+                    return;
+                }
+                if ((*it)->Type == Sketcher::Vertical && (*it)->First == GeoId) {
+                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Impossible constraint"),
+                                         QObject::tr("The selected edge has already a vertical constraint!"));
+                    return;
+                }
+            }
+            ids.push_back(GeoId);
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    // get the needed lists and objects
+    const std::vector< int > &conflicting = Obj->getConflicting();
+    const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+    
+    getSelection().clearSelection();
+    
+    // push the constraints
+    int i=1;
+    for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it != vals.end(); ++it,++i) {
+        
+        for(std::vector< int >::const_iterator itc= conflicting.begin();itc != conflicting.end(); ++itc) {
+            if ( (*itc) == i){
+                ss.str(std::string());
+                ss << "Constraint" << i;
+                Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                break;
+            }
+        }
+    }
+}
+
+bool CmdSketcherSelectElementsAssociatedWithConstraints::isActive(void)
+{
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), true );
+}
+
 // Add Accelerator Commands
 void CreateSketcherCommandsConstraintAccel(void)
 {
@@ -569,4 +695,5 @@ void CreateSketcherCommandsConstraintAccel(void)
     rcCmdMgr.addCommand(new CmdSketcherSelectHorizontalAxis());
     rcCmdMgr.addCommand(new CmdSketcherSelectRedundantConstraints());
     rcCmdMgr.addCommand(new CmdSketcherSelectConflictingConstraints());
+    rcCmdMgr.addCommand(new CmdSketcherSelectElementsAssociatedWithConstraints());
 }
