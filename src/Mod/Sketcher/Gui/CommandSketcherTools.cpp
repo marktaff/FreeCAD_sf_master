@@ -577,6 +577,7 @@ void CmdSketcherSelectElementsAssociatedWithConstraints::activated(int iMsg)
     std::vector<Gui::SelectionObject> selection = Gui::Selection().getSelectionEx();
     
     
+    
     Gui::Document * doc= getActiveGuiDocument();
     
     SketcherGui::ViewProviderSketch* vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
@@ -592,6 +593,8 @@ void CmdSketcherSelectElementsAssociatedWithConstraints::activated(int iMsg)
     std::string obj_name = Obj->getNameInDocument();
     std::stringstream ss;
     
+    int selected=0;
+    
     // go through the selected subelements
     for (std::vector<std::string>::const_iterator it=SubNames.begin(); it != SubNames.end(); ++it) {
         // only handle constraints
@@ -599,81 +602,77 @@ void CmdSketcherSelectElementsAssociatedWithConstraints::activated(int iMsg)
             int ConstrId = std::atoi(it->substr(10,4000).c_str()) - 1;
             
             if(ConstrId<vals.size()){
-                if(vals[ConstrId].First1!=Constraint::GeoUndef){
+                if(vals[ConstrId]->First!=Constraint::GeoUndef){
                     ss.str(std::string());
                     
-                    switch(vals[ConstrId].FirstPos)
+                    switch(vals[ConstrId]->FirstPos)
                     {
                         case Sketcher::none:
-                            ss << "Edge" << vals[ConstrId].First;
-                            vals[ConstrId].First;
+                            ss << "Edge" << vals[ConstrId]->First + 1;
                             break;
                         case Sketcher::start:
-                            
                         case Sketcher::end:
-                        case Sketcher::mid:    
-                            vals[ConstrId].First;
+                        case Sketcher::mid: 
+                            int vertex = Obj->getVertexIndexGeoPos(vals[ConstrId]->First,vals[ConstrId]->FirstPos);
+                            if(vertex>-1)
+                                ss << "Vertex" <<  vertex + 1;
                             break;                      
                     }
-                                   
                 
-                Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                    selected++;
+                }
+                
+                if(vals[ConstrId]->Second!=Constraint::GeoUndef){
+                    ss.str(std::string());
                     
+                    switch(vals[ConstrId]->SecondPos)
+                    {
+                        case Sketcher::none:
+                            ss << "Edge" << vals[ConstrId]->Second + 1;
+                            vals[ConstrId]->Second;
+                            break;
+                        case Sketcher::start:
+                        case Sketcher::end:
+                        case Sketcher::mid: 
+                            int vertex = Obj->getVertexIndexGeoPos(vals[ConstrId]->Second,vals[ConstrId]->SecondPos);
+                            if(vertex>-1)
+                                ss << "Vertex" << vertex + 1;
+                            break;                      
+                    }
+                
+                    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                    selected++;
+                }
+                
+                if(vals[ConstrId]->Third!=Constraint::GeoUndef){
+                    ss.str(std::string());
                     
+                    switch(vals[ConstrId]->ThirdPos)
+                    {
+                        case Sketcher::none:
+                            ss << "Edge" << vals[ConstrId]->Third + 1;
+                            vals[ConstrId]->Third;
+                            break;
+                        case Sketcher::start:
+                        case Sketcher::end:
+                        case Sketcher::mid: 
+                            int vertex = Obj->getVertexIndexGeoPos(vals[ConstrId]->Third,vals[ConstrId]->ThirdPos);
+                            if(vertex>-1)
+                                ss << "Vertex" <<  vertex + 1;
+                            break;                      
+                    }
+                
+                    Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                    selected++;
                 }
             }
-            
-            
-            const Part::Geometry *geo = Obj->getGeometry(GeoId);
-            if (geo->getTypeId() != Part::GeomLineSegment::getClassTypeId()) {
-                QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Impossible constraint"),
-                                     QObject::tr("The selected edge is not a line segment"));
-                return;
-            }
-
-            // check if the edge has already a Horizontal or Vertical constraint
-            for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
-                 it != vals.end(); ++it) {
-                if ((*it)->Type == Sketcher::Horizontal && (*it)->First == GeoId){
-                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Double constraint"),
-                        QObject::tr("The selected edge has already a horizontal constraint!"));
-                    return;
-                }
-                if ((*it)->Type == Sketcher::Vertical && (*it)->First == GeoId) {
-                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Impossible constraint"),
-                                         QObject::tr("The selected edge has already a vertical constraint!"));
-                    return;
-                }
-            }
-            ids.push_back(GeoId);
         }
     }
     
-    
-    
-    
-    
-    
-    
-    
-    // get the needed lists and objects
-    const std::vector< int > &conflicting = Obj->getConflicting();
-    const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
-    
-    getSelection().clearSelection();
-    
-    // push the constraints
-    int i=1;
-    for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it != vals.end(); ++it,++i) {
-        
-        for(std::vector< int >::const_iterator itc= conflicting.begin();itc != conflicting.end(); ++itc) {
-            if ( (*itc) == i){
-                ss.str(std::string());
-                ss << "Constraint" << i;
-                Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
-                break;
-            }
-        }
+    if ( selected == 0 ) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("No constraint selected"),
+                                     QObject::tr("At least one constraint must be selected"));
     }
 }
 
