@@ -3695,6 +3695,16 @@ QString ViewProviderSketch::appendRedundantMsg(const std::vector<int> &redundant
     return msg;
 }
 
+const std::vector<int> &ViewProviderSketch::getConflicting(void) const
+{
+    return edit->ActSketch.getConflicting();
+}
+
+const std::vector<int> &ViewProviderSketch::getRedundant(void) const
+{
+    return edit->ActSketch.getRedundant();  
+}
+
 void ViewProviderSketch::solveSketch(void)
 {
     // set up the sketch and diagnose possible conflicts

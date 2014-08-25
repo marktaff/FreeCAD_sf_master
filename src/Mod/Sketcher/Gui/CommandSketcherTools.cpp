@@ -477,16 +477,17 @@ void CmdSketcherSelectRedundantConstraints::activated(int iMsg)
     std::stringstream ss;
     
     // get the needed lists and objects
-    const std::vector< int > &redundant = Obj->getRedundant();
+    const std::vector< int > &skobjredundant = Obj->getRedundant(); // sketchobject redundant
+    const std::vector< int > &solverredundant = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit())->getRedundant();
     const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
-    
+       
     getSelection().clearSelection();
     
     // push the constraints
     int i=1;
     for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it != vals.end(); ++it,++i) {
         
-        for(std::vector< int >::const_iterator itc= redundant.begin();itc != redundant.end(); ++itc) {
+        for(std::vector< int >::const_iterator itc= skobjredundant.begin();itc != skobjredundant.end(); ++itc) {
             if ( (*itc) == i){
                 ss.str(std::string());
                 ss << "Constraint" << i;
@@ -494,6 +495,17 @@ void CmdSketcherSelectRedundantConstraints::activated(int iMsg)
                 break;
             }
         }
+        
+        for(std::vector< int >::const_iterator itc= solverredundant.begin();itc != solverredundant.end(); ++itc) {
+            if ( (*itc) == i){
+                ss.str(std::string());
+                ss << "Constraint" << i;
+                Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                break;
+            }
+        }
+        
+        
     }
 }
 
@@ -531,7 +543,8 @@ void CmdSketcherSelectConflictingConstraints::activated(int iMsg)
     std::stringstream ss;
     
     // get the needed lists and objects
-    const std::vector< int > &conflicting = Obj->getConflicting();
+    const std::vector< int > &skobjconflicting = Obj->getConflicting();
+    const std::vector< int > &solverconflicting = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit())->getConflicting();
     const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
     
     getSelection().clearSelection();
@@ -540,7 +553,16 @@ void CmdSketcherSelectConflictingConstraints::activated(int iMsg)
     int i=1;
     for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();it != vals.end(); ++it,++i) {
         
-        for(std::vector< int >::const_iterator itc= conflicting.begin();itc != conflicting.end(); ++itc) {
+        for(std::vector< int >::const_iterator itc= skobjconflicting.begin();itc != skobjconflicting.end(); ++itc) {
+            if ( (*itc) == i){
+                ss.str(std::string());
+                ss << "Constraint" << i;
+                Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());
+                break;
+            }
+        }
+        
+        for(std::vector< int >::const_iterator itc= solverconflicting.begin();itc != solverconflicting.end(); ++itc) {
             if ( (*itc) == i){
                 ss.str(std::string());
                 ss << "Constraint" << i;
