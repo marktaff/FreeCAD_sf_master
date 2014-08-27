@@ -28,6 +28,7 @@
 # include <Poly_Polygon3D.hxx>
 # include <Geom_BSplineCurve.hxx>
 # include <Geom_Circle.hxx>
+# include <Geom_Ellipse.hxx>
 # include <Geom_TrimmedCurve.hxx>
 # include <Inventor/actions/SoGetBoundingBoxAction.h>
 # include <Inventor/SoPath.h>
@@ -2677,7 +2678,7 @@ void ViewProviderSketch::draw(bool temp)
         }
         else if ((*it)->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // add a circle
             const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(*it);
-            Handle_Geom_Circle curve = Handle_Geom_Circle::DownCast(ellipse->handle());
+            Handle_Geom_Ellipse curve = Handle_Geom_Ellipse::DownCast(ellipse->handle());
 
             int countSegments = 50;
             Base::Vector3d center = ellipse->getCenter();
