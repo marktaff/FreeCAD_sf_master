@@ -459,6 +459,14 @@ void SoDatumLabel::GLRender(SoGLRenderAction * action)
         this->imgHeight = scale * (float) (srch);
         this->imgWidth  = aspectRatio * (float) this->imgHeight;
     }
+    
+    if (this->datumtype.getValue() == SYMMETRIC) {
+        // For the symmetry constraint that does not have text, but does have arrows
+        //this->imgHeight = 3.36f;
+        //this->imgWidth  = 5.26f;
+        this->imgHeight = 1.5f;
+        this->imgWidth  = 1.5f;
+    }
    
     // Get the points stored in the pnt field
     const SbVec3f *pnts = this->pnts.getValues(0);
