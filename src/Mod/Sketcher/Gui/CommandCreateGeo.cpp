@@ -1827,6 +1827,7 @@ public:
     enum SelectMode {
         STATUS_SEEK_First,      /**< enum value ----. */
         STATUS_SEEK_Second,     /**< enum value ----. */
+        STATUS_SEEK_Third,     /**< enum value ----. */        
         STATUS_Close
     };
 
@@ -1860,11 +1861,54 @@ public:
             float radius = (onSketchPos - EditCurve[0]).Length();
 
             SbString text;
-            text.sprintf(" (%.1fR)", radius);
+            text.sprintf(" (%.1fR,%.1fR)", radius,radius);
             setPositionText(onSketchPos, text);
 
             sketchgui->drawEdit(EditCurve);
             if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
+                                   AutoConstraint::CURVE)) {
+                renderSuggestConstraintsCursor(sugConstr2);
+                return;
+            }
+        }
+        else if (Mode==STATUS_SEEK_Third) {
+            double rx0 = EditCurve[1].fX - EditCurve[0].fX;    // first semidiameter
+            double ry0 = EditCurve[1].fY - EditCurve[0].fY;     // first semidiameter
+            // force second semidiameter to be perpendicular to first semidiamater
+            Base::Vector2D projonSketchPos;
+            Base::Vector2D majAxisDir = EditCurve[1] - EditCurve[0];
+            Base::Vector2D perp(majAxisDir.fY,-majAxisDir.fX);
+            perp.Normalize();
+            perp = perp;
+            projonSketchPos.ProjToLine(onSketchPos, perp); // projection on perpendicular to Major
+            
+            //projonSketchPos = projonSketchPos / ;
+            
+            double rx1 = projonSketchPos.fX - EditCurve[0].fX;      // second semidiameter
+            double ry1 = projonSketchPos.fY - EditCurve[0].fY;      // second semidiameter  
+            // angle between the major axis of the ellipse and the X axis
+            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
+            double a = (EditCurve[1]-EditCurve[0]).Length();
+            double b = (projonSketchPos-EditCurve[0]).Length();
+            for (int i=0; i < 16; i++) {
+                double angle = i*M_PI/16.0;
+                double rx = a * cos(angle) * cos(phi) - b * sin(angle) * sin(phi); 
+                double ry = a * cos(angle) * sin(phi) + b * sin(angle) * cos(phi);
+                EditCurve[1+i] = Base::Vector2D(EditCurve[0].fX + rx, EditCurve[0].fY + ry);
+                EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
+            }
+            EditCurve[33] = EditCurve[1];
+
+            // Display radius for user
+            float radmaj = (EditCurve[1] - EditCurve[0]).Length();
+            float radmin = (projonSketchPos - EditCurve[0]).Length();
+
+            SbString text;
+            text.sprintf(" (%.1fR,%.1fR)", radmaj, radmin);
+            setPositionText(projonSketchPos, text);
+
+            sketchgui->drawEdit(EditCurve);
+            if (seekAutoConstraint(sugConstr2, projonSketchPos, Base::Vector2D(0.f,0.f),
                                    AutoConstraint::CURVE)) {
                 renderSuggestConstraintsCursor(sugConstr2);
                 return;
@@ -1878,8 +1922,13 @@ public:
         if (Mode==STATUS_SEEK_First){
             EditCurve[0] = onSketchPos;
             Mode = STATUS_SEEK_Second;
-        } else {
+        } 
+        else if(Mode==STATUS_SEEK_Second) {
             EditCurve[1] = onSketchPos;
+            Mode = STATUS_SEEK_Third;
+        } 
+        else {
+            EditCurve[16] = onSketchPos;
             Mode = STATUS_Close;
         }
         return true;
@@ -1888,17 +1937,16 @@ public:
     virtual bool releaseButton(Base::Vector2D onSketchPos)
     {
         if (Mode==STATUS_Close) {
-            double rx = EditCurve[1].fX - EditCurve[0].fX;
-            double ry = EditCurve[1].fY - EditCurve[0].fY;
             unsetCursor();
             resetPositionText();
-            Gui::Command::openCommand("Add sketch circle");
+            Gui::Command::openCommand("Add sketch ellipse");
             Gui::Command::doCommand(Gui::Command::Doc,
-                "App.ActiveDocument.%s.addGeometry(Part.Circle"
-                "(App.Vector(%f,%f,0),App.Vector(0,0,1),%f))",
+                "App.ActiveDocument.%s.addGeometry(Part.Ellipse"
+                "(App.Vector(%f,%f,0),App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                       sketchgui->getObject()->getNameInDocument(),
-                      EditCurve[0].fX, EditCurve[0].fY,
-                      sqrt(rx*rx + ry*ry));
+                      EditCurve[1].fX, EditCurve[1].fY,                                    
+                      EditCurve[16].fX, EditCurve[16].fY,
+                      EditCurve[0].fX, EditCurve[0].fY);
 
             Gui::Command::commitCommand();
             Gui::Command::updateActive();
@@ -1911,7 +1959,7 @@ public:
 
             // add suggested constraints for circumference
             if (sugConstr2.size() > 0) {
-                createAutoConstraints(sugConstr2, getHighestCurveIndex(), Sketcher::none);
+                //createAutoConstraints(sugConstr2, getHighestCurveIndex(), Sketcher::none);
                 sugConstr2.clear();
             }
 
