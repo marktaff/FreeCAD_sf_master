@@ -34,6 +34,7 @@
 #include <Gui/ViewProvider.h>
 #include <Gui/WaitCursor.h>
 #include <Gui/Selection.h>
+#include <Gui/Command.h>
 
 #include <boost/bind.hpp>
 
@@ -44,7 +45,7 @@ using namespace Gui::TaskView;
 
 TaskSketcherMessages::TaskSketcherMessages(ViewProviderSketch *sketchView)
     : TaskBox(Gui::BitmapFactory().pixmap("document-new"),tr("Solver messages"),true, 0)
-    , sketchView(sketchView)
+    , sketchView(sketchView), isRedundant(false), isConflict(false)
 {
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
@@ -56,6 +57,14 @@ TaskSketcherMessages::TaskSketcherMessages(ViewProviderSketch *sketchView)
 
     connectionSetUp = sketchView->signalSetUp.connect(boost::bind(&SketcherGui::TaskSketcherMessages::slotSetUp, this,_1));
     connectionSolved = sketchView->signalSolved.connect(boost::bind(&SketcherGui::TaskSketcherMessages::slotSolved, this,_1));
+    
+    connectionRedundant = sketchView->signalRedundantConstraints.connect(boost::bind(&SketcherGui::TaskSketcherMessages::redundantConstraints, this,_1));
+    connectionConflicting = sketchView->signalConflictingConstraints.connect(boost::bind(&SketcherGui::TaskSketcherMessages::conflictingConstraints, this,_1));
+    
+    QObject::connect(
+        ui->selectConstraints, SIGNAL(clicked(bool)),
+        this                     , SLOT  (on_selectConstraints_clicked(bool))
+       );
 }
 
 TaskSketcherMessages::~TaskSketcherMessages()
@@ -73,6 +82,30 @@ void TaskSketcherMessages::slotSetUp(QString msg)
 void TaskSketcherMessages::slotSolved(QString msg)
 {
     ui->labelSolverStatus->setText(msg);
+    
+    if(!isRedundant && !isConflict)
+        ui->selectConstraints->setEnabled(false);
+    else
+        ui->selectConstraints->setEnabled(true);
 }
+
+void TaskSketcherMessages::redundantConstraints(bool redundant)
+{
+    isRedundant=redundant;
+}
+
+void TaskSketcherMessages::conflictingConstraints(bool conflicting)
+{
+    isConflict=conflicting;
+}
+
+void TaskSketcherMessages::on_selectConstraints_clicked(bool)
+{
+    if(isConflict)
+        Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectConflictingConstraints");
+    if(isRedundant)
+        Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectRedundantConstraints");        
+}
+
 
 #include "moc_TaskSketcherMessages.cpp"

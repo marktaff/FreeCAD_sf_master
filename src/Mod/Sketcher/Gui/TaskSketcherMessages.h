@@ -39,6 +39,7 @@ namespace SketcherGui {
 
 class ViewProviderSketch;
 
+
 class TaskSketcherMessages : public Gui::TaskView::TaskBox
 {
     Q_OBJECT
@@ -49,17 +50,25 @@ public:
 
     void slotSetUp(QString msg);
     void slotSolved(QString msg);
+    
+    void redundantConstraints(bool redundant);
+    void conflictingConstraints(bool conflicting);
 
 private Q_SLOTS:
+    void on_selectConstraints_clicked(bool);
     
 protected:
     ViewProviderSketch *sketchView;
     Connection connectionSetUp;
     Connection connectionSolved;
+    Connection connectionRedundant;
+    Connection connectionConflicting;
 
 private:
     QWidget* proxy;
     Ui_TaskSketcherMessages* ui;
+    bool isRedundant;
+    bool isConflict;
 };
 
 } //namespace SketcherGui
