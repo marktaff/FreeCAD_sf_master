@@ -218,10 +218,7 @@ template <>
 inline void SketcherAddWorkbenchTools<Gui::ToolBarItem>(Gui::ToolBarItem& consaccel){
     consaccel << "Sketcher_CloseShape"
         << "Sketcher_ConnectLines"
-        << "Sketcher_SelectConstraints"
-        << "Sketcher_SelectRedundantConstraints"
-        << "Sketcher_SelectConflictingConstraints"
-        << "Sketcher_SelectElementsAssociatedWithConstraints";
+        << "Sketcher_SelectConstraints";
 }
 
 template <typename T>
