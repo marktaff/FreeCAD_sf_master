@@ -39,6 +39,7 @@ namespace SketcherGui {
 
 class ViewProviderSketch;
 
+
 class TaskSketcherMessages : public Gui::TaskView::TaskBox
 {
     Q_OBJECT
@@ -51,6 +52,7 @@ public:
     void slotSolved(QString msg);
 
 private Q_SLOTS:
+    void on_labelConstrainStatus_linkActivated(const QString &);
     
 protected:
     ViewProviderSketch *sketchView;
