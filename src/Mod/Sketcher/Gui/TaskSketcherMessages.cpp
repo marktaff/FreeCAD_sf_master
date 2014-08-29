@@ -71,6 +71,8 @@ TaskSketcherMessages::~TaskSketcherMessages()
 {
     connectionSetUp.disconnect();
     connectionSolved.disconnect();
+    connectionRedundant.disconnect();
+    connectionConflicting.disconnect();
     delete ui;
 }
 
