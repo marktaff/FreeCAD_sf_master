@@ -219,10 +219,6 @@ public:
     boost::signal<void (QString msg)> signalSolved;
     /// signals if the elements list has changed
     boost::signal<void ()> signalElementsChanged;
-    /// signals if the list of redundant constraints has changed
-    boost::signal<void (bool redundant)> signalRedundantConstraints;
-    /// signals if the list of conflicting constraints has changed
-    boost::signal<void (bool conflicting)> signalConflictingConstraints;
     
     /** @name Act sketch interface */
     //@{

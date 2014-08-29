@@ -50,9 +50,6 @@ public:
 
     void slotSetUp(QString msg);
     void slotSolved(QString msg);
-    
-    void redundantConstraints(bool redundant);
-    void conflictingConstraints(bool conflicting);
 
 private Q_SLOTS:
     void on_labelConstrainStatus_linkActivated(const QString &);
@@ -61,14 +58,10 @@ protected:
     ViewProviderSketch *sketchView;
     Connection connectionSetUp;
     Connection connectionSolved;
-    Connection connectionRedundant;
-    Connection connectionConflicting;
 
 private:
     QWidget* proxy;
     Ui_TaskSketcherMessages* ui;
-    bool isRedundant;
-    bool isConflict;
 };
 
 } //namespace SketcherGui

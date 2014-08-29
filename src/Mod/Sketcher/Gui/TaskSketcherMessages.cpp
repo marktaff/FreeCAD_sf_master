@@ -45,7 +45,7 @@ using namespace Gui::TaskView;
 
 TaskSketcherMessages::TaskSketcherMessages(ViewProviderSketch *sketchView)
     : TaskBox(Gui::BitmapFactory().pixmap("document-new"),tr("Solver messages"),true, 0)
-    , sketchView(sketchView), isRedundant(false), isConflict(false)
+    , sketchView(sketchView)
 {
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
@@ -58,9 +58,6 @@ TaskSketcherMessages::TaskSketcherMessages(ViewProviderSketch *sketchView)
     connectionSetUp = sketchView->signalSetUp.connect(boost::bind(&SketcherGui::TaskSketcherMessages::slotSetUp, this,_1));
     connectionSolved = sketchView->signalSolved.connect(boost::bind(&SketcherGui::TaskSketcherMessages::slotSolved, this,_1));
     
-    connectionRedundant = sketchView->signalRedundantConstraints.connect(boost::bind(&SketcherGui::TaskSketcherMessages::redundantConstraints, this,_1));
-    connectionConflicting = sketchView->signalConflictingConstraints.connect(boost::bind(&SketcherGui::TaskSketcherMessages::conflictingConstraints, this,_1));
-        
     ui->labelConstrainStatus->setOpenExternalLinks(false);
     
     QObject::connect(
@@ -74,8 +71,6 @@ TaskSketcherMessages::~TaskSketcherMessages()
 {
     connectionSetUp.disconnect();
     connectionSolved.disconnect();
-    connectionRedundant.disconnect();
-    connectionConflicting.disconnect();
     delete ui;
 }
 
@@ -89,21 +84,12 @@ void TaskSketcherMessages::slotSolved(QString msg)
     ui->labelSolverStatus->setText(msg);
 }
 
-void TaskSketcherMessages::redundantConstraints(bool redundant)
+void TaskSketcherMessages::on_labelConstrainStatus_linkActivated(const QString &str)
 {
-    isRedundant=redundant;
-}
-
-void TaskSketcherMessages::conflictingConstraints(bool conflicting)
-{
-    isConflict=conflicting;
-}
-
-void TaskSketcherMessages::on_labelConstrainStatus_linkActivated(const QString &)
-{
-    if(isConflict)
+    if( str == QString::fromLatin1("#conflicting"))
         Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectConflictingConstraints");
-    if(isRedundant)
+    
+    if( str == QString::fromLatin1("#redundant"))
         Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectRedundantConstraints");            
 }
 
