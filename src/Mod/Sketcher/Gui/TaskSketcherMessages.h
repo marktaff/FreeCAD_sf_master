@@ -55,7 +55,7 @@ public:
     void conflictingConstraints(bool conflicting);
 
 private Q_SLOTS:
-    void on_selectConstraints_clicked(bool);
+    void on_labelConstrainStatus_linkActivated(const QString &);
     
 protected:
     ViewProviderSketch *sketchView;

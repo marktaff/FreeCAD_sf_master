@@ -60,11 +60,14 @@ TaskSketcherMessages::TaskSketcherMessages(ViewProviderSketch *sketchView)
     
     connectionRedundant = sketchView->signalRedundantConstraints.connect(boost::bind(&SketcherGui::TaskSketcherMessages::redundantConstraints, this,_1));
     connectionConflicting = sketchView->signalConflictingConstraints.connect(boost::bind(&SketcherGui::TaskSketcherMessages::conflictingConstraints, this,_1));
+        
+    ui->labelConstrainStatus->setOpenExternalLinks(false);
     
     QObject::connect(
-        ui->selectConstraints, SIGNAL(clicked(bool)),
-        this                     , SLOT  (on_selectConstraints_clicked(bool))
+        ui->labelConstrainStatus, SIGNAL(linkActivated(const QString &)),
+        this                     , SLOT  (on_labelConstrainStatus_linkActivated(const QString &))
        );
+    
 }
 
 TaskSketcherMessages::~TaskSketcherMessages()
@@ -84,11 +87,6 @@ void TaskSketcherMessages::slotSetUp(QString msg)
 void TaskSketcherMessages::slotSolved(QString msg)
 {
     ui->labelSolverStatus->setText(msg);
-    
-    if(!isRedundant && !isConflict)
-        ui->selectConstraints->setEnabled(false);
-    else
-        ui->selectConstraints->setEnabled(true);
 }
 
 void TaskSketcherMessages::redundantConstraints(bool redundant)
@@ -101,12 +99,12 @@ void TaskSketcherMessages::conflictingConstraints(bool conflicting)
     isConflict=conflicting;
 }
 
-void TaskSketcherMessages::on_selectConstraints_clicked(bool)
+void TaskSketcherMessages::on_labelConstrainStatus_linkActivated(const QString &)
 {
     if(isConflict)
         Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectConflictingConstraints");
     if(isRedundant)
-        Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectRedundantConstraints");        
+        Gui::Application::Instance->commandManager().runCommandByName("Sketcher_SelectRedundantConstraints");            
 }
 
 

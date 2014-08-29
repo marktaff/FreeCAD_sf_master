@@ -3664,14 +3664,18 @@ QString ViewProviderSketch::appendConflictMsg(const std::vector<int> &conflictin
     QString msg;
     QTextStream ss(&msg);
     if (conflicting.size() > 0) {
-        if (conflicting.size() == 1)
+        if (conflicting.size() == 1) 
             ss << tr("Please remove the following constraint:");
-        else
-            ss << tr("Please remove at least one of the following constraints:");
+        else 
+            ss << tr("Please remove at least one of the following constraints:");        
         ss << "\n";
         ss << conflicting[0];
         for (unsigned int i=1; i < conflicting.size(); i++)
             ss << ", " << conflicting[i];
+        
+        ss << "<br/><a href=\"#clicked\"><span style=\" text-decoration: underline; color:#0000ff;\">";
+        ss << tr("(click to select)");
+        ss << "</span></a>";
         ss << "\n";
     }
     return msg;
@@ -3690,6 +3694,11 @@ QString ViewProviderSketch::appendRedundantMsg(const std::vector<int> &redundant
         ss << redundant[0];
         for (unsigned int i=1; i < redundant.size(); i++)
             ss << ", " << redundant[i];
+        
+        ss << "<br/><a href=\"#clicked\"><span style=\" text-decoration: underline; color:#0000ff;\">";
+        ss << tr("(click to select)");
+        ss << "</span></a>";
+        
         ss << "\n";
     }
     return msg;
@@ -3720,9 +3729,9 @@ void ViewProviderSketch::solveSketch(void)
     else if (dofs < 0) { // over-constrained sketch
         std::string msg;
         SketchObject::appendConflictMsg(edit->ActSketch.getConflicting(), msg);
-        signalSetUp(QString::fromLatin1("<font color='red'>%1<br/>%2</font>")
+        signalSetUp(QString::fromLatin1("<font color='red'>%1<br/>%2</font><br/><a href=\"#clicked\"><span style=\" text-decoration: underline; color:#0000ff;\">")
                     .arg(tr("Over-constrained sketch"))
-                    .arg(QString::fromStdString(msg)));
+                    .arg(QString::fromStdString(msg))+tr("(click to select)")+QString::fromLatin1("</span></a>"));        
         signalConflictingConstraints(true);
         signalRedundantConstraints(false);
         signalSolved(QString());
