@@ -720,6 +720,7 @@ int System::addConstraintEqualRadius(Circle &c1, Circle &c2, int tagId)
 
 int System::addConstraintEqualRadMaj(Ellipse &e1, Ellipse &e2, int tagId)
 {
+    // TODO: Ellipse
     return addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
 }
 

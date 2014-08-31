@@ -2676,7 +2676,7 @@ void ViewProviderSketch::draw(bool temp)
             edit->CurvIdToGeoId.push_back(GeoId);
             Points.push_back(center);
         }
-        else if ((*it)->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // add a circle
+        else if ((*it)->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // add an ellipse
             const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(*it);
             Handle_Geom_Ellipse curve = Handle_Geom_Ellipse::DownCast(ellipse->handle());
 
