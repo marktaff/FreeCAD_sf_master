@@ -803,7 +803,8 @@ void CmdSketcherConstrainPointOnObject::activated(int iMsg)
         // Currently only accepts line segments and circles
         if (geom->getTypeId() == Part::GeomLineSegment::getClassTypeId() ||
             geom->getTypeId() == Part::GeomCircle::getClassTypeId() || // TODO: ellipse
-            geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ) {
+            geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ||
+            geom->getTypeId() == Part::GeomEllipse::getClassTypeId() ) {
 
             openCommand("add point on object constraint");
             Gui::Command::doCommand(
