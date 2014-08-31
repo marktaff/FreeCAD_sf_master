@@ -166,9 +166,9 @@ int Sketch::addGeometry(const Part::Geometry *geo, bool fixed)
         // create the definition struct for that geom
         return addCircle(*circle, fixed);
     } else if (geo->getTypeId() == GeomEllipse::getClassTypeId()) { // add a ellipse
-        const GeomEllipse *circle = dynamic_cast<const GeomEllipse*>(geo);
+        const GeomEllipse *ellipse = dynamic_cast<const GeomEllipse*>(geo);
         // create the definition struct for that geom
-        return addEllipse(*circle, fixed);
+        return addEllipse(*ellipse, fixed);
     } else if (geo->getTypeId() == GeomArcOfCircle::getClassTypeId()) { // add an arc
         const GeomArcOfCircle *aoc = dynamic_cast<const GeomArcOfCircle*>(geo);
         // create the definition struct for that geom
@@ -391,6 +391,7 @@ int Sketch::addCircle(const Part::GeomCircle &cir, bool fixed)
 
 int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
 {
+    // TODO: Ellipse
     std::vector<double *> &params = fixed ? FixParameters : Parameters;
 
     // create our own copy
@@ -410,18 +411,17 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     params.push_back(new double(center.y));
     p1.x = params[params.size()-2];
     p1.y = params[params.size()-1];
-
-    params.push_back(new double(radmaj));
-    params.push_back(new double(radmin));
-
+    
     def.midPointId = Points.size();
     Points.push_back(p1);
 
-    // add the radius parameter
-    double *rmaj = params[params.size()-2];
+    // add the radius parameters
+    params.push_back(new double(radmaj));
+    double *rmaj = params[params.size()-1];
+    params.push_back(new double(radmin));
     double *rmin = params[params.size()-1];
-
-    // set the circle for later constraints
+     
+    // set the ellipse for later constraints
     GCS::Ellipse e;
     e.center = p1;
     e.radmaj    = rmaj;
@@ -908,6 +908,7 @@ int Sketch::addPerpendicularConstraint(int geoId1, PointPos pos1, int geoId2)
             return ConstraintsCounter;
         }
         else if (Geoms[geoId2].type == Ellipse) {
+            // TODO: Ellipse
             GCS::Ellipse &c2 = Ellipses[Geoms[geoId2].index];
             GCS::Point &p2 = Points[Geoms[geoId2].midPointId];
             int tag = ++ConstraintsCounter;
@@ -939,6 +940,7 @@ int Sketch::addPerpendicularConstraint(int geoId1, PointPos pos1, int geoId2)
                 radius = c2.rad;
             }
             else {
+                // TODO: Ellipse
                 GCS::Ellipse &c2 = Ellipses[Geoms[geoId2].index];
                 radius = c2.radmaj;
             }
@@ -1114,7 +1116,7 @@ int Sketch::addTangentConstraint(int geoId1, int geoId2)
         }
     } else if (Geoms[geoId1].type == Ellipse) {
         GCS::Ellipse &e = Ellipses[Geoms[geoId1].index];
-        // Todo: elipse real implementation
+        // TODO: Ellipse
         if (Geoms[geoId2].type == Circle) {
             GCS::Circle &c = Circles[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
@@ -1134,6 +1136,7 @@ int Sketch::addTangentConstraint(int geoId1, int geoId2)
             GCSsys.addConstraintTangent(c, a, tag);
             return ConstraintsCounter;
         } else if (Geoms[geoId2].type == Ellipse) {
+            // TODO: Ellipse
             GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintTangent(e, a, tag);
@@ -1188,6 +1191,7 @@ int Sketch::addTangentConstraint(int geoId1, PointPos pos1, int geoId2)
             return ConstraintsCounter;
         }
         else if (Geoms[geoId2].type == Ellipse) {
+            // TODO: Ellipse
             GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintPointOnEllipse(p1, e, tag);
@@ -1224,6 +1228,7 @@ int Sketch::addTangentConstraint(int geoId1, PointPos pos1, int geoId2)
                 return ConstraintsCounter;
             }
         } else if (Geoms[geoId2].type == Ellipse) {
+            // TODO: Ellipse
             GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
             if (pos1 == start) {
                 int tag = ++ConstraintsCounter;
@@ -1433,6 +1438,7 @@ int Sketch::addRadiusConstraint(int geoId, double value)
         return ConstraintsCounter;
     }
     else if (Geoms[geoId].type == Ellipse) {
+        // TODO: Ellipse
         GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
         // add the parameter for the radius
         FixParameters.push_back(new double(value));
@@ -1567,7 +1573,7 @@ int Sketch::addEqualConstraint(int geoId1, int geoId2)
         else
             std::swap(geoId1, geoId2);
     }
-    
+    // TODO: Ellipse
     if (Geoms[geoId2].type == Ellipse) {
         if (Geoms[geoId1].type == Ellipse) {
             GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
@@ -1728,13 +1734,14 @@ bool Sketch::updateGeometry()
                                );
                 circ->setRadius(*Circles[it->index].rad);
             } else if (it->type == Ellipse) {
+                // TODO: Ellipse
                 GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo);
                 ellipse->setCenter(Vector3d(*Points[it->midPointId].x,
                                          *Points[it->midPointId].y,
                                          0.0)
                                );
                 ellipse->setMajorRadius(*Ellipses[it->index].radmaj);
-                ellipse->setMajorRadius(*Ellipses[it->index].radmin);
+                ellipse->setMinorRadius(*Ellipses[it->index].radmin);
             }
         } catch (Base::Exception e) {
             Base::Console().Error("Updating geometry: Error build geometry(%d): %s\n",
@@ -1922,6 +1929,7 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             *p0.y = *center.y;
             GCSsys.addConstraintP2PCoincident(p0,center,-1);
         } else if (pos == none) {
+            // TODO: Ellipse
             MoveParameters.resize(4); // x,y,cx,cy
             GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
             p0.x = &MoveParameters[0];

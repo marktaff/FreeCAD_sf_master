@@ -163,14 +163,11 @@ public:
     int addTangentConstraint(int geoId1, PointPos pos1, int geoId2);
     int addTangentConstraint(int geoId1, PointPos pos1, int geoId2, PointPos pos2);
     /// add a radius constraint on a circle or an arc
-    int addRadiusConstraint(int geoId, double value, int radiusnumber=0);
+    int addRadiusConstraint(int geoId, double value);
     /// add an angle constraint on a line or between two lines
     int addAngleConstraint(int geoId, double value);
     int addAngleConstraint(int geoId1, int geoId2, double value);
     int addAngleConstraint(int geoId1, PointPos pos1, int geoId2, PointPos pos2, double value);
-    /// add ellipse XDir axis angle constraint with respect to XAxis or a lines
-    int addEllipseAngleXUConstraint(int geoId, double value);
-    int addEllipseAngleXUConstraint(int geoId1, int geoId2, double value);
     /// add an equal length or radius constraints between two lines or between circles and arcs
     int addEqualConstraint(int geoId1, int geoId2);
     /// add a point on line constraint
@@ -180,23 +177,14 @@ public:
     /// add a symmetric constraint between three points, the last point is in the middle of the first two
     int addSymmetricConstraint(int geoId1, PointPos pos1, int geoId2, PointPos pos2, int geoId3, PointPos pos3);
     //@}
-    
-    /// Internal Alignment constraints
-    //@{
-    /// add InternalAlignmentEllipseMajorDiameter to a line and an ellipse
-    int addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2);
-    int addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2);
-    int addInternalAlignmentEllipseFocus1(int geoId1, int geoId2);
-    int addInternalAlignmentEllipseFocus2(int geoId1, int geoId2);
-    //@}
-    
+
     enum GeoType {
         None    = 0,
         Point   = 1, // 1 Point(start), 2 Parameters(x,y)
         Line    = 2, // 2 Points(start,end), 4 Parameters(x1,y1,x2,y2)
         Arc     = 3, // 3 Points(start,end,mid), (4)+5 Parameters((x1,y1,x2,y2),x,y,r,a1,a2)
         Circle  = 4, // 1 Point(mid), 3 Parameters(x,y,r)
-        Ellipse = 5  // 1 Point(mid), 5 Parameters(x,y,r1,r2,phi)  phi=angle xaxis of elipse with respect of sketch xaxis// TODO: Ellipse
+        Ellipse = 5  // 1 Point(mid), 4 Parameters(x,y,r1,r2) // TODO: Ellipse
     };
 
     float SolveTime;
