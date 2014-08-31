@@ -1874,23 +1874,16 @@ public:
         else if (Mode==STATUS_SEEK_Third) {
             double rx0 = EditCurve[1].fX - EditCurve[0].fX;    // first semidiameter
             double ry0 = EditCurve[1].fY - EditCurve[0].fY;     // first semidiameter
-            // force second semidiameter to be perpendicular to first semidiamater
-            Base::Vector2D projonSketchPos;
-            Base::Vector2D majAxisDir = EditCurve[1] - EditCurve[0];
-            Base::Vector2D perp(majAxisDir.fY,-majAxisDir.fX);
-            perp.Normalize();
-            perp = perp;
-            projonSketchPos.ProjToLine(onSketchPos, perp); // projection on perpendicular to Major
-            
-            //projonSketchPos = projonSketchPos / ;
-            
-            double rx1 = projonSketchPos.fX - EditCurve[0].fX;      // second semidiameter
-            double ry1 = projonSketchPos.fY - EditCurve[0].fY;      // second semidiameter  
+                        
             // angle between the major axis of the ellipse and the X axis
-            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
             double a = (EditCurve[1]-EditCurve[0]).Length();
-            double b = (projonSketchPos-EditCurve[0]).Length();
-            for (int i=0; i < 16; i++) {
+            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
+            
+            // This is the angle at cursor point
+            double angleatpoint = acos((onSketchPos.fX-EditCurve[0].fX+(onSketchPos.fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
+            double b=(onSketchPos.fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
+                        
+            for (int i=1; i < 16; i++) {
                 double angle = i*M_PI/16.0;
                 double rx = a * cos(angle) * cos(phi) - b * sin(angle) * sin(phi); 
                 double ry = a * cos(angle) * sin(phi) + b * sin(angle) * cos(phi);
@@ -1898,17 +1891,15 @@ public:
                 EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
             }
             EditCurve[33] = EditCurve[1];
+            EditCurve[17] = EditCurve[16];
 
             // Display radius for user
-            float radmaj = (EditCurve[1] - EditCurve[0]).Length();
-            float radmin = (projonSketchPos - EditCurve[0]).Length();
-
             SbString text;
-            text.sprintf(" (%.1fR,%.1fR)", radmaj, radmin);
-            setPositionText(projonSketchPos, text);
+            text.sprintf(" (%.1fR,%.1fR)", a, b);
+            setPositionText(onSketchPos, text);
 
             sketchgui->drawEdit(EditCurve);
-            if (seekAutoConstraint(sugConstr2, projonSketchPos, Base::Vector2D(0.f,0.f),
+            if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
                                    AutoConstraint::CURVE)) {
                 renderSuggestConstraintsCursor(sugConstr2);
                 return;
@@ -1928,7 +1919,7 @@ public:
             Mode = STATUS_SEEK_Third;
         } 
         else {
-            EditCurve[16] = onSketchPos;
+            EditCurve[2] = onSketchPos;
             Mode = STATUS_Close;
         }
         return true;
@@ -1939,13 +1930,29 @@ public:
         if (Mode==STATUS_Close) {
             unsetCursor();
             resetPositionText();
+            
+            // angle between the major axis of the ellipse and the X axis
+            double a = (EditCurve[1]-EditCurve[0]).Length();
+            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
+            
+            // This is the angle at cursor point
+            double angleatpoint = acos((EditCurve[2].fX-EditCurve[0].fX+(EditCurve[2].fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
+            double b=(EditCurve[2].fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
+                        
+            // force second semidiameter to be perpendicular to first semidiamater
+            Base::Vector2D majAxisDir = EditCurve[1] - EditCurve[0];
+            Base::Vector2D perp(majAxisDir.fY,-majAxisDir.fX);
+            perp.Normalize();
+            perp.Scale(b);
+            Base::Vector2D minAxisPoint = EditCurve[0]+perp;
+            
             Gui::Command::openCommand("Add sketch ellipse");
             Gui::Command::doCommand(Gui::Command::Doc,
                 "App.ActiveDocument.%s.addGeometry(Part.Ellipse"
                 "(App.Vector(%f,%f,0),App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                       sketchgui->getObject()->getNameInDocument(),
-                      EditCurve[1].fX, EditCurve[1].fY,                                    
-                      EditCurve[16].fX, EditCurve[16].fY,
+                      b>a?minAxisPoint.fX:EditCurve[1].fX, b>a?minAxisPoint.fY:EditCurve[1].fY,                                    
+                      a>=b?minAxisPoint.fX:EditCurve[1].fX, a>=b?minAxisPoint.fY:EditCurve[1].fY,
                       EditCurve[0].fX, EditCurve[0].fY);
 
             Gui::Command::commitCommand();
