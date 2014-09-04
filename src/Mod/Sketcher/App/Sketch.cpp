@@ -404,6 +404,7 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     Base::Vector3d center = elips->getCenter();
     double radmaj         = elips->getMajorRadius();
     double radmin         = elips->getMinorRadius();
+    double phi            = elips->getAngleXU();
 
     GCS::Point p1;
 
@@ -420,12 +421,15 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     double *rmaj = params[params.size()-1];
     params.push_back(new double(radmin));
     double *rmin = params[params.size()-1];
+    params.push_back(new double(phi));
+    double *iphi = params[params.size()-1];
      
     // set the ellipse for later constraints
     GCS::Ellipse e;
     e.center = p1;
     e.radmaj    = rmaj;
     e.radmin    = rmin;
+    e.phi       = iphi;
     def.index = Ellipses.size();
     Ellipses.push_back(e);
 
@@ -581,7 +585,11 @@ int Sketch::addConstraint(const Constraint *constraint)
             rtn = addAngleConstraint(constraint->First,constraint->Value);
         break;
     case Radius:
+    case MajorRadius:
         rtn = addRadiusConstraint(constraint->First, constraint->Value);
+        break;
+    case MinorRadius:
+        rtn = addRadiusConstraint(constraint->First, constraint->Value,1);
         break;
     case Equal:
         rtn = addEqualConstraint(constraint->First,constraint->Second);
@@ -1424,7 +1432,7 @@ int Sketch::addDistanceConstraint(int geoId1, PointPos pos1, int geoId2, PointPo
     return -1;
 }
 
-int Sketch::addRadiusConstraint(int geoId, double value)
+int Sketch::addRadiusConstraint(int geoId, double value, int radiusnumber)
 {
     geoId = checkGeoId(geoId);
 
@@ -1442,9 +1450,16 @@ int Sketch::addRadiusConstraint(int geoId, double value)
         GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
         // add the parameter for the radius
         FixParameters.push_back(new double(value));
-        double *radmaj = FixParameters[FixParameters.size()-2];
-        int tag = ++ConstraintsCounter;
-        GCSsys.addConstraintEllipseMajRadius(e, radmaj, tag);
+        if(radiusnumber==0) {
+            double *radmaj = FixParameters[FixParameters.size()-1];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintEllipseMajRadius(e, radmaj, tag);
+        }
+        else {
+            double *radmin = FixParameters[FixParameters.size()-1];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintEllipseMinRadius(e, radmin, tag);            
+        }
         return ConstraintsCounter;
     }
     else if (Geoms[geoId].type == Arc) {
@@ -1637,6 +1652,12 @@ int Sketch::addPointOnObjectConstraint(int geoId1, PointPos pos1, int geoId2)
             GCS::Circle &c = Circles[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintPointOnCircle(p1, c, tag);
+            return ConstraintsCounter;
+        }
+        else if (Geoms[geoId2].type == Ellipse) {
+            GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintPointOnEllipse(p1, e, tag);
             return ConstraintsCounter;
         }
     }

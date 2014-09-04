@@ -698,8 +698,12 @@ int System::addConstraintCircleRadius(Circle &c, double *radius, int tagId)
 
 int System::addConstraintEllipseMajRadius(Ellipse &e, double *radmaj, int tagId)
 {
-    //TODO: Ellipse
     return addConstraintEqual(e.radmaj, radmaj, tagId);
+}
+
+int System::addConstraintEllipseMinRadius(Ellipse &e, double *radmin, int tagId)
+{
+    return addConstraintEqual(e.radmin, radmin, tagId);
 }
 
 int System::addConstraintArcRadius(Arc &a, double *radius, int tagId)
