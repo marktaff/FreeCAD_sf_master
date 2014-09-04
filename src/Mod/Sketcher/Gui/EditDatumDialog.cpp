@@ -75,6 +75,8 @@ void EditDatumDialog::exec(bool atCursor)
         Constr->Type == Sketcher::DistanceX || 
         Constr->Type == Sketcher::DistanceY ||
         Constr->Type == Sketcher::Radius || 
+        Constr->Type == Sketcher::MajorRadius || 
+        Constr->Type == Sketcher::MinorRadius || 
         Constr->Type == Sketcher::Angle) {
 
         if (sketch->hasConflicts()) {

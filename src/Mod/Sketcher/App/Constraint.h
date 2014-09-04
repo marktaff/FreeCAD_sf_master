@@ -31,30 +31,23 @@ namespace Sketcher
 {
 
 enum ConstraintType {
-    None = 0,
-    Coincident = 1,
-    Horizontal = 2,
-    Vertical = 3,
-    Parallel = 4,
-    Tangent = 5,
-    Distance = 6,
-    DistanceX = 7,
-    DistanceY = 8,
-    Angle = 9,
-    Perpendicular = 10,
-    Radius = 11,
-    Equal = 12,
-    PointOnObject = 13,
-    Symmetric = 14,
-    InternalAlignment = 15
-};
-
-enum InternalAlignmentType {
-    Undef                   = 0,
-    EllipseMajorDiameter    = 1,
-    EllipseMinorDiameter    = 2,
-    EllipseFocus1           = 3,
-    EllipseFocus2           = 4
+    None,
+    Coincident,
+    Horizontal,
+    Vertical,
+    Parallel,
+    Tangent,
+    Distance,
+    DistanceX,
+    DistanceY,
+    Angle,
+    Perpendicular,
+    Radius,
+    MajorRadius,
+    MinorRadius,
+    Equal,
+    PointOnObject,
+    Symmetric
 };
 
 /// define if you want to use the end or start point
@@ -83,7 +76,6 @@ public:
 
 public:
     ConstraintType Type;
-    InternalAlignmentType AlignmentType;
     std::string Name;
     double Value;
     int First;

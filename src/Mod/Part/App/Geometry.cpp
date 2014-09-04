@@ -896,11 +896,9 @@ double GeomEllipse::getAngleXU(void) const
     gp_Dir normal = this->myCurve->Axis().Direction();
     gp_Dir xdir = this->myCurve->XAxis().Direction();
     
+    gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
     
-    gp_Ax2 xdirref(center, normal); // this is a reference system, might be CCW or CW depending on the creation method
-    
-    return -xdir.AngleWithRef(xdirref.XDirection(),normal);
-
+    return xdir.AngleWithRef(xdirref.XDirection(),normal);
 }
 
 void GeomEllipse::setAngleXU(double angle)
@@ -915,7 +913,7 @@ void GeomEllipse::setAngleXU(double angle)
         
         gp_Ax2 xdirref(center, normal);
         
-        xdirref.Rotate(normaxis,angle);
+        xdirref.Rotate(normaxis,-angle);
         
         this->myCurve->SetPosition(xdirref);
 
@@ -943,7 +941,7 @@ void GeomEllipse::Save(Base::Writer& writer) const
     
     gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
     
-    double AngleXU = -xdir.AngleWithRef(xdirref.XDirection(),normal);
+    double AngleXU = xdir.AngleWithRef(xdirref.XDirection(),normal);
     
     
     writer.Stream()
@@ -978,12 +976,7 @@ void GeomEllipse::Restore(Base::XMLReader& reader)
     NormalZ = reader.getAttributeAsFloat("NormalZ");
     MajorRadius = reader.getAttributeAsFloat("MajorRadius");
     MinorRadius = reader.getAttributeAsFloat("MinorRadius");
-    
-    // This is for backwards compatibility
-    if(reader.hasAttribute("AngleXU"))
-        AngleXU = reader.getAttributeAsFloat("AngleXU");
-    else
-        AngleXU = 0;
+    AngleXU = reader.getAttributeAsFloat("AngleXU");
 
     // set the read geometry
     gp_Pnt p1(CenterX,CenterY,CenterZ);
@@ -993,7 +986,7 @@ void GeomEllipse::Restore(Base::XMLReader& reader)
     
     gp_Ax2 xdir(p1, norm);
     
-    xdir.Rotate(normaxis,AngleXU); 
+    xdir.Rotate(normaxis,-AngleXU); 
     
     try {
         GC_MakeEllipse mc(xdir, MajorRadius, MinorRadius);

@@ -1,7 +1,6 @@
 <RCC>
     <qresource> 
         <file>icons/Constraint_Concentric.svg</file>
-        <file>icons/Constraint_Ellipse_Axis_Angle.svg</file>
         <file>icons/Constraint_Ellipse_Major_Radius.svg</file>
         <file>icons/Constraint_Ellipse_Minor_Radius.svg</file>
         <file>icons/Constraint_Ellipse_Radii.svg</file>
@@ -62,9 +61,9 @@
         <file>icons/Sketcher_Element_Arc_StartingPoint.svg</file>
         <file>icons/Sketcher_Element_Circle_Edge.svg</file>
         <file>icons/Sketcher_Element_Circle_MidPoint.svg</file>
-        <file>icons/Sketcher_Element_Ellipse_CentrePoint.svg</file>
-        <file>icons/Sketcher_Element_Ellipse_Edge_1.svg</file>
-        <file>icons/Sketcher_Element_Ellipse_Edge_2.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_CentrePoint_2 .svg</file>
+        <file>icons/Sketcher_Element_Ellipse_Edge_1 .svg</file>
+        <file>icons/Sketcher_Element_Ellipse_Edge_2 .svg</file>
         <file>icons/Sketcher_Element_Line_Edge.svg</file>
         <file>icons/Sketcher_Element_Line_EndPoint.svg</file>
         <file>icons/Sketcher_Element_Line_StartingPoint.svg</file>
@@ -75,12 +74,9 @@
         <file>icons/Sketcher_MapSketch.svg</file>
         <file>icons/Sketcher_NewSketch.svg</file>
         <file>icons/Sketcher_ProfilesHexagon1.svg</file>
-        <file>icons/Sketcher_SelectConflictingConstraints.svg</file>
         <file>icons/Sketcher_SelectConstraints.svg</file>
-        <file>icons/Sketcher_SelectElementsAssociatedWithConstraints.svg</file>
         <file>icons/Sketcher_SelectHorizontalAxis.svg</file>
         <file>icons/Sketcher_SelectOrigin.svg</file>
-        <file>icons/Sketcher_SelectRedundantConstraints.svg</file>
         <file>icons/Sketcher_SelectVerticalAxis.svg</file>
         <file>icons/Sketcher_Sketch.svg</file>
         <file>icons/Sketcher_Trimming.svg</file>

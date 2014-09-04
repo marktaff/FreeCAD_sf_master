@@ -146,6 +146,14 @@ int ConstraintPy::PyInit(PyObject* args, PyObject* /*kwd*/)
                 this->getConstraintPtr()->Type = Radius;
                 valid = true;
             }
+            else if (strcmp("MajorRadius",ConstraintType) == 0) {
+                this->getConstraintPtr()->Type = MajorRadius;
+                valid = true;
+            }
+            else if (strcmp("MinorRadius",ConstraintType) == 0) {
+                this->getConstraintPtr()->Type = MinorRadius;
+                valid = true;
+            }
             if (valid) {
                 this->getConstraintPtr()->First    = FirstIndex;
                 this->getConstraintPtr()->Value    = Value;

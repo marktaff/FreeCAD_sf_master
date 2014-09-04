@@ -47,23 +47,7 @@ namespace GCS
         L2LAngle = 10,
         MidpointOnLine = 11,
         TangentCircumf = 12,
-        P2OnEllipse = 13,
-        TangentEllipseLine = 14,
-        Point2EllipseDistance = 15,
-        InternalAlignmentPoint2Ellipse = 16
-    };
-    
-    enum InternalAlignmentType {
-        EllipsePositiveMajorX = 0,
-        EllipsePositiveMajorY = 1,
-        EllipseNegativeMajorX = 2,
-        EllipseNegativeMajorY = 3,
-        EllipsePositiveMinorX = 4,
-        EllipsePositiveMinorY = 5,
-        EllipseNegativeMinorX = 6,
-        EllipseNegativeMinorY = 7,
-        EllipseFocus2X = 8,
-        EllipseFocus2Y = 9
+        P2OnEllipse = 13
     };
 
     class Constraint
@@ -176,7 +160,6 @@ namespace GCS
         virtual double error();
         virtual double grad(double *);
         virtual double maxStep(MAP_pD_D &dir, double lim=1.);
-        double abs(double darea);
     };
 
     // PointOnLine
@@ -322,64 +305,24 @@ namespace GCS
         virtual double error();
         virtual double grad(double *);
     };
-    // PointOnEllipse
+    // TangentCircumf
     class ConstraintPointOnEllipse : public Constraint
     {
     private:
         inline double* p1x() { return pvec[0]; }
         inline double* p1y() { return pvec[1]; }
-        inline double* cx() { return pvec[2]; }
-        inline double* cy() { return pvec[3]; }
-        inline double* f1x() { return pvec[4]; }
-        inline double* f1y() { return pvec[5]; }
-        inline double* rmin() { return pvec[6]; }
+        inline double* e1x() { return pvec[2]; }
+        inline double* e1y() { return pvec[3]; }
+        inline double* rmaj() { return pvec[4]; }
+        inline double* rmin() { return pvec[5]; }
+        inline double* phi() { return pvec[6]; }
     public:
         ConstraintPointOnEllipse(Point &p, Ellipse &e);
         virtual ConstraintType getTypeId();
         virtual void rescale(double coef=1.);
         virtual double error();
         virtual double grad(double *);
-    };
-    
-    class ConstraintEllipseTangentLine : public Constraint
-    {
-    private:
-        inline double* p1x() { return pvec[0]; }
-        inline double* p1y() { return pvec[1]; }
-        inline double* p2x() { return pvec[2]; }
-        inline double* p2y() { return pvec[3]; }        
-        inline double* cx() { return pvec[4]; }
-        inline double* cy() { return pvec[5]; }
-        inline double* f1x() { return pvec[6]; }
-        inline double* f1y() { return pvec[7]; }
-        inline double* rmin() { return pvec[8]; }
-    public:
-        ConstraintEllipseTangentLine(Line &l, Ellipse &e);
-        virtual ConstraintType getTypeId();
-        virtual void rescale(double coef=1.);
-        virtual double error();
-        virtual double grad(double *);
-    };
-        
-    class ConstraintInternalAlignmentPoint2Ellipse : public Constraint
-    {
-    private:
-        inline double* p1x() { return pvec[0]; }
-        inline double* p1y() { return pvec[1]; }      
-        inline double* cx() { return pvec[2]; }
-        inline double* cy() { return pvec[3]; }
-        inline double* f1x() { return pvec[4]; }
-        inline double* f1y() { return pvec[5]; }
-        inline double* rmin() { return pvec[6]; }
-    public:
-        ConstraintInternalAlignmentPoint2Ellipse(Ellipse &e, Point &p1, InternalAlignmentType alignmentType);
-        virtual ConstraintType getTypeId();
-        virtual void rescale(double coef=1.);
-        virtual double error();
-        virtual double grad(double *);
-    private:
-        InternalAlignmentType AlignmentType;
-    };
+    };    
 
 } //namespace GCS
 

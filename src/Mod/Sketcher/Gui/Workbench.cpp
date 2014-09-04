@@ -198,7 +198,9 @@ inline void SketcherAddWorkbenchConstraints(T& cons){
             << "Sketcher_ConstrainDistance"
             << "Sketcher_ConstrainRadius"
             << "Sketcher_ConstrainAngle"
-            << "Sketcher_ConstrainInternalAlignment";
+            << "Sketcher_ConstrainMajorRadius"
+            << "Sketcher_ConstrainMinorRadius";
+
 }
 
 template <typename T>
@@ -211,10 +213,7 @@ inline void SketcherAddWorkbenchTools<Gui::MenuItem>(Gui::MenuItem& consaccel){
 		<< "Sketcher_SelectConstraints"
 		<< "Sketcher_SelectOrigin"
 		<< "Sketcher_SelectVerticalAxis"
-		<< "Sketcher_SelectHorizontalAxis"
-        << "Sketcher_SelectRedundantConstraints"
-        << "Sketcher_SelectConflictingConstraints"
-        << "Sketcher_SelectElementsAssociatedWithConstraints";
+		<< "Sketcher_SelectHorizontalAxis";
 }
 template <>
 inline void SketcherAddWorkbenchTools<Gui::ToolBarItem>(Gui::ToolBarItem& consaccel){
