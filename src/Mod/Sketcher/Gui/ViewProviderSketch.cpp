@@ -915,8 +915,12 @@ void ViewProviderSketch::editDoubleClicked(void)
 
             // if its the right constraint
             if (Constr->Type == Sketcher::Distance ||
-                Constr->Type == Sketcher::DistanceX || Constr->Type == Sketcher::DistanceY ||
-                Constr->Type == Sketcher::Radius || Constr->Type == Sketcher::Angle) {
+                Constr->Type == Sketcher::DistanceX || 
+                Constr->Type == Sketcher::DistanceY ||
+                Constr->Type == Sketcher::Radius || 
+                Constr->Type == Sketcher::MajorRadius ||
+                Constr->Type == Sketcher::MinorRadius ||
+                Constr->Type == Sketcher::Angle) {
 
                 // Coin's SoIdleSensor causes problems on some platform while Qt seems to work properly (#0001517)
                 EditDatumDialog *editDatumDialog = new EditDatumDialog(this, *it);
@@ -2065,6 +2069,8 @@ void ViewProviderSketch::updateColor(void)
         ConstraintType type = constraint->Type;
         bool hasDatumLabel  = (type == Sketcher::Angle ||
                                type == Sketcher::Radius ||
+                               type == Sketcher::MajorRadius ||
+                               type == Sketcher::MinorRadius || // TODO: Ellipse implementation
                                type == Sketcher::Symmetric ||
                                type == Sketcher::Distance ||
                                type == Sketcher::DistanceX ||
@@ -2886,7 +2892,8 @@ Restart:
         // root separator for this constraint
         SoSeparator *sep = dynamic_cast<SoSeparator *>(edit->constrGroup->getChild(i));
         const Constraint *Constr = *it;
-
+        
+        bool major_radius = false; // this is checked in the radius to reuse code
         // distinquish different constraint types to build up
         switch (Constr->Type) {
             case Horizontal: // write the new position of the Horizontal constraint Same as vertical position.
@@ -3019,6 +3026,12 @@ Restart:
                                 arc->getRange(startangle, endangle);
                                 angle1 = (startangle + endangle)/2;
                                 midpos1 = arc->getCenter();
+                            } else if (geo1->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+                                // TODO: ellipse
+                                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo1);
+                                r1 = ellipse->getMajorRadius();
+                                angle1 = -ellipse->getAngleXU();
+                                midpos1 = ellipse->getCenter();
                             } else
                                 break;
 
@@ -3034,7 +3047,14 @@ Restart:
                                 arc->getRange(startangle, endangle);
                                 angle2 = (startangle + endangle)/2;
                                 midpos2 = arc->getCenter();
-                            } else
+                            } else if (geo2->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+                                // TODO: ellipse
+                                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo2);
+                                r2 = ellipse->getMajorRadius();
+                                angle2 = -ellipse->getAngleXU();
+                                midpos2 = ellipse->getCenter();
+                            }
+                            else
                                 break;
 
                             norm1 = Base::Vector3d(cos(angle1),sin(angle1),0);
@@ -3381,6 +3401,9 @@ Restart:
                 }
                 break;
             case Radius:
+            case MajorRadius:
+            major_radius=true;
+            case MinorRadius:
                 {
                     assert(Constr->First >= -extGeoCount && Constr->First < intGeoCount);
 
@@ -3397,13 +3420,21 @@ Restart:
                             pnt1 = arc->getCenter();
                             pnt2 = pnt1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
                         }
-                        else if (geo->getTypeId() == Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
+                        else if (geo->getTypeId() == Part::GeomCircle::getClassTypeId()) { 
                             const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(geo);
                             double radius = circle->getRadius();
                             double angle = (double) Constr->LabelPosition;
                             pnt1 = circle->getCenter();
                             pnt2 = pnt1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
-                        } else
+                        }
+                        else if (geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
+                            const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
+                            double radius = major_radius?ellipse->getMajorRadius():ellipse->getMinorRadius();
+                            double angle = major_radius?-ellipse->getAngleXU():-ellipse->getAngleXU()-M_PI/2;//(double) Constr->LabelPosition;
+                            pnt1 = ellipse->getCenter();
+                            pnt2 = pnt1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
+                        }
+                        else
                             break;
                     } else
                         break;
@@ -3484,6 +3515,8 @@ void ViewProviderSketch::rebuildConstraintsVisual(void)
             case DistanceX:
             case DistanceY:
             case Radius:
+            case MajorRadius:
+            case MinorRadius: // TODO: Ellipse
             case Angle:
             {
                 SoDatumLabel *text = new SoDatumLabel();

@@ -1616,6 +1616,344 @@ bool CmdSketcherConstrainRadius::isActive(void)
     return isCreateConstraintActive( getActiveGuiDocument() );
 }
 
+DEF_STD_CMD_A(CmdSketcherConstrainMajorRadius);
+
+CmdSketcherConstrainMajorRadius::CmdSketcherConstrainMajorRadius()
+    :Command("Sketcher_ConstrainMajorRadius")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Constrain major radius");
+    sToolTipText    = QT_TR_NOOP("Fix the  major radius of an ellipse");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Constraint_Ellipse_Major_Radius";
+    sAccel          = "M,R";
+    eType           = ForEdit;
+}
+
+void CmdSketcherConstrainMajorRadius::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one or more ellipses from the sketch."));
+        return;
+    }
+
+    // get the needed lists and objects
+    const std::vector<std::string> &SubNames = selection[0].getSubNames();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    if (SubNames.empty()) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one or more ellipses from the sketch."));
+        return;
+    }
+
+    // check for which selected geometry the constraint can be applied
+    std::vector< std::pair<int, double> > geoIdRadiusMap;
+    for (std::vector<std::string>::const_iterator it = SubNames.begin(); it != SubNames.end(); ++it) {
+        if (it->size() > 4 && it->substr(0,4) == "Edge") {
+            int GeoId = std::atoi(it->substr(4,4000).c_str()) - 1;
+            const Part::Geometry *geom = Obj->getGeometry(GeoId);
+            if (geom && geom->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
+                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geom);
+                double radius = ellipse->getMajorRadius();
+                geoIdRadiusMap.push_back(std::make_pair(GeoId, radius));
+            }
+        }
+    }
+
+    if (geoIdRadiusMap.empty()) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one or more ellipses from the sketch."));
+    }
+    else {
+        bool constrainEqual = false;
+        if (geoIdRadiusMap.size() > 1) {
+            int ret = QMessageBox::question(Gui::getMainWindow(), QObject::tr("Constrain equal"),
+                QObject::tr("Do you want to share the same major radius for all selected elements?"),
+                QMessageBox::Yes, QMessageBox::No);
+            // use an equality constraint
+            if (ret == QMessageBox::Yes) {
+                constrainEqual = true;
+            }
+        }
+
+        if (constrainEqual) {
+            // Create the one radius constraint now
+            int refGeoId = geoIdRadiusMap.front().first;
+            double radius = geoIdRadiusMap.front().second;
+            openCommand("Add major radius constraint");
+            Gui::Command::doCommand(
+                Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('MajorRadius',%d,%f)) ",
+                selection[0].getFeatName(),refGeoId,radius);
+            commitCommand();
+
+            // Add the equality constraints
+            openCommand("Add equality constraint");
+            for (std::vector< std::pair<int, double> >::iterator it = geoIdRadiusMap.begin()+1; it != geoIdRadiusMap.end(); ++it) {
+                Gui::Command::doCommand(
+                    Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('Equal',%d,%d)) ",
+                    selection[0].getFeatName(),refGeoId,it->first);
+            }
+            commitCommand();
+        }
+        else {
+            // Create the radius constraints now
+            openCommand("Add major radius constraint");
+            for (std::vector< std::pair<int, double> >::iterator it = geoIdRadiusMap.begin(); it != geoIdRadiusMap.end(); ++it) {
+                Gui::Command::doCommand(
+                    Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('MajorRadius',%d,%f)) ",
+                    selection[0].getFeatName(),it->first,it->second);
+            }
+            commitCommand();
+        }
+
+        const std::vector<Sketcher::Constraint *> &ConStr = Obj->Constraints.getValues();
+        std::size_t indexConstr = ConStr.size() - geoIdRadiusMap.size();
+
+        // Guess some reasonable distance for placing the datum text
+        Gui::Document *doc = getActiveGuiDocument();
+        float sf = 1.f;
+        if (doc && doc->getInEdit() && doc->getInEdit()->isDerivedFrom(SketcherGui::ViewProviderSketch::getClassTypeId())) {
+            SketcherGui::ViewProviderSketch *vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
+            sf = vp->getScaleFactor();
+
+            for (std::size_t i=0; i<geoIdRadiusMap.size();i++) {
+                Sketcher::Constraint *constr = ConStr[indexConstr + i];
+                constr->LabelDistance = 2. * sf;
+            }
+            vp->draw(); // Redraw
+        }
+
+        ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/General");
+        bool show = hGrp->GetBool("ShowDialogOnDistanceConstraint", true);
+        // Ask for the value of the radius immediately
+        if (show) {
+            QDialog dlg(Gui::getMainWindow());
+            Ui::InsertDatum ui_Datum;
+            ui_Datum.setupUi(&dlg);
+            dlg.setWindowTitle(EditDatumDialog::tr("Change major radius"));
+            ui_Datum.label->setText(EditDatumDialog::tr("Major radius:"));
+            Base::Quantity init_val;
+            init_val.setUnit(Base::Unit::Length);
+            init_val.setValue(geoIdRadiusMap.front().second);
+
+            ui_Datum.labelEdit->setValue(init_val);
+            ui_Datum.labelEdit->selectNumber();
+
+            if (dlg.exec() == QDialog::Accepted) {
+                Base::Quantity newQuant = ui_Datum.labelEdit->getQuantity();
+                double newRadius = newQuant.getValue();
+
+                try {
+                    openCommand("Modify major radius constraint");
+                    if (constrainEqual) {
+                        doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.setDatum(%i,App.Units.Quantity('%f %s'))",
+                                    Obj->getNameInDocument(),
+                                    indexConstr, newRadius, (const char*)newQuant.getUnit().getString().toUtf8());
+                    }
+                    else {
+                        for (std::size_t i=0; i<geoIdRadiusMap.size();i++) {
+                            doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.setDatum(%i,App.Units.Quantity('%f %s'))",
+                                        Obj->getNameInDocument(),
+                                        indexConstr+i, newRadius, (const char*)newQuant.getUnit().getString().toUtf8());
+                        }
+                    }
+                    commitCommand();
+                    updateActive();
+                }
+                catch (const Base::Exception& e) {
+                    QMessageBox::critical(qApp->activeWindow(), QObject::tr("Dimensional constraint"), QString::fromUtf8(e.what()));
+                    abortCommand();
+                }
+            }
+        }
+
+        //updateActive();
+        getSelection().clearSelection();
+    }
+}
+
+bool CmdSketcherConstrainMajorRadius::isActive(void)
+{
+    return isCreateConstraintActive( getActiveGuiDocument() );
+}
+
+DEF_STD_CMD_A(CmdSketcherConstrainMinorRadius);
+
+CmdSketcherConstrainMinorRadius::CmdSketcherConstrainMinorRadius()
+    :Command("Sketcher_ConstrainMinorRadius")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Constrain minor radius");
+    sToolTipText    = QT_TR_NOOP("Fix the minor radius of an ellipse");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Constraint_Ellipse_Minor_Radius";
+    sAccel          = "S,R";
+    eType           = ForEdit;
+}
+
+void CmdSketcherConstrainMinorRadius::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one or more ellipses from the sketch."));
+        return;
+    }
+
+    // get the needed lists and objects
+    const std::vector<std::string> &SubNames = selection[0].getSubNames();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    if (SubNames.empty()) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one or more ellipses from the sketch."));
+        return;
+    }
+
+    // check for which selected geometry the constraint can be applied
+    std::vector< std::pair<int, double> > geoIdRadiusMap;
+    for (std::vector<std::string>::const_iterator it = SubNames.begin(); it != SubNames.end(); ++it) {
+        if (it->size() > 4 && it->substr(0,4) == "Edge") {
+            int GeoId = std::atoi(it->substr(4,4000).c_str()) - 1;
+            const Part::Geometry *geom = Obj->getGeometry(GeoId);
+            if (geom && geom->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
+                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geom);
+                double radius = ellipse->getMinorRadius();
+                geoIdRadiusMap.push_back(std::make_pair(GeoId, radius));
+            }
+        }
+    }
+
+    if (geoIdRadiusMap.empty()) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one or more ellipses from the sketch."));
+    }
+    else {
+        bool constrainEqual = false;
+        if (geoIdRadiusMap.size() > 1) {
+            int ret = QMessageBox::question(Gui::getMainWindow(), QObject::tr("Constrain equal"),
+                QObject::tr("Do you want to share the same minor radius for all selected elements?"),
+                QMessageBox::Yes, QMessageBox::No);
+            // use an equality constraint
+            if (ret == QMessageBox::Yes) {
+                constrainEqual = true;
+            }
+        }
+
+        if (constrainEqual) {
+            // Create the one radius constraint now
+            int refGeoId = geoIdRadiusMap.front().first;
+            double radius = geoIdRadiusMap.front().second;
+            openCommand("Add minor radius constraint");
+            Gui::Command::doCommand(
+                Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('MinorRadius',%d,%f)) ",
+                selection[0].getFeatName(),refGeoId,radius);
+            commitCommand();
+
+            // Add the equality constraints
+            openCommand("Add equality constraint");
+            for (std::vector< std::pair<int, double> >::iterator it = geoIdRadiusMap.begin()+1; it != geoIdRadiusMap.end(); ++it) {
+                Gui::Command::doCommand(
+                    Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('Equal',%d,%d)) ",
+                    selection[0].getFeatName(),refGeoId,it->first);
+            }
+            commitCommand();
+        }
+        else {
+            // Create the radius constraints now
+            openCommand("Add minor radius constraint");
+            for (std::vector< std::pair<int, double> >::iterator it = geoIdRadiusMap.begin(); it != geoIdRadiusMap.end(); ++it) {
+                Gui::Command::doCommand(
+                    Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('MinorRadius',%d,%f)) ",
+                    selection[0].getFeatName(),it->first,it->second);
+            }
+            commitCommand();
+        }
+
+        const std::vector<Sketcher::Constraint *> &ConStr = Obj->Constraints.getValues();
+        std::size_t indexConstr = ConStr.size() - geoIdRadiusMap.size();
+
+        // Guess some reasonable distance for placing the datum text
+        Gui::Document *doc = getActiveGuiDocument();
+        float sf = 1.f;
+        if (doc && doc->getInEdit() && doc->getInEdit()->isDerivedFrom(SketcherGui::ViewProviderSketch::getClassTypeId())) {
+            SketcherGui::ViewProviderSketch *vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(doc->getInEdit());
+            sf = vp->getScaleFactor();
+
+            for (std::size_t i=0; i<geoIdRadiusMap.size();i++) {
+                Sketcher::Constraint *constr = ConStr[indexConstr + i];
+                constr->LabelDistance = 2. * sf;
+            }
+            vp->draw(); // Redraw
+        }
+
+        ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/General");
+        bool show = hGrp->GetBool("ShowDialogOnDistanceConstraint", true);
+        // Ask for the value of the radius immediately
+        if (show) {
+            QDialog dlg(Gui::getMainWindow());
+            Ui::InsertDatum ui_Datum;
+            ui_Datum.setupUi(&dlg);
+            dlg.setWindowTitle(EditDatumDialog::tr("Change minor radius"));
+            ui_Datum.label->setText(EditDatumDialog::tr("Minor radius:"));
+            Base::Quantity init_val;
+            init_val.setUnit(Base::Unit::Length);
+            init_val.setValue(geoIdRadiusMap.front().second);
+
+            ui_Datum.labelEdit->setValue(init_val);
+            ui_Datum.labelEdit->selectNumber();
+
+            if (dlg.exec() == QDialog::Accepted) {
+                Base::Quantity newQuant = ui_Datum.labelEdit->getQuantity();
+                double newRadius = newQuant.getValue();
+
+                try {
+                    openCommand("Modify minor radius constraint");
+                    if (constrainEqual) {
+                        doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.setDatum(%i,App.Units.Quantity('%f %s'))",
+                                    Obj->getNameInDocument(),
+                                    indexConstr, newRadius, (const char*)newQuant.getUnit().getString().toUtf8());
+                    }
+                    else {
+                        for (std::size_t i=0; i<geoIdRadiusMap.size();i++) {
+                            doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.setDatum(%i,App.Units.Quantity('%f %s'))",
+                                        Obj->getNameInDocument(),
+                                        indexConstr+i, newRadius, (const char*)newQuant.getUnit().getString().toUtf8());
+                        }
+                    }
+                    commitCommand();
+                    updateActive();
+                }
+                catch (const Base::Exception& e) {
+                    QMessageBox::critical(qApp->activeWindow(), QObject::tr("Dimensional constraint"), QString::fromUtf8(e.what()));
+                    abortCommand();
+                }
+            }
+        }
+
+        //updateActive();
+        getSelection().clearSelection();
+    }
+}
+
+bool CmdSketcherConstrainMinorRadius::isActive(void)
+{
+    return isCreateConstraintActive( getActiveGuiDocument() );
+}
+
 
 DEF_STD_CMD_A(CmdSketcherConstrainAngle);
 
@@ -2045,6 +2383,8 @@ void CreateSketcherCommandsConstraints(void)
     rcCmdMgr.addCommand(new CmdSketcherConstrainDistanceX());
     rcCmdMgr.addCommand(new CmdSketcherConstrainDistanceY());
     rcCmdMgr.addCommand(new CmdSketcherConstrainRadius());
+    rcCmdMgr.addCommand(new CmdSketcherConstrainMajorRadius());
+    rcCmdMgr.addCommand(new CmdSketcherConstrainMinorRadius());
     rcCmdMgr.addCommand(new CmdSketcherConstrainAngle());
     rcCmdMgr.addCommand(new CmdSketcherConstrainEqual());
     rcCmdMgr.addCommand(new CmdSketcherConstrainPointOnObject());
