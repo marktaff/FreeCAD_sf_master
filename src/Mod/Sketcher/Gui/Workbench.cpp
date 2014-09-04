@@ -197,7 +197,9 @@ inline void SketcherAddWorkbenchConstraints(T& cons){
             << "Sketcher_ConstrainDistanceY"
             << "Sketcher_ConstrainDistance"
             << "Sketcher_ConstrainRadius"
-            << "Sketcher_ConstrainAngle";
+            << "Sketcher_ConstrainAngle"
+            << "Sketcher_ConstrainMajorRadius"
+            << "Sketcher_ConstrainMinorRadius";
 
 }
 

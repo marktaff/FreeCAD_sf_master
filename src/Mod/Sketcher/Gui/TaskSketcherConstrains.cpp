@@ -272,6 +272,8 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemActivated(QListWidgetI
         it->Type == Sketcher::DistanceX ||
         it->Type == Sketcher::DistanceY ||
         it->Type == Sketcher::Radius ||
+        it->Type == Sketcher::MajorRadius ||
+        it->Type == Sketcher::MinorRadius ||
         it->Type == Sketcher::Angle) {
 
         EditDatumDialog *editDatumDialog = new EditDatumDialog(this->sketchView, it->ConstraintNbr);
@@ -295,15 +297,11 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemChanged(QListWidgetIte
     QString unitStr;
     switch(v->Type) {
     case Sketcher::Distance:
-        unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
-        break;
     case Sketcher::DistanceX:
-        unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
-        break;
     case Sketcher::DistanceY:
-        unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
-        break;
     case Sketcher::Radius:
+    case Sketcher::MajorRadius:
+    case Sketcher::MinorRadius:
         unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
         break;
     case Sketcher::Angle:
@@ -336,6 +334,8 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
     QIcon tang ( Gui::BitmapFactory().pixmap("Constraint_Tangent") );
     QIcon dist ( Gui::BitmapFactory().pixmap("Constraint_Length") );
     QIcon radi ( Gui::BitmapFactory().pixmap("Constraint_Radius") );
+    QIcon majradi ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Major_Radius") );
+    QIcon minradi ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Minor_Radius") );
     QIcon angl ( Gui::BitmapFactory().pixmap("Constraint_InternalAngle") );
     QIcon equal( Gui::BitmapFactory().pixmap("Constraint_EqualLength") );
     QIcon pntoo( Gui::BitmapFactory().pixmap("Constraint_PointOnObject") );
@@ -427,6 +427,22 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
             case Sketcher::Radius:
                 if (Filter<3 || !(*it)->Name.empty()) {
                     ConstraintItem* item = new ConstraintItem(radi,name,i-1,(*it)->Type);
+                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity((*it)->Value,Base::Unit::Length).getUserString());
+                    item->setData(Qt::UserRole, name);
+                    ui->listWidgetConstraints->addItem(item);
+                }
+                break;
+            case Sketcher::MajorRadius:
+                if (Filter<3 || !(*it)->Name.empty()) {
+                    ConstraintItem* item = new ConstraintItem(majradi,name,i-1,(*it)->Type);
+                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity((*it)->Value,Base::Unit::Length).getUserString());
+                    item->setData(Qt::UserRole, name);
+                    ui->listWidgetConstraints->addItem(item);
+                }
+                break;
+            case Sketcher::MinorRadius:
+                if (Filter<3 || !(*it)->Name.empty()) {
+                    ConstraintItem* item = new ConstraintItem(minradi,name,i-1,(*it)->Type);
                     name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity((*it)->Value,Base::Unit::Length).getUserString());
                     item->setData(Qt::UserRole, name);
                     ui->listWidgetConstraints->addItem(item);

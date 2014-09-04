@@ -244,6 +244,8 @@ public:
     void setMajorRadius(double Radius);
     double getMinorRadius(void) const;
     void setMinorRadius(double Radius);
+    double getAngleXU(void) const;
+    void setAngleXU(double angle);
 
     // Persistence implementer ---------------------
     virtual unsigned int getMemSize(void) const;

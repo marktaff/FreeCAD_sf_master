@@ -888,6 +888,42 @@ void GeomEllipse::setMinorRadius(double Radius)
     }
 }
 
+double GeomEllipse::getAngleXU(void) const
+{
+    Handle_Geom_Ellipse ellipse = Handle_Geom_Ellipse::DownCast(handle());
+    
+    gp_Pnt center = this->myCurve->Axis().Location();
+    gp_Dir normal = this->myCurve->Axis().Direction();
+    gp_Dir xdir = this->myCurve->XAxis().Direction();
+    
+    gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
+    
+    return xdir.AngleWithRef(xdirref.XDirection(),normal);
+}
+
+void GeomEllipse::setAngleXU(double angle)
+{
+    Handle_Geom_Ellipse ellipse = Handle_Geom_Ellipse::DownCast(handle());
+
+    try {
+        gp_Pnt center = this->myCurve->Axis().Location();
+        gp_Dir normal = this->myCurve->Axis().Direction();
+        
+        gp_Ax1 normaxis(center, normal);
+        
+        gp_Ax2 xdirref(center, normal);
+        
+        xdirref.Rotate(normaxis,-angle);
+        
+        this->myCurve->SetPosition(xdirref);
+
+    }
+    catch (Standard_Failure) {
+        Handle_Standard_Failure e = Standard_Failure::Caught();
+        throw Base::Exception(e->GetMessageString());
+    }
+}
+
 // Persistence implementer 
 unsigned int GeomEllipse::getMemSize (void) const
 {
@@ -901,7 +937,13 @@ void GeomEllipse::Save(Base::Writer& writer) const
 
     gp_Pnt center = this->myCurve->Axis().Location();
     gp_Dir normal = this->myCurve->Axis().Direction();
-
+    gp_Dir xdir = this->myCurve->XAxis().Direction();
+    
+    gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
+    
+    double AngleXU = xdir.AngleWithRef(xdirref.XDirection(),normal);
+    
+    
     writer.Stream()
          << writer.ind()
             << "<Ellipse "
@@ -913,6 +955,7 @@ void GeomEllipse::Save(Base::Writer& writer) const
             << "NormalZ=\"" <<  normal.Z() << "\" "
             << "MajorRadius=\"" <<  this->myCurve->MajorRadius() << "\" "
             << "MinorRadius=\"" <<  this->myCurve->MinorRadius() << "\" "
+            << "AngleXU=\"" << AngleXU << "\" "
             << "/>" << endl;
 }
 
@@ -921,7 +964,7 @@ void GeomEllipse::Restore(Base::XMLReader& reader)
     // read the attributes of the father class
     GeomCurve::Restore(reader);
 
-    double CenterX,CenterY,CenterZ,NormalX,NormalY,NormalZ,MajorRadius,MinorRadius;
+    double CenterX,CenterY,CenterZ,NormalX,NormalY,NormalZ,MajorRadius,MinorRadius,AngleXU;
     // read my Element
     reader.readElement("Ellipse");
     // get the value of my Attribute
@@ -933,12 +976,20 @@ void GeomEllipse::Restore(Base::XMLReader& reader)
     NormalZ = reader.getAttributeAsFloat("NormalZ");
     MajorRadius = reader.getAttributeAsFloat("MajorRadius");
     MinorRadius = reader.getAttributeAsFloat("MinorRadius");
+    AngleXU = reader.getAttributeAsFloat("AngleXU");
 
     // set the read geometry
     gp_Pnt p1(CenterX,CenterY,CenterZ);
     gp_Dir norm(NormalX,NormalY,NormalZ);
+    
+    gp_Ax1 normaxis(p1,norm);
+    
+    gp_Ax2 xdir(p1, norm);
+    
+    xdir.Rotate(normaxis,-AngleXU); 
+    
     try {
-        GC_MakeEllipse mc(gp_Ax2(p1, norm), MajorRadius, MinorRadius);
+        GC_MakeEllipse mc(xdir, MajorRadius, MinorRadius);
         if (!mc.IsDone())
             throw Base::Exception(gce_ErrorStatusText(mc.Status()));
 

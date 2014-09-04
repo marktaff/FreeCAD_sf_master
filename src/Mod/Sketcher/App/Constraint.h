@@ -43,6 +43,8 @@ enum ConstraintType {
     Angle,
     Perpendicular,
     Radius,
+    MajorRadius,
+    MinorRadius,
     Equal,
     PointOnObject,
     Symmetric
