@@ -192,7 +192,8 @@ int SketchObject::setDatum(int ConstrId, double Datum)
         type != Radius &&
         type != MajorRadius && // TODO: ellipse implementation
         type != MinorRadius &&
-        type != Angle)
+        type != Angle &&
+        type != EllipseXUAngle)
         return -1;
 
     if ((type == Distance || type == Radius || type == MajorRadius || type == MinorRadius) && Datum <= 0)
