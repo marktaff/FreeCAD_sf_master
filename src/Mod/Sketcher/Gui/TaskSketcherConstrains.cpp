@@ -45,27 +45,9 @@
 #include <Gui/ViewProvider.h>
 #include <Gui/BitmapFactory.h>
 #include <boost/bind.hpp>
-#include <Gui/Command.h>
 
 using namespace SketcherGui;
 using namespace Gui::TaskView;
-
-/// Inserts a QAction into an existing menu
-/// ICONSTR is the string of the icon in the resource file
-/// NAMESTR is the text appearing in the contextual menuAction
-/// CMDSTR is the string registered in the commandManager
-/// FUNC is the name of the member function to be executed on selection of the menu item
-/// ACTSONSELECTION is a true/false value to activate the command only if a selection is made
-#define CONTEXT_ITEM(ICONSTR,NAMESTR,CMDSTR,FUNC,ACTSONSELECTION)                       \
-QIcon icon_ ## FUNC( Gui::BitmapFactory().pixmap(ICONSTR) );                    \
-    QAction* constr_ ## FUNC = menu.addAction(icon_ ## FUNC,tr(NAMESTR), this, SLOT(FUNC()),    \
-        QKeySequence(QString::fromUtf8(Gui::Application::Instance->commandManager().getCommandByName(CMDSTR)->getAccel())));        \
-    if(ACTSONSELECTION) constr_ ## FUNC->setEnabled(!items.isEmpty()); else constr_ ## FUNC->setEnabled(true);
-
-/// Defines the member function corresponding to the CONTEXT_ITEM macro
-#define CONTEXT_MEMBER_DEF(CMDSTR,FUNC)                             \
-void ConstraintView::FUNC(){                               \
-   Gui::Application::Instance->commandManager().runCommandByName(CMDSTR);}
 
 // helper class to store additional information about the listWidget entry.
 class ConstraintItem : public QListWidgetItem
@@ -124,10 +106,6 @@ void ConstraintView::contextMenuEvent (QContextMenuEvent* event)
     QMenu menu;
     QListWidgetItem* item = currentItem();
     QList<QListWidgetItem *> items = selectedItems();
-    
-    CONTEXT_ITEM("Sketcher_SelectElementsAssociatedWithConstraints","Select Elements","Sketcher_SelectElementsAssociatedWithConstraints",doSelectConstraints,true)
-    
-    menu.addSeparator();
 
     QAction* change = menu.addAction(tr("Change value"), this, SLOT(modifyCurrentItem()));
     QVariant v = item ? item->data(Qt::UserRole) : QVariant();
@@ -145,8 +123,6 @@ void ConstraintView::contextMenuEvent (QContextMenuEvent* event)
     remove->setEnabled(!items.isEmpty());
     menu.exec(event->globalPos());
 }
-
-CONTEXT_MEMBER_DEF("Sketcher_SelectElementsAssociatedWithConstraints",doSelectConstraints)
 
 void ConstraintView::modifyCurrentItem()
 {
@@ -298,7 +274,8 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemActivated(QListWidgetI
         it->Type == Sketcher::Radius ||
         it->Type == Sketcher::MajorRadius ||
         it->Type == Sketcher::MinorRadius ||
-        it->Type == Sketcher::Angle) {
+        it->Type == Sketcher::Angle ||
+        it->Type == Sketcher::EllipseXUAngle) {
 
         EditDatumDialog *editDatumDialog = new EditDatumDialog(this->sketchView, it->ConstraintNbr);
         editDatumDialog->exec(false);
@@ -329,6 +306,7 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemChanged(QListWidgetIte
         unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
         break;
     case Sketcher::Angle:
+    case Sketcher::EllipseXUAngle:
         unitStr = Base::Quantity(Base::toDegrees<double>(std::abs(v->Value)),Base::Unit::Angle).getUserString();
         break;
     default:
@@ -361,7 +339,7 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
     QIcon majradi ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Major_Radius") );
     QIcon minradi ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Minor_Radius") );
     QIcon angl ( Gui::BitmapFactory().pixmap("Constraint_InternalAngle") );
-    QIcon ellipseXUAngl ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Axis_Angle") );
+    QIcon ellipseXUAngl ( Gui::BitmapFactory().pixmap("Constraint_InternalAngle") );
     QIcon equal( Gui::BitmapFactory().pixmap("Constraint_EqualLength") );
     QIcon pntoo( Gui::BitmapFactory().pixmap("Constraint_PointOnObject") );
     QIcon symm ( Gui::BitmapFactory().pixmap("Constraint_Symmetric") );
@@ -476,6 +454,14 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
             case Sketcher::Angle:
                 if (Filter<3 || !(*it)->Name.empty()) {
                     ConstraintItem* item = new ConstraintItem(angl,name,i-1,(*it)->Type);
+                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>(std::abs((*it)->Value)),Base::Unit::Angle).getUserString());
+                    item->setData(Qt::UserRole, name);
+                    ui->listWidgetConstraints->addItem(item);
+                }
+                break;
+            case Sketcher::EllipseXUAngle:
+                if (Filter<3 || !(*it)->Name.empty()) {
+                    ConstraintItem* item = new ConstraintItem(ellipseXUAngl,name,i-1,(*it)->Type);
                     name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>(std::abs((*it)->Value)),Base::Unit::Angle).getUserString());
                     item->setData(Qt::UserRole, name);
                     ui->listWidgetConstraints->addItem(item);

@@ -898,7 +898,7 @@ double GeomEllipse::getAngleXU(void) const
     
     gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
     
-    return xdir.AngleWithRef(xdirref.XDirection(),normal);
+    return -xdir.AngleWithRef(xdirref.XDirection(),normal);
 }
 
 void GeomEllipse::setAngleXU(double angle)
@@ -913,7 +913,7 @@ void GeomEllipse::setAngleXU(double angle)
         
         gp_Ax2 xdirref(center, normal);
         
-        xdirref.Rotate(normaxis,-angle);
+        xdirref.Rotate(normaxis,angle);
         
         this->myCurve->SetPosition(xdirref);
 
@@ -941,7 +941,7 @@ void GeomEllipse::Save(Base::Writer& writer) const
     
     gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
     
-    double AngleXU = xdir.AngleWithRef(xdirref.XDirection(),normal);
+    double AngleXU = -xdir.AngleWithRef(xdirref.XDirection(),normal);
     
     
     writer.Stream()
@@ -986,7 +986,7 @@ void GeomEllipse::Restore(Base::XMLReader& reader)
     
     gp_Ax2 xdir(p1, norm);
     
-    xdir.Rotate(normaxis,-AngleXU); 
+    xdir.Rotate(normaxis,AngleXU); 
     
     try {
         GC_MakeEllipse mc(xdir, MajorRadius, MinorRadius);
