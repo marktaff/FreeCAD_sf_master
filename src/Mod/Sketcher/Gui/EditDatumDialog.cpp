@@ -77,7 +77,8 @@ void EditDatumDialog::exec(bool atCursor)
         Constr->Type == Sketcher::Radius || 
         Constr->Type == Sketcher::MajorRadius || 
         Constr->Type == Sketcher::MinorRadius || 
-        Constr->Type == Sketcher::Angle) {
+        Constr->Type == Sketcher::Angle ||
+        Constr->Type == Sketcher::EllipseXUAngle) {
 
         if (sketch->hasConflicts()) {
             QMessageBox::critical(qApp->activeWindow(), QObject::tr("Distance constraint"),
@@ -95,14 +96,14 @@ void EditDatumDialog::exec(bool atCursor)
         double datum = Constr->Value;
         Base::Quantity init_val;
 
-        if (Constr->Type == Sketcher::Angle) {
+        if (Constr->Type == Sketcher::Angle || Constr->Type == Sketcher::EllipseXUAngle) {
             datum = Base::toDegrees<double>(datum);
             dlg.setWindowTitle(tr("Insert angle"));
             init_val.setUnit(Base::Unit::Angle);
             ui_ins_datum.label->setText(tr("Angle:"));
             ui_ins_datum.labelEdit->setParamGrpPath(QByteArray("User parameter:BaseApp/History/SketcherAngle"));
         }
-        else if (Constr->Type == Sketcher::Radius) {
+        else if (Constr->Type == Sketcher::Radius || Constr->Type == Sketcher::MajorRadius || Constr->Type == Sketcher::MinorRadius) {
             dlg.setWindowTitle(tr("Insert radius"));
             init_val.setUnit(Base::Unit::Length);
             ui_ins_datum.label->setText(tr("Radius:"));
@@ -118,7 +119,7 @@ void EditDatumDialog::exec(bool atCursor)
 
         //ui_ins_datum.lineEdit->setParamGrpPath("User parameter:History/Sketcher/SetDatum");
 
-        if (Constr->Type == Sketcher::Angle ||
+        if (Constr->Type == Sketcher::Angle || Constr->Type ==Sketcher::EllipseXUAngle ||
             ((Constr->Type == Sketcher::DistanceX || Constr->Type == Sketcher::DistanceY) &&
              Constr->FirstPos == Sketcher::none || Constr->Second != Sketcher::Constraint::GeoUndef))
             // hide negative sign
@@ -140,7 +141,7 @@ void EditDatumDialog::exec(bool atCursor)
                 ui_ins_datum.labelEdit->pushToHistory();
 
                 double newDatum = newQuant.getValue();
-                if (Constr->Type == Sketcher::Angle ||
+                if (Constr->Type == Sketcher::Angle || Constr->Type ==Sketcher::EllipseXUAngle ||
                     ((Constr->Type == Sketcher::DistanceX || Constr->Type == Sketcher::DistanceY) &&
                      Constr->FirstPos == Sketcher::none || Constr->Second != Sketcher::Constraint::GeoUndef)) {
                     // Permit negative values to flip the sign of the constraint

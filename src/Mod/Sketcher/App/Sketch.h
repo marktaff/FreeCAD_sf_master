@@ -168,6 +168,9 @@ public:
     int addAngleConstraint(int geoId, double value);
     int addAngleConstraint(int geoId1, int geoId2, double value);
     int addAngleConstraint(int geoId1, PointPos pos1, int geoId2, PointPos pos2, double value);
+    /// add ellipse XDir axis angle constraint with respect to XAxis or a lines
+    int addEllipseAngleXUConstraint(int geoId, double value);
+    int addEllipseAngleXUConstraint(int geoId1, int geoId2, double value);
     /// add an equal length or radius constraints between two lines or between circles and arcs
     int addEqualConstraint(int geoId1, int geoId2);
     /// add a point on line constraint
