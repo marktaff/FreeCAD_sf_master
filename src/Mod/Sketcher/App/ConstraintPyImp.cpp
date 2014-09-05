@@ -116,6 +116,15 @@ int ConstraintPy::PyInit(PyObject* args, PyObject* /*kwd*/)
                 this->getConstraintPtr()->Type = Angle;
                 valid = true;
             }
+            else if (strcmp("EllipseXUAngle",ConstraintType) == 0 ) {
+                if (PyObject_TypeCheck(index_or_value, &(Base::QuantityPy::Type))) {
+                    Base::Quantity q = *(static_cast<Base::QuantityPy*>(index_or_value)->getQuantityPtr());
+                    if (q.getUnit() == Base::Unit::Angle)
+                        Value = q.getValueAs(Base::Quantity::Radian);
+                }
+                this->getConstraintPtr()->Type = EllipseXUAngle;
+                valid = true;
+            }
             else if (strcmp("DistanceX",ConstraintType) == 0) {
                 this->getConstraintPtr()->Type = DistanceX;
                 valid = true;
@@ -190,6 +199,18 @@ int ConstraintPy::PyInit(PyObject* args, PyObject* /*kwd*/)
                         Value = q.getValueAs(Base::Quantity::Radian);
                 }
                 this->getConstraintPtr()->Type   = Angle;
+                this->getConstraintPtr()->First  = FirstIndex;
+                this->getConstraintPtr()->Second = SecondIndex;
+                this->getConstraintPtr()->Value  = Value;
+                return 0;
+            }
+            else if (strcmp("EllipseXUAngle",ConstraintType) == 0) {
+                if (PyObject_TypeCheck(index_or_value, &(Base::QuantityPy::Type))) {
+                    Base::Quantity q = *(static_cast<Base::QuantityPy*>(index_or_value)->getQuantityPtr());
+                    if (q.getUnit() == Base::Unit::Angle)
+                        Value = q.getValueAs(Base::Quantity::Radian);
+                }
+                this->getConstraintPtr()->Type   = EllipseXUAngle;
                 this->getConstraintPtr()->First  = FirstIndex;
                 this->getConstraintPtr()->Second = SecondIndex;
                 this->getConstraintPtr()->Value  = Value;
@@ -304,6 +325,15 @@ int ConstraintPy::PyInit(PyObject* args, PyObject* /*kwd*/)
                 this->getConstraintPtr()->Type = Angle;
                 valid = true;
             }
+            else if (strcmp("EllipseXUAngle",ConstraintType) == 0 ) {
+                if (PyObject_TypeCheck(index_or_value, &(Base::QuantityPy::Type))) {
+                    Base::Quantity q = *(static_cast<Base::QuantityPy*>(index_or_value)->getQuantityPtr());
+                    if (q.getUnit() == Base::Unit::Angle)
+                        Value = q.getValueAs(Base::Quantity::Radian);
+                }
+                this->getConstraintPtr()->Type = EllipseXUAngle;
+                valid = true;
+            }
             if (valid) {
                 this->getConstraintPtr()->First     = FirstIndex;
                 this->getConstraintPtr()->FirstPos  = (Sketcher::PointPos) FirstPos;
@@ -348,17 +378,18 @@ std::string ConstraintPy::representation(void) const
     std::stringstream result;
     result << "<Constraint " ;
     switch(this->getConstraintPtr()->Type) {
-        case None       : result << "'None'>";break;
-        case DistanceX  : result << "'DistanceX'>";break;
-        case DistanceY  : result << "'DistanceY'>";break;
-        case Coincident : result << "'Coincident'>";break;
-        case Horizontal : result << "'Horizontal' (" << getConstraintPtr()->First << ")>";break;
-        case Vertical   : result << "'Vertical' (" << getConstraintPtr()->First << ")>";break;
-        case Parallel   : result << "'Parallel'>";break;
-        case Tangent    : result << "'Tangent'>";break;
-        case Distance   : result << "'Distance'>";break;
-        case Angle      : result << "'Angle'>";break;
-        default         : result << "'?'>";break;
+        case None           : result << "'None'>";break;
+        case DistanceX      : result << "'DistanceX'>";break;
+        case DistanceY      : result << "'DistanceY'>";break;
+        case Coincident     : result << "'Coincident'>";break;
+        case Horizontal     : result << "'Horizontal' (" << getConstraintPtr()->First << ")>";break;
+        case Vertical       : result << "'Vertical' (" << getConstraintPtr()->First << ")>";break;
+        case Parallel       : result << "'Parallel'>";break;
+        case Tangent        : result << "'Tangent'>";break;
+        case Distance       : result << "'Distance'>";break;
+        case Angle          : result << "'Angle'>";break;
+        case EllipseXUAngle : result << "'EllipseXUAngle'>";break;
+        default             : result << "'?'>";break;
     }
     return result.str();
 }

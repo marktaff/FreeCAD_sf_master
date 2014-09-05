@@ -706,6 +706,11 @@ int System::addConstraintEllipseMinRadius(Ellipse &e, double *radmin, int tagId)
     return addConstraintEqual(e.radmin, radmin, tagId);
 }
 
+int System::addConstraintEllipseAngleXU(Ellipse &e, double *angle, int tagId)
+{
+    return addConstraintEqual(e.phi, angle, tagId);
+}
+
 int System::addConstraintArcRadius(Arc &a, double *radius, int tagId)
 {
     return addConstraintEqual(a.rad, radius, tagId);

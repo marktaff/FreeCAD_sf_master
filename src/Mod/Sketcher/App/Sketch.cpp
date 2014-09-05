@@ -584,6 +584,12 @@ int Sketch::addConstraint(const Constraint *constraint)
         else if (constraint->First != Constraint::GeoUndef) // orientation angle of a line
             rtn = addAngleConstraint(constraint->First,constraint->Value);
         break;
+    case EllipseXUAngle:
+        if (constraint->Second != Constraint::GeoUndef) // angle between an ellipse and a line
+            rtn = addEllipseAngleXUConstraint(constraint->First,constraint->Second,constraint->Value);
+        else if (constraint->First != Constraint::GeoUndef) // angle between an ellipse and the X axis
+            rtn = addEllipseAngleXUConstraint(constraint->First,constraint->Value);
+        break;
     case Radius:
     case MajorRadius:
         rtn = addRadiusConstraint(constraint->First, constraint->Value);
@@ -1555,6 +1561,50 @@ int Sketch::addAngleConstraint(int geoId1, PointPos pos1, int geoId2, PointPos p
     return ConstraintsCounter;
 }
 
+
+int Sketch::addEllipseAngleXUConstraint(int geoId, double value)
+{
+    geoId = checkGeoId(geoId);
+
+    if (Geoms[geoId].type != Ellipse)
+        return -1;
+
+    GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
+
+    // add the parameter for the angle
+    FixParameters.push_back(new double(value));
+    double *angle = FixParameters[FixParameters.size()-1];
+
+    int tag = ++ConstraintsCounter;
+    GCSsys.addConstraintEllipseAngleXU(e, angle, tag);
+    
+    return ConstraintsCounter;
+}
+
+// line to line angle constraint
+int Sketch::addEllipseAngleXUConstraint(int geoId1, int geoId2, double value)
+{
+    // TODO: Ellipse implementation - This is wrong - Just a placeholder
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+
+    if (Geoms[geoId1].type != Line ||
+        Geoms[geoId2].type != Line)
+        return -1;
+
+    GCS::Line &l1 = Lines[Geoms[geoId1].index];
+    GCS::Line &l2 = Lines[Geoms[geoId2].index];
+
+    // add the parameter for the angle
+    FixParameters.push_back(new double(value));
+    double *angle = FixParameters[FixParameters.size()-1];
+
+    int tag = ++ConstraintsCounter;
+    GCSsys.addConstraintL2LAngle(l1, l2, angle, tag);
+    return ConstraintsCounter;
+}
+
+
 int Sketch::addEqualConstraint(int geoId1, int geoId2)
 {
     geoId1 = checkGeoId(geoId1);
@@ -1763,6 +1813,7 @@ bool Sketch::updateGeometry()
                                );
                 ellipse->setMajorRadius(*Ellipses[it->index].radmaj);
                 ellipse->setMinorRadius(*Ellipses[it->index].radmin);
+                ellipse->setAngleXU(*Ellipses[it->index].phi);
             }
         } catch (Base::Exception e) {
             Base::Console().Error("Updating geometry: Error build geometry(%d): %s\n",

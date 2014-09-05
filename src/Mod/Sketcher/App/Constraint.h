@@ -41,6 +41,7 @@ enum ConstraintType {
     DistanceX,
     DistanceY,
     Angle,
+    EllipseXUAngle,
     Perpendicular,
     Radius,
     MajorRadius,

@@ -2103,6 +2103,119 @@ bool CmdSketcherConstrainAngle::isActive(void)
     return isCreateConstraintActive( getActiveGuiDocument() );
 }
 
+DEF_STD_CMD_A(CmdSketcherConstrainEllipseXUAngle);
+
+CmdSketcherConstrainEllipseXUAngle::CmdSketcherConstrainEllipseXUAngle()
+    :Command("Sketcher_EllipseXUAngle")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Constrain angle");
+    sToolTipText    = QT_TR_NOOP("Fix the angle of a line or the angle between two lines");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Constraint_EllipseXUAngle";
+    sAccel          = "E,A";
+    eType           = ForEdit;
+}
+
+void CmdSketcherConstrainEllipseXUAngle::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select vertexes from the sketch."));
+        return;
+    }
+
+    // get the needed lists and objects
+    const std::vector<std::string> &SubNames = selection[0].getSubNames();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    if (SubNames.size() < 1 || SubNames.size() > 2) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select one ellipse or one ellipse and one line from the sketch."));
+        return;
+    }
+
+
+    int GeoId1, GeoId2=Constraint::GeoUndef;
+    Sketcher::PointPos PosId1, PosId2=Sketcher::none;
+    getIdsFromName(SubNames[0], Obj, GeoId1, PosId1);
+    if (SubNames.size() == 2)
+        getIdsFromName(SubNames[1], Obj, GeoId2, PosId2);
+
+    if (checkBothExternal(GeoId1, GeoId2))
+        return;
+    else if (isVertex(GeoId1,PosId1) && isEdge(GeoId2,PosId2)) {
+        std::swap(GeoId1,GeoId2);
+        std::swap(PosId1,PosId2);
+    }
+
+    if (isEdge(GeoId2,PosId2)) { // ellipse to line angle
+        // TODO: Ellipse implementation - Not yet supported
+        const Part::Geometry *geom2 = Obj->getGeometry(GeoId2);
+        if (geom2->getTypeId() == Part::GeomLineSegment::getClassTypeId()) {
+            const Part::GeomLineSegment *lineSeg;
+            lineSeg = dynamic_cast<const Part::GeomLineSegment*>(geom2);
+            Base::Vector3d dir = lineSeg->getEndPoint()-lineSeg->getStartPoint();
+            double reflineAngle = atan2(dir.y,dir.x);
+            
+            const Part::Geometry *geom1 = Obj->getGeometry(GeoId1);
+            if (geom1->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse*>(geom1);
+                double ActAngle = ellipse->getAngleXU()-reflineAngle;
+
+                openCommand("add ellipseAngleXU constraint");
+                Gui::Command::doCommand(
+                Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('EllipseXUAngle',%d,%d,%d,%d,%f)) ",
+                selection[0].getFeatName(),GeoId1,PosId1,GeoId2,PosId2,ActAngle);
+                commitCommand();
+
+                finishDistanceConstraint(this, Obj);
+                return;
+            }
+
+        }
+        
+        return;
+    } else if (isEdge(GeoId1,PosId1)) { // ellipse angle
+        if (GeoId1 < 0) {
+            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+                GeoId1 < -2 ? QObject::tr("Cannot add an angle constraint on an external geometry!")
+                            : QObject::tr("Cannot add an angle constraint on an axis!"));
+            return;
+        }
+
+        const Part::Geometry *geom = Obj->getGeometry(GeoId1);
+        if (geom->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+            const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse*>(geom);
+            double ActAngle = ellipse->getAngleXU();
+
+            openCommand("add ellipseAngleXU constraint");
+            Gui::Command::doCommand(
+                Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('EllipseXUAngle',%d,%f)) ",
+                selection[0].getFeatName(),GeoId1,ActAngle);
+            commitCommand();
+
+            finishDistanceConstraint(this, Obj);
+            return;
+        }
+    }
+
+    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+        QObject::tr("Select exactly one or two lines from the sketch."));
+    return;
+}
+
+bool CmdSketcherConstrainEllipseXUAngle::isActive(void)
+{
+    return isCreateConstraintActive( getActiveGuiDocument() );
+}
+
 
 DEF_STD_CMD_A(CmdSketcherConstrainEqual);
 
@@ -2386,6 +2499,7 @@ void CreateSketcherCommandsConstraints(void)
     rcCmdMgr.addCommand(new CmdSketcherConstrainMajorRadius());
     rcCmdMgr.addCommand(new CmdSketcherConstrainMinorRadius());
     rcCmdMgr.addCommand(new CmdSketcherConstrainAngle());
+    rcCmdMgr.addCommand(new CmdSketcherConstrainEllipseXUAngle());
     rcCmdMgr.addCommand(new CmdSketcherConstrainEqual());
     rcCmdMgr.addCommand(new CmdSketcherConstrainPointOnObject());
     rcCmdMgr.addCommand(new CmdSketcherConstrainSymmetric());
