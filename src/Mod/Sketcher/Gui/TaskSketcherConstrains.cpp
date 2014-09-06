@@ -339,7 +339,7 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
     QIcon majradi ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Major_Radius") );
     QIcon minradi ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Minor_Radius") );
     QIcon angl ( Gui::BitmapFactory().pixmap("Constraint_InternalAngle") );
-    QIcon ellipseXUAngl ( Gui::BitmapFactory().pixmap("Constraint_InternalAngle") );
+    QIcon ellipseXUAngl ( Gui::BitmapFactory().pixmap("Constraint_Ellipse_Axis_Angle") );
     QIcon equal( Gui::BitmapFactory().pixmap("Constraint_EqualLength") );
     QIcon pntoo( Gui::BitmapFactory().pixmap("Constraint_PointOnObject") );
     QIcon symm ( Gui::BitmapFactory().pixmap("Constraint_Symmetric") );

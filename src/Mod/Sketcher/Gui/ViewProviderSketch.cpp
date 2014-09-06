@@ -1121,7 +1121,7 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
            || Constr->First != Constraint::GeoUndef);
 
     if (Constr->Type == Distance || Constr->Type == DistanceX || Constr->Type == DistanceY ||
-        Constr->Type == Radius) {
+        Constr->Type == Radius || Constr->Type == MajorRadius || Constr->Type == MinorRadius) {
 
         Base::Vector3d p1(0.,0.,0.), p2(0.,0.,0.);
         if (Constr->SecondPos != Sketcher::none) { // point to point distance
@@ -1156,13 +1156,30 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
                 p1 = arc->getCenter();
                 p2 = p1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
             }
-            else if (geo->getTypeId() == Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
+            else if (geo->getTypeId() == Part::GeomCircle::getClassTypeId()) { 
                 const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(geo);
                 double radius = circle->getRadius();
                 p1 = circle->getCenter();
                 Base::Vector3d tmpDir =  Base::Vector3d(toPos.fX, toPos.fY, 0) - p1;
                 double angle = atan2f(tmpDir.y, tmpDir.x);
                 p2 = p1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
+            }
+            else if (geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
+                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
+                double radius = (Constr->Type == MajorRadius)?ellipse->getMajorRadius():ellipse->getMinorRadius();
+                p1 = ellipse->getCenter();
+                Base::Vector3d tmpDir  =  Base::Vector3d(toPos.fX, toPos.fY, 0) - p1;
+                //Base::Vector3d tmpDir2 =  (Constr->Type == MajorRadius) ?  
+                //                          (radius * Base::Vector3d(cos(ellipse->getAngleXU()), sin(ellipse->getAngleXU()), 0)):
+                //                          (radius * Base::Vector3d(cos(ellipse->getAngleXU()+M_PI/2), sin(ellipse->getAngleXU()+M_PI/2), 0));
+                
+                double angle = (Constr->Type == MajorRadius)?ellipse->getAngleXU():ellipse->getAngleXU()+M_PI/2;
+                //double angle = acos(tmpDir.Normalize() * tmpDir2.Normalize());
+                //angle = (abs(angle)>M_PI/2 && angle>0)?
+                //            ((Constr->Type == MajorRadius)?-ellipse->getAngleXU():ellipse->getAngleXU()-M_PI/2 ):
+                //            ((Constr->Type == MajorRadius)?ellipse->getAngleXU():ellipse->getAngleXU()+M_PI/2) ;
+                                
+                p2 = p1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);                        
             } else
                 return;
         } else
@@ -1171,14 +1188,14 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
         Base::Vector3d vec = Base::Vector3d(toPos.fX, toPos.fY, 0) - p2;
 
         Base::Vector3d dir;
-        if (Constr->Type == Distance || Constr->Type == Radius)
+        if (Constr->Type == Distance || Constr->Type == Radius || Constr->Type == MajorRadius || Constr->Type == MinorRadius)
             dir = (p2-p1).Normalize();
         else if (Constr->Type == DistanceX)
             dir = Base::Vector3d( (p2.x - p1.x >= FLT_EPSILON) ? 1 : -1, 0, 0);
         else if (Constr->Type == DistanceY)
             dir = Base::Vector3d(0, (p2.y - p1.y >= FLT_EPSILON) ? 1 : -1, 0);
 
-        if (Constr->Type == Radius) {
+        if (Constr->Type == Radius || Constr->Type == MajorRadius || Constr->Type == MinorRadius) {
             Constr->LabelDistance = vec.x * dir.x + vec.y * dir.y;
             Constr->LabelPosition = atan2f(dir.y, dir.x);
         } else {
@@ -1232,6 +1249,23 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
 
         Base::Vector3d vec = Base::Vector3d(toPos.fX, toPos.fY, 0) - p0;
         Constr->LabelDistance = vec.Length()/2;
+    }
+    else if (Constr->Type == EllipseXUAngle) {
+        Base::Vector3d p0(0.,0.,0.);
+        if (Constr->Second != Constraint::GeoUndef) { // Ellipse with reference to line
+            // TODO: ellipse - Ellipse to line angle support
+        }
+        else { // Ellipse to X-Axis (phi)
+            const Part::Geometry *geo = GeoById(geomlist, Constr->First);
+            if (geo->getTypeId() != Part::GeomEllipse::getClassTypeId())
+                return;
+            const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
+            p0 = ellipse->getCenter(); //+ ellipse->getMajorRadius() * Base::Vector3d(cos(ellipse->getAngleXU()),sin(ellipse->getAngleXU()),0.);
+        }
+        
+        Base::Vector3d vec = Base::Vector3d(toPos.fX, toPos.fY, 0) - p0;
+        Constr->LabelDistance = vec.Length()/2;
+        
     }
 
     // delete the cloned objects
