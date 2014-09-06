@@ -330,8 +330,10 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemChanged(QListWidgetIte
         unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
         break;
     case Sketcher::Angle:
-    case Sketcher::EllipseXUAngle:
         unitStr = Base::Quantity(Base::toDegrees<double>(std::abs(v->Value)),Base::Unit::Angle).getUserString();
+        break;
+    case Sketcher::EllipseXUAngle:
+        unitStr = Base::Quantity(Base::toDegrees<double>(v->Value),Base::Unit::Angle).getUserString();
         break;
     default:
         break;
@@ -486,7 +488,7 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
             case Sketcher::EllipseXUAngle:
                 if (Filter<3 || !(*it)->Name.empty()) {
                     ConstraintItem* item = new ConstraintItem(ellipseXUAngl,name,i-1,(*it)->Type);
-                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>(std::abs((*it)->Value)),Base::Unit::Angle).getUserString());
+                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>((*it)->Value),Base::Unit::Angle).getUserString());
                     item->setData(Qt::UserRole, name);
                     ui->listWidgetConstraints->addItem(item);
                 }
