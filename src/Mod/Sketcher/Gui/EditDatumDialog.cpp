@@ -158,7 +158,7 @@ void EditDatumDialog::exec(bool atCursor)
                     if( (Constr->Type == Sketcher::MajorRadius && newDatum < ellipse->getMinorRadius()) ||
                         (Constr->Type == Sketcher::MinorRadius && newDatum > ellipse->getMajorRadius()) ) {
                         QMessageBox::warning(qApp->activeWindow(), QObject::tr("Wrong value"),
-                        QObject::tr("The major radius of an ellipse must be larger than or equal to the minor radius."));
+                        QObject::tr("The major radius of an ellipse must be larger than or equal to the minor radius. You might want to rotate the ellipse 90º."));
                         return;
                     }
                     
