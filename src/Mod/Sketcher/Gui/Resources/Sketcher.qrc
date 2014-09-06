@@ -62,9 +62,9 @@
         <file>icons/Sketcher_Element_Arc_StartingPoint.svg</file>
         <file>icons/Sketcher_Element_Circle_Edge.svg</file>
         <file>icons/Sketcher_Element_Circle_MidPoint.svg</file>
-        <file>icons/Sketcher_Element_Ellipse_CentrePoint_2 .svg</file>
-        <file>icons/Sketcher_Element_Ellipse_Edge_1 .svg</file>
-        <file>icons/Sketcher_Element_Ellipse_Edge_2 .svg</file>
+        <file>icons/Sketcher_Element_Ellipse_CentrePoint.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_Edge_1.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_Edge_2.svg</file>
         <file>icons/Sketcher_Element_Line_Edge.svg</file>
         <file>icons/Sketcher_Element_Line_EndPoint.svg</file>
         <file>icons/Sketcher_Element_Line_StartingPoint.svg</file>
