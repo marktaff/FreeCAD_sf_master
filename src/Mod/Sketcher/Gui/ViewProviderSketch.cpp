@@ -3511,7 +3511,7 @@ Restart:
                         break;
 
                     SoDatumLabel *asciiText = dynamic_cast<SoDatumLabel *>(sep->getChild(CONSTRAINT_SEPARATOR_INDEX_MATERIAL_OR_DATUMLABEL));
-                    asciiText->string    = SbString(Base::Quantity(Base::toDegrees<double>(std::abs(Constr->Value)),Base::Unit::Angle).getUserString().toUtf8().constData());
+                    asciiText->string    = SbString(Base::Quantity(Base::toDegrees<double>(Constr->Value),Base::Unit::Angle).getUserString().toUtf8().constData());
                     asciiText->datumtype = SoDatumLabel::ANGLE;
                     asciiText->param1    = Constr->LabelDistance;
                     asciiText->param2    = startangle;

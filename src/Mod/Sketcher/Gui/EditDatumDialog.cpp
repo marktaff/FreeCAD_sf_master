@@ -119,7 +119,7 @@ void EditDatumDialog::exec(bool atCursor)
 
         //ui_ins_datum.lineEdit->setParamGrpPath("User parameter:History/Sketcher/SetDatum");
 
-        if (Constr->Type == Sketcher::Angle || Constr->Type ==Sketcher::EllipseXUAngle ||
+        if (Constr->Type == Sketcher::Angle ||
             ((Constr->Type == Sketcher::DistanceX || Constr->Type == Sketcher::DistanceY) &&
              Constr->FirstPos == Sketcher::none || Constr->Second != Sketcher::Constraint::GeoUndef))
             // hide negative sign
@@ -141,7 +141,7 @@ void EditDatumDialog::exec(bool atCursor)
                 ui_ins_datum.labelEdit->pushToHistory();
 
                 double newDatum = newQuant.getValue();
-                if (Constr->Type == Sketcher::Angle || Constr->Type ==Sketcher::EllipseXUAngle ||
+                if (Constr->Type == Sketcher::Angle ||
                     ((Constr->Type == Sketcher::DistanceX || Constr->Type == Sketcher::DistanceY) &&
                      Constr->FirstPos == Sketcher::none || Constr->Second != Sketcher::Constraint::GeoUndef)) {
                     // Permit negative values to flip the sign of the constraint
@@ -149,6 +149,19 @@ void EditDatumDialog::exec(bool atCursor)
                         newDatum = ((datum >= 0) ? 1 : -1) * std::abs(newDatum);
                     else // flip sign
                         newDatum = ((datum >= 0) ? -1 : 1) * std::abs(newDatum);
+                }
+                
+                // If major or minor radius : Add here find the ellipse, and see if value is possible if not notify the user and do not apply change
+                if (Constr->Type == Sketcher::MajorRadius || Constr->Type == Sketcher::MinorRadius) {
+                    const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(sketch->getGeometry(Constr->First));
+                    
+                    if( (Constr->Type == Sketcher::MajorRadius && newDatum < ellipse->getMinorRadius()) ||
+                        (Constr->Type == Sketcher::MinorRadius && newDatum > ellipse->getMajorRadius()) ) {
+                        QMessageBox::warning(qApp->activeWindow(), QObject::tr("Wrong value"),
+                        QObject::tr("The major radius of an ellipse must be larger than or equal to the minor radius."));
+                        return;
+                    }
+                    
                 }
 
                 try {
