@@ -976,7 +976,12 @@ void GeomEllipse::Restore(Base::XMLReader& reader)
     NormalZ = reader.getAttributeAsFloat("NormalZ");
     MajorRadius = reader.getAttributeAsFloat("MajorRadius");
     MinorRadius = reader.getAttributeAsFloat("MinorRadius");
-    AngleXU = reader.getAttributeAsFloat("AngleXU");
+    
+    // This is for backwards compatibility
+    if(reader.hasAttribute("AngleXU"))
+        AngleXU = reader.getAttributeAsFloat("AngleXU");
+    else
+        AngleXU = 0;
 
     // set the read geometry
     gp_Pnt p1(CenterX,CenterY,CenterZ);
