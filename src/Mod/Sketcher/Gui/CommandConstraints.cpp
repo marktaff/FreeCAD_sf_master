@@ -2114,7 +2114,7 @@ CmdSketcherConstrainEllipseXUAngle::CmdSketcherConstrainEllipseXUAngle()
     sToolTipText    = QT_TR_NOOP("Fix the angle of a line or the angle between two lines");
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
-    sPixmap         = "Constraint_EllipseXUAngle";
+    sPixmap         = "Constraint_Ellipse_Axis_Angle";
     sAccel          = "E,A";
     eType           = ForEdit;
 }
