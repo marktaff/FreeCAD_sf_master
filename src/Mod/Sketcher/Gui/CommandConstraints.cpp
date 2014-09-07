@@ -1847,7 +1847,7 @@ void CmdSketcherConstrainMinorRadius::activated(int iMsg)
                 const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geom);
                 double radius = ellipse->getMinorRadius();
                 geoIdMinorRadiusMap.push_back(std::make_pair(GeoId, radius));
-                geoIdMajorRadiusMap.push_back(std::make_pair(GeoId, radius));
+                geoIdMajorRadiusMap.push_back(std::make_pair(GeoId, ellipse->getMajorRadius()));
             }
         }
     }
