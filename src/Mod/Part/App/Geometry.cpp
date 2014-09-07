@@ -896,9 +896,11 @@ double GeomEllipse::getAngleXU(void) const
     gp_Dir normal = this->myCurve->Axis().Direction();
     gp_Dir xdir = this->myCurve->XAxis().Direction();
     
-    gp_Ax2 xdirref(center, normal); // this is a reference XY for the ellipse
+    
+    gp_Ax2 xdirref(center, normal); // this is a reference system, might be CCW or CW depending on the creation method
     
     return -xdir.AngleWithRef(xdirref.XDirection(),normal);
+
 }
 
 void GeomEllipse::setAngleXU(double angle)

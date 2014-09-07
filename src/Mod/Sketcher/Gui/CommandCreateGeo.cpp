@@ -1939,25 +1939,42 @@ public:
             double angleatpoint = acos((EditCurve[2].fX-EditCurve[0].fX+(EditCurve[2].fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
             double b=(EditCurve[2].fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
                         
-            // force second semidiameter to be perpendicular to first semidiamater
-            Base::Vector2D majAxisDir = EditCurve[1] - EditCurve[0];
-            Base::Vector2D perp(majAxisDir.fY,-majAxisDir.fX);
-            perp.Normalize();
-            perp.Scale(b);
-            Base::Vector2D minAxisPoint = EditCurve[0]+perp;
+            Base::Vector2D majAxisDir,minAxisDir,minAxisPoint,majAxisPoint;
+            // We always create a CCW ellipse, because we want our XY reference system to be in the +X +Y direction
+            // Our normal will then always be in the +Z axis (local +Z axis of the sketcher)
+            
+            if(a>b)
+            {
+                // force second semidiameter to be perpendicular to first semidiamater
+                majAxisDir = EditCurve[1] - EditCurve[0];
+                Base::Vector2D perp(-majAxisDir.fY,majAxisDir.fX);
+                perp.Normalize();
+                perp.Scale(abs(b));
+                minAxisPoint = EditCurve[0]+perp;
+                majAxisPoint = EditCurve[0]+majAxisDir;
+            }
+            else {
+                // force second semidiameter to be perpendicular to first semidiamater
+                minAxisDir = EditCurve[1] - EditCurve[0];
+                Base::Vector2D perp(minAxisDir.fY,-minAxisDir.fX);
+                perp.Normalize();
+                perp.Scale(abs(b));
+                majAxisPoint = EditCurve[0]+perp; 
+                minAxisPoint = EditCurve[0]+minAxisDir;
+            }
             
             Gui::Command::openCommand("Add sketch ellipse");
             Gui::Command::doCommand(Gui::Command::Doc,
                 "App.ActiveDocument.%s.addGeometry(Part.Ellipse"
                 "(App.Vector(%f,%f,0),App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
-                      sketchgui->getObject()->getNameInDocument(),
-                      b>a?minAxisPoint.fX:EditCurve[1].fX, b>a?minAxisPoint.fY:EditCurve[1].fY,                                    
-                      a>=b?minAxisPoint.fX:EditCurve[1].fX, a>=b?minAxisPoint.fY:EditCurve[1].fY,
-                      EditCurve[0].fX, EditCurve[0].fY);
+                    sketchgui->getObject()->getNameInDocument(),
+                    majAxisPoint.fX, majAxisPoint.fY,                                    
+                    minAxisPoint.fX, minAxisPoint.fY,
+                    EditCurve[0].fX, EditCurve[0].fY);
 
             Gui::Command::commitCommand();
             Gui::Command::updateActive();
-
+            
             // add auto constraints for the center point
             if (sugConstr1.size() > 0) {
                 createAutoConstraints(sugConstr1, getHighestCurveIndex(), Sketcher::mid);
