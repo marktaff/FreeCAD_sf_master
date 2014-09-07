@@ -1757,11 +1757,37 @@ void CmdSketcherConstrainMajorRadius::activated(int iMsg)
                     newRadius = newQuant.getValue();
                 }
                 else {
-                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong value"),
-                    QObject::tr("The value you provided for the major radius is smaller than the minor radius."));
-                    getSelection().clearSelection();
-                    return;
-                    // TODO: Improvement, search for a minor radius constraint, if not existing reduce the size of the minor radius.
+                    // search if there is a Minor radius constraint active for this ellipse
+                    
+                    bool minorConstraint=false;
+                    
+                    const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+                    int i=1;
+                    for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
+                        it != vals.end(); ++it,++i) {
+                        if ( (*it)->Type == MinorRadius && (*it)->First == geoIdMajorRadiusMap.front().first){
+                            minorConstraint=true;
+                        }
+                    }
+                    
+                    if(minorConstraint){
+                        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong value"),
+                        QObject::tr("The value you provided for the major radius is smaller than the minor radius."));
+                        getSelection().clearSelection();
+                        return;
+                    }
+                    else {
+                        const Part::Geometry *geom = Obj->getGeometry(geoIdMajorRadiusMap.front().first);
+                        if (geom && geom->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+                            Part::GeomEllipse *ellipse = const_cast<Part::GeomEllipse *>(dynamic_cast<const Part::GeomEllipse *>(geom));
+                            
+                            newRadius = newQuant.getValue();
+                            
+                            ellipse->setMinorRadius(newRadius);
+                            
+                        }
+                    }
+
                 }
 
                 try {
@@ -1839,6 +1865,7 @@ void CmdSketcherConstrainMinorRadius::activated(int iMsg)
     // check for which selected geometry the constraint can be applied
     std::vector< std::pair<int, double> > geoIdMinorRadiusMap;
     std::vector< std::pair<int, double> > geoIdMajorRadiusMap;
+    
     for (std::vector<std::string>::const_iterator it = SubNames.begin(); it != SubNames.end(); ++it) {
         if (it->size() > 4 && it->substr(0,4) == "Edge") {
             int GeoId = std::atoi(it->substr(4,4000).c_str()) - 1;
@@ -1939,11 +1966,37 @@ void CmdSketcherConstrainMinorRadius::activated(int iMsg)
                     newRadius = newQuant.getValue();
                 }
                 else {
-                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong value"),
-                    QObject::tr("The value you provided for the minor radius is larger than the major radius."));
-                    getSelection().clearSelection();
-                    return;
-                    // TODO: Improvement, search for a major radius constraint, if not existing increase the size of the major radius.
+                    // search if there is a Major radius constraint active for this ellipse
+                    //ellipse
+                    
+                    bool majorConstraint=false;
+                    
+                    const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+                    int i=1;
+                    for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
+                        it != vals.end(); ++it,++i) {
+                        if ( (*it)->Type == MajorRadius && (*it)->First == geoIdMajorRadiusMap.front().first){
+                            majorConstraint=true;
+                        }
+                    }
+                    
+                    if(majorConstraint){
+                        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong value"),
+                        QObject::tr("The value you provided for the minor radius is larger than the major radius."));
+                        getSelection().clearSelection();
+                        return;
+                    }
+                    else {
+                        const Part::Geometry *geom = Obj->getGeometry(geoIdMajorRadiusMap.front().first);
+                        if (geom && geom->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+                            Part::GeomEllipse *ellipse = const_cast<Part::GeomEllipse *>(dynamic_cast<const Part::GeomEllipse *>(geom));
+                            
+                            newRadius = newQuant.getValue();
+                            
+                            ellipse->setMajorRadius(newRadius);
+                            
+                        }
+                    }
                 }
 
                 try {
