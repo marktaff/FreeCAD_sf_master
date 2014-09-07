@@ -2235,6 +2235,7 @@ void CmdSketcherConstrainEllipseXUAngle::activated(int iMsg)
     }
 
     if (isEdge(GeoId2,PosId2)) { // ellipse to line angle
+
         // TODO: Ellipse implementation - Not yet supported
         const Part::Geometry *geom2 = Obj->getGeometry(GeoId2);
         if (geom2->getTypeId() == Part::GeomLineSegment::getClassTypeId()) {
