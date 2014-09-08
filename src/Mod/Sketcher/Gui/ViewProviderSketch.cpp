@@ -1844,7 +1844,7 @@ void ViewProviderSketch::doBoxSelection(const SbVec2s &startPos, const SbVec2s &
                 Gui::Selection().addSelection(doc->getName(), sketchObject->getNameInDocument(), ss.str().c_str());
             }
 
-        } else if ((*it)->getTypeId() == Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
+        } else if ((*it)->getTypeId() == Part::GeomCircle::getClassTypeId()) { 
             // ----- Check if circle lies inside box selection -----/
             const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(*it);
             pnt0 = circle->getCenter();
@@ -1870,6 +1870,50 @@ void ViewProviderSketch::doBoxSelection(const SbVec2s &startPos, const SbVec2s &
                 for (int i = 0; i < countSegments; ++i, angle += segment) {
                     pnt = Base::Vector3d(pnt0.x + radius * cos(angle),
                                          pnt0.y + radius * sin(angle),
+                                         0.f);
+                    Plm.multVec(pnt, pnt);
+                    pnt = proj(pnt);
+                    if (!polygon.Contains(Base::Vector2D(pnt.x, pnt.y))) {
+                        bpolyInside = false;
+                        break;
+                    }
+                }
+
+                if (bpolyInside) {
+                    ss.clear();
+                    ss.str("");
+                    ss << "Edge" << GeoId + 1;
+                    Gui::Selection().addSelection(doc->getName(), sketchObject->getNameInDocument(),ss.str().c_str());
+                }
+            }
+        } else if ((*it)->getTypeId() == Part::GeomEllipse::getClassTypeId()) { 
+            // ----- Check if circle lies inside box selection -----/
+            const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(*it);
+            pnt0 = ellipse->getCenter();
+            VertexId += 1;
+
+            Plm.multVec(pnt0, pnt0);
+            pnt0 = proj(pnt0);
+
+            if (polygon.Contains(Base::Vector2D(pnt0.x, pnt0.y))) {
+                std::stringstream ss;
+                ss << "Vertex" << VertexId + 1;
+                Gui::Selection().addSelection(doc->getName(), sketchObject->getNameInDocument(), ss.str().c_str());
+
+                int countSegments = 12;
+                float segment = float(2 * M_PI) / countSegments;
+
+                // circumscribed polygon radius
+                float a = float(ellipse->getMajorRadius()) / cos(segment/2);
+                float b = float(ellipse->getMinorRadius()) / cos(segment/2);
+                float phi = float(ellipse->getAngleXU());
+
+                bool bpolyInside = true;
+                pnt0 = ellipse->getCenter();
+                float angle = 0.f;
+                for (int i = 0; i < countSegments; ++i, angle += segment) {
+                    pnt = Base::Vector3d(pnt0.x + a * cos(angle) * cos(phi) - b * sin(angle) * sin(phi),
+                                         pnt0.y + a * cos(angle) * sin(phi) + b * sin(angle) * cos(phi),
                                          0.f);
                     Plm.multVec(pnt, pnt);
                     pnt = proj(pnt);
