@@ -727,10 +727,11 @@ int System::addConstraintEqualRadius(Circle &c1, Circle &c2, int tagId)
     return addConstraintEqual(c1.rad, c2.rad, tagId);
 }
 
-int System::addConstraintEqualRadMaj(Ellipse &e1, Ellipse &e2, int tagId)
+int System::addConstraintEqualRadii(Ellipse &e1, Ellipse &e2, int tagId)
 {
     // TODO: Ellipse
-    return addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
+    addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
+    return addConstraintEqual(e1.radmin, e2.radmin, tagId);
 }
 
 int System::addConstraintEqualRadius(Circle &c1, Arc &a2, int tagId)
