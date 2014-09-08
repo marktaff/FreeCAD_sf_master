@@ -1644,7 +1644,7 @@ int Sketch::addEqualConstraint(int geoId1, int geoId2)
             GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
             GCS::Ellipse &e2 = Ellipses[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
-            GCSsys.addConstraintEqualRadMaj(e1, e2, tag);
+            GCSsys.addConstraintEqualRadii(e1, e2, tag);
             return ConstraintsCounter;
         }
         else
@@ -2002,7 +2002,7 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             GCSsys.addConstraintP2PCoincident(p0,center,-1);
         } else if (pos == none) {
             // TODO: Ellipse
-            /*MoveParameters.resize(4); // x,y,cx,cy
+            MoveParameters.resize(4); // x,y,cx,cy
             GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
             p0.x = &MoveParameters[0];
             p0.y = &MoveParameters[1];
@@ -2015,7 +2015,7 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             *p1.y = *center.y;
             int i=GCSsys.addConstraintP2PCoincident(p1,center,-1);
             GCSsys.rescaleConstraint(i-1, 0.01);
-            GCSsys.rescaleConstraint(i, 0.01);*/
+            GCSsys.rescaleConstraint(i, 0.01);
         }
     } else if (Geoms[geoId].type == Arc) {
         GCS::Point &center = Points[Geoms[geoId].midPointId];
