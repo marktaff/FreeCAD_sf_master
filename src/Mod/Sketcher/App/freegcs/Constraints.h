@@ -160,6 +160,7 @@ namespace GCS
         virtual double error();
         virtual double grad(double *);
         virtual double maxStep(MAP_pD_D &dir, double lim=1.);
+        double abs(double darea);
     };
 
     // PointOnLine

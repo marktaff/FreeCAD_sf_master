@@ -481,10 +481,14 @@ int System::addConstraintPointOnCircle(Point &p, Circle &c, int tagId)
     return addConstraintP2PDistance(p, c.center, c.rad, tagId);
 }
 
-int System::addConstraintPointOnEllipse(Point &p, Ellipse &c, int tagId)
+int System::addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId)
 {
     // TODO: Implement real constraint
-    return addConstraintP2PDistance(p, c.center, c.radmaj, tagId);
+    //return addConstraintP2PDistance(p, c.center, c.radmaj, tagId);
+    
+    Constraint *constr = new ConstraintPointOnEllipse(p, e);
+    constr->setTag(tagId);
+    return addConstraint(constr);
 }
 
 int System::addConstraintPointOnArc(Point &p, Arc &a, int tagId)
@@ -558,10 +562,10 @@ int System::addConstraintTangent(Line &l, Circle &c, int tagId)
     return addConstraintP2LDistance(c.center, l, c.rad, tagId);
 }
 
-int System::addConstraintTangent(Line &l, Ellipse &c, int tagId)
+int System::addConstraintTangent(Line &l, Ellipse &e, int tagId)
 {
     // TODO: real ellipse implementation
-    return addConstraintP2LDistance(c.center, l, c.radmaj, tagId);
+    return addConstraintP2LDistance(e.center, l, e.radmaj, tagId);
 }
 
 int System::addConstraintTangent(Ellipse &e, Circle &c, int tagId)

@@ -125,7 +125,7 @@ namespace GCS
         int addConstraintCoordinateY(Point &p, double *y, int tagId=0);
         int addConstraintArcRules(Arc &a, int tagId=0);
         int addConstraintPointOnCircle(Point &p, Circle &c, int tagId=0);
-        int addConstraintPointOnEllipse(Point &p, Ellipse &c, int tagId=0);
+        int addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId=0);
         int addConstraintPointOnArc(Point &p, Arc &a, int tagId=0);
         int addConstraintPerpendicularLine2Arc(Point &p1, Point &p2, Arc &a,
                                                int tagId=0);
