@@ -937,91 +937,129 @@ void ConstraintPointOnEllipse::rescale(double coef)
 
 double ConstraintPointOnEllipse::error()
 {
-    /*double dx = (*c1x() - *c2x());
-    double dy = (*c1y() - *c2y());
-    if (internal)
-        return scale * (sqrt(dx*dx + dy*dy) - std::abs(*r1() - *r2()));
-    else
-        return scale * (sqrt(dx*dx + dy*dy) - (*r1() + *r2()));*/
-    return 0;
-}
-
-double ConstraintPointOnEllipse::grad(double *param)
-{
-    /* sage: a = var('a')
-    sage: b = var('b')
-    sage: t = var('t')
-    sage: phi = var('phi')
-    sage: X_c = var('X_c')
-    sage: Y_c = var('Y_c')
-    sage: Xt=X_c+a*cos(t)*cos(phi)-b*sin(t)*sin(phi)
-    sage: Yt=Y_c+a*cos(t)*sin(phi)+b*sin(t)*cos(phi)
-    sage: X_0 = var('X_0')
-    sage: Y_0 = var('Y_0')
-    sage: dXtdt= Xt.derivative(t)
-    sage: dYtdt= Yt.derivative(t)
-    sage: P=vector([X_0,Y_0])
-    sage: E=vector([Xt,Yt])
-    sage: dEdt=E.derivative(t)
-    sage: ((P-E)*dEdt).expand().simplify_trig()
-    sage: thetafunc=((P-E)*dEdt).expand().simplify_trig()
-    sage: thetafunc.derivative(t).simplify_trig()*/
-    // equation of distance from point P to the point in t of ellipse E
-    // t0 => (a^2 - b^2)*cos(t)*sin(t) - (b*cos(t)*sin(phi) + a*cos(phi)*sin(t))*X_0 + (b*cos(t)*sin(phi) + a*cos(phi)*sin(t))*X_c + (b*cos(phi)*cos(t) - a*sin(phi)*sin(t))*Y_0 - (b*cos(phi)*cos(t) - a*sin(phi)*sin(t))*Y_c=0
-    // t0 must be solved numerically
-    // d=(P-E(t0))
-    // first derivative:
-    // 2*(a^2 - b^2)*cos(t)^2 - (a*cos(phi)*cos(t) - b*sin(phi)*sin(t))*X_0 + (a*cos(phi)*cos(t) - b*sin(phi)*sin(t))*X_c - (a*cos(t)*sin(phi) + b*cos(phi)*sin(t))*Y_0 + (a*cos(t)*sin(phi) + b*cos(phi)*sin(t))*Y_c - a^2 + b^2
-
-    
     // so first get t for our case
     int i=0, maxmitr=100;
-    double h, t, f, df;
+    double h, t1, f, df;
     // TODO: ellipse check this error
-    double error=0.01;
+    double error=1e-10;
     // TODO: ellipse check this for convergence
+    
+    double X_0 = *p1x();
+    double Y_0 = *p1y();
+    double X_c = *e1x();
+    double Y_c = *e1y();
+    double a = *rmaj();
+    double b = *rmin();
+    double phip = *phi();
+    
     // this is atan2(a*y,b*x) translated and rotated
-    double t0=atan2(*rmaj()*(*p1x()*sin(*phi())+*p1y()*cos(*phi())-*e1y()),*rmin()*(*p1x()*cos(*phi())-*p1y()*sin(*phi())-*e1x()));
+    //double t0=atan2(*rmaj()*(*p1x()*sin(*phi())+*p1y()*cos(*phi())-*e1y()),*rmin()*(*p1x()*cos(*phi())-*p1y()*sin(*phi())-*e1x()));
+    //double t0=atan2(a*(X_0*sin(-phip)+Y_0*cos(-phip)-Y_c),b*(X_0*cos(-phip)-Y_0*sin(-phip)-X_c));
+    double t=atan2(a*(-(X_0-X_c)*sin(phip)+(Y_0-Y_c)*cos(phip)),b*((X_0-X_c)*cos(phip)+(Y_0-Y_c)*sin(phip)));
     
     // Newton-Raphson to get the t0 that corresponds to d.
     for (i=1; i<=maxmitr; i++){
-        f=(*rmaj()**rmaj() - *rmin()**rmin())*cos(t0)*sin(t0) - (*rmin()*cos(t0)*sin(*phi()) + *rmaj()*cos(*phi())*sin(t0))**p1x() + (*rmin()*cos(t0)*sin(*phi()) + *rmaj()*cos(*phi())*sin(t0))**e1x() + (*rmin()*cos(*phi())*cos(t0) - *rmaj()*sin(*phi())*sin(t0))**p1y() - (*rmin()*cos(*phi())*cos(t0) - *rmaj()*sin(*phi())*sin(t0))**e1y();
-        df=2*(*rmaj()**rmaj() - *rmin()**rmin())*cos(t0)*cos(t0) - (*rmaj()*cos(*phi())*cos(t0) - *rmin()*sin(*phi())*sin(t0))**p1x() + (*rmaj()*cos(*phi())*cos(t0) - *rmin()*sin(*phi())*sin(t0))**e1x() - (*rmaj()*cos(t0)*sin(*phi()) + *rmin()*cos(*phi())*sin(t0))**p1y() + (*rmaj()*cos(t0)*sin(*phi()) + *rmin()*cos(*phi())*sin(t0))**e1y() - *rmaj()**rmaj() + *rmin()**rmin();
+        f=-X_0*(a*sin(t)*cos(phip) + b*sin(phip)*cos(t)) + X_c*(a*sin(t)*cos(phip) + b*sin(phip)*cos(t)) + Y_0*(-a*sin(phip)*sin(t) + b*cos(phip)*cos(t)) - Y_c*(-a*sin(phip)*sin(t) + b*cos(phip)*cos(t)) + (pow(a, 2) - pow(b, 2))*sin(t)*cos(t);
+        df=-X_0*(a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + X_c*(a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) - Y_0*(a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) + Y_c*(a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) - pow(a, 2) + pow(b, 2) + 2*(pow(a, 2) - pow(b, 2))*pow(cos(t), 2);
         h=f/df;
-        t=t0-h;
+        t1=t-h;
         if (fabs(h) < error)
             break;
-        t0=t;
+        t=t1;
     }
     
     // t is the solution for the distance at this point
-    // -now we can derive the partials taking into account that t varies when varying any of all 7 parameters.
-    // substitute the values in the formulas and done !! Simple, ain't it?
-    
-    
+    // now calculate |P-E|    
+    double err=sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) - b*sin(phip)*sin(t),2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) + b*sin(t)*cos(phip), 2));
+    return scale * err;
+}
+
+double ConstraintPointOnEllipse::grad(double *param)
+{      
     double deriv=0.;
     if (param == p1x() || param == p1y() ||
         param == e1x() || param == e1y() ||
         param == rmaj() || param == rmin() ||
         param == phi()) {
+        
+        // so first get t for our case (the Eccentric anomally corresponding to the closest point of the ellipse)
+        int i=0, maxmitr=100;
+        double h, t1, f, df;
+        // TODO: ellipse check this error
+        double error=1e-10;
+        // TODO: ellipse check this for convergence
+        
+        double X_0 = *p1x();
+        double Y_0 = *p1y();
+        double X_c = *e1x();
+        double Y_c = *e1y();
+        double a = *rmaj();
+        double b = *rmin();
+        double phip = *phi();
+        
+        // this is atan2(a*y,b*x) translated and rotated
+        //double t0=atan2(*rmaj()*(*p1x()*sin(*phi())+*p1y()*cos(*phi())-*e1y()),*rmin()*(*p1x()*cos(*phi())-*p1y()*sin(*phi())-*e1x()));
+        //double t0=atan2(a*(X_0*sin(-phip)+Y_0*cos(-phip)-Y_c),b*(X_0*cos(-phip)-Y_0*sin(-phip)-X_c));
+        double t=atan2(a*(-(X_0-X_c)*sin(phip)+(Y_0-Y_c)*cos(phip)),b*((X_0-X_c)*cos(phip)+(Y_0-Y_c)*sin(phip)));
+        
+        // Newton-Raphson to get the t0 that corresponds to d.
+        for (i=1; i<=maxmitr; i++){
+            f=-X_0*(a*sin(t)*cos(phip) + b*sin(phip)*cos(t)) + X_c*(a*sin(t)*cos(phip) + b*sin(phip)*cos(t)) + Y_0*(-a*sin(phip)*sin(t) + b*cos(phip)*cos(t)) - Y_c*(-a*sin(phip)*sin(t) + b*cos(phip)*cos(t)) + (pow(a, 2) - pow(b, 2))*sin(t)*cos(t);
+            df=-X_0*(a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + X_c*(a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) - Y_0*(a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) + Y_c*(a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) - pow(a, 2) + pow(b, 2) + 2*(pow(a, 2) - pow(b, 2))*pow(cos(t), 2);
+            h=f/df;
+            t1=t-h;
+            if (fabs(h) < error)
+                break;
+            t=t1;
+        }
+        
+        // t is the solution for the distance at this point
+        // -now we can derive the partials taking into account that t varies when varying any of all 7 parameters.
+        // substitute the values in the formulas and done !! Simple, ain't it?
         // partials
         // TODO: Ellipse implementation: Insert the partials
         
-        /*double dx = (*c1x() - *c2x());
-        double dy = (*c1y() - *c2y());
-        double d = sqrt(dx*dx + dy*dy);
-        if (param == c1x()) deriv += dx/d;
-        if (param == c1y()) deriv += dy/d;
-        if (param == c2x()) deriv += -dx/d;
-        if (param == c2y()) deriv += -dy/d;
-        if (internal) {
-            if (param == r1()) deriv += (*r1() > *r2()) ? -1 : 1;
-            if (param == r2()) deriv += (*r1() > *r2()) ? 1 : -1;
-        }
-        else {
-            if (param == r1()) deriv += -1;
-            if (param == r2()) deriv += -1;
-        }*/
+        if (param == p1x()) 
+            deriv += -(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t))/sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip), 2));
+        if (param == p1y()) 
+            deriv += -(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip))/sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip), 2));
+        if (param == e1x()) 
+            deriv += (-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t))/sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip), 2));
+        if (param == e1y()) 
+            deriv += (-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip))/sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip), 2));
+        if (param == rmaj()) 
+            deriv += ((-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t))*cos(phip)*cos(t) + (-Y_0 + Y_c + a*sin(phip)*cos(t)
+                + b*sin(t)*cos(phip))*sin(phip)*cos(t))/sqrt(pow(-X_0 + X_c +
+                a*cos(phip)*cos(t) - b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c +
+                a*sin(phip)*cos(t) + b*sin(t)*cos(phip), 2));
+        if (param == rmin()) 
+            deriv += (-(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t))*sin(phip)*sin(t) + (-Y_0 + Y_c + a*sin(phip)*cos(t)
+                + b*sin(t)*cos(phip))*sin(t)*cos(phip))/sqrt(pow(-X_0 + X_c +
+                a*cos(phip)*cos(t) - b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c +
+                a*sin(phip)*cos(t) + b*sin(t)*cos(phip), 2));
+        if (param == phi()) 
+            deriv += (-(a*sin(phip)*cos(t) + b*sin(t)*cos(phip))*(-X_0 + X_c +
+                a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + (a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t))*(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip)))/sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) -
+                b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
+                b*sin(t)*cos(phip), 2));
+            deriv +=0;
+       
     }
     return scale * deriv;
 }
