@@ -47,7 +47,8 @@ namespace GCS
         L2LAngle = 10,
         MidpointOnLine = 11,
         TangentCircumf = 12,
-        P2OnEllipse = 13
+        P2OnEllipse = 13,
+        TangentEllipseLine = 14
     };
 
     class Constraint
@@ -306,7 +307,7 @@ namespace GCS
         virtual double error();
         virtual double grad(double *);
     };
-    // TangentCircumf
+    // PointOnEllipse
     class ConstraintPointOnEllipse : public Constraint
     {
     private:
@@ -319,6 +320,26 @@ namespace GCS
         inline double* phi() { return pvec[6]; }
     public:
         ConstraintPointOnEllipse(Point &p, Ellipse &e);
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+    
+    class ConstraintEllipseTangentLine : public Constraint
+    {
+    private:
+        inline double* p1x() { return pvec[0]; }
+        inline double* p1y() { return pvec[1]; }
+        inline double* p2x() { return pvec[2]; }
+        inline double* p2y() { return pvec[3]; }        
+        inline double* e1x() { return pvec[4]; }
+        inline double* e1y() { return pvec[5]; }
+        inline double* rmaj() { return pvec[6]; }
+        inline double* rmin() { return pvec[7]; }
+        inline double* phi() { return pvec[8]; }
+    public:
+        ConstraintEllipseTangentLine(Line &l, Ellipse &e);
         virtual ConstraintType getTypeId();
         virtual void rescale(double coef=1.);
         virtual double error();
