@@ -565,7 +565,9 @@ int System::addConstraintTangent(Line &l, Circle &c, int tagId)
 int System::addConstraintTangent(Line &l, Ellipse &e, int tagId)
 {
     // TODO: real ellipse implementation
-    return addConstraintP2LDistance(e.center, l, e.radmaj, tagId);
+    Constraint *constr = new ConstraintEllipseTangentLine(l, e);
+    constr->setTag(tagId);
+    return addConstraint(constr);
 }
 
 int System::addConstraintTangent(Ellipse &e, Circle &c, int tagId)
