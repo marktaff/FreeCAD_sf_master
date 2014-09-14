@@ -1113,7 +1113,7 @@ double ConstraintEllipseTangentLine::error()
     int i=0, maxmitr=100;
     double h, t1, f, df;
     // TODO: ellipse check this error
-    double error=1e-10;
+    double error=1e-20;
     // TODO: ellipse check this for convergence
     
     double X_0 = ( X_1 + X_2 ) / 2;
@@ -1179,7 +1179,7 @@ double ConstraintEllipseTangentLine::grad(double *param)
         int i=0, maxmitr=100;
         double h, t1, f, df;
         // TODO: ellipse check this error
-        double error=1e-10;
+        double error=1e-20;
         // TODO: ellipse check this for convergence
         
         double X_0 = ( X_1 + X_2 ) / 2;
