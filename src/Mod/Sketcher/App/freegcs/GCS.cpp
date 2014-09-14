@@ -27,6 +27,16 @@
 #include "qp_eq.h"
 #include <Eigen/QR>
 
+#define _GCS_DEBUG 1
+
+#ifdef _GCS_DEBUG
+#include <Base/Writer.h>
+#include <Base/Reader.h>
+#include <Base/Exception.h>
+#include <Base/TimeInfo.h>
+#include <Base/Console.h>
+#endif // _GCS_DEBUG
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
 
@@ -1549,12 +1559,25 @@ int System::diagnose()
                 J(count-1,j) = (*constr)->grad(plist[j]);
         }
     }
-
+    
+    #ifdef _GCS_DEBUG
+    // Debug code starts
+    std::stringstream stream;
+    
+    stream << J ;
+    
+    const std::string tmp = stream.str();
+    
+    Base::Console().Warning(tmp.c_str());
+    // Debug code ends
+    #endif
+    
     if (J.rows() > 0) {
         Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qrJT(J.topRows(count).transpose());
         Eigen::MatrixXd Q = qrJT.matrixQ ();
         int paramsNum = qrJT.rows();
         int constrNum = qrJT.cols();
+        //qrJT.setThreshold(0);
         int rank = qrJT.rank();
 
         Eigen::MatrixXd R;
