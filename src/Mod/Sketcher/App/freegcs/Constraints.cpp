@@ -1035,10 +1035,61 @@ double ConstraintPointOnEllipse::grad(double *param)
                 b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
                 b*sin(t)*cos(phip), 2));
         if (param == e1y()) 
-            deriv += (-Y_0 + Y_c + a*sin(phip)*cos(t) +
+            /*deriv += (-Y_0 + Y_c + a*sin(phip)*cos(t) +
                 b*sin(t)*cos(phip))/sqrt(pow(-X_0 + X_c + a*cos(phip)*cos(t) -
                 b*sin(phip)*sin(t), 2) + pow(-Y_0 + Y_c + a*sin(phip)*cos(t) +
-                b*sin(t)*cos(phip), 2));
+                b*sin(t)*cos(phip), 2));*/
+            deriv +=-(-X_0*(Y_c*a*b + pow(a, 2)*b*sin(phip)*cos(t) + a*pow(b,
+                2)*sin(t)*cos(phip)) + X_c*(pow(a, 2)*b*sin(phip)*cos(t) + a*pow(b,
+                2)*sin(t)*cos(phip)) - Y_0*(-X_0*a*b + X_c*a*b + (pow(a, 2)*b - pow(b,
+                3))*cos(phip)*pow(cos(t), 3) - ((pow(a, 3) - a*pow(b,
+                2))*sin(phip)*pow(cos(t), 2) - (pow(a, 3) - a*pow(b,
+                2))*sin(phip))*sin(t)) + Y_c*(X_c*a*b + (pow(a, 2)*b - pow(b,
+                3))*cos(phip)*pow(cos(t), 3) - ((pow(a, 3) - a*pow(b,
+                2))*sin(phip)*pow(cos(t), 2) - (pow(a, 3) - a*pow(b,
+                2))*sin(phip))*sin(t)) + (pow(a, 3)*b - a*pow(b,
+                3))*sin(phip)*cos(phip)*pow(cos(t), 4) + ((pow(a, 4) - pow(a, 2)*pow(b,
+                2))*pow(sin(phip), 2)*cos(t) + (-(pow(a, 4) - pow(a, 2)*pow(b,
+                2))*pow(sin(phip), 2) + (pow(a, 2)*pow(b, 2) - pow(b, 4))*pow(cos(phip),
+                2))*pow(cos(t), 3))*sin(t) - ((pow(a, 3)*b - a*pow(b,
+                3))*sin(phip)*cos(phip)*pow(cos(t), 2) - (pow(a, 3)*b - a*pow(b,
+                3))*sin(phip)*cos(phip))*pow(sin(t), 2) + (-X_0*(pow(a,
+                3)*pow(sin(phip), 2)*pow(sin(t), 3)*cos(phip) + pow(b,
+                3)*sin(phip)*pow(cos(phip), 2)*pow(cos(t), 3) - (-pow(a,
+                2)*b*pow(sin(phip), 3) + 2*pow(a, 2)*b*sin(phip)*pow(cos(phip),
+                2))*pow(sin(t), 2)*cos(t) + (-2*a*pow(b, 2)*pow(sin(phip), 2)*cos(phip)
+                + a*pow(b, 2)*pow(cos(phip), 3))*sin(t)*pow(cos(t), 2)) + X_c*(pow(a,
+                3)*pow(sin(phip), 2)*pow(sin(t), 3)*cos(phip) + pow(b,
+                3)*sin(phip)*pow(cos(phip), 2)*pow(cos(t), 3) - (-pow(a,
+                2)*b*pow(sin(phip), 3) + 2*pow(a, 2)*b*sin(phip)*pow(cos(phip),
+                2))*pow(sin(t), 2)*cos(t) + (-2*a*pow(b, 2)*pow(sin(phip), 2)*cos(phip)
+                + a*pow(b, 2)*pow(cos(phip), 3))*sin(t)*pow(cos(t), 2)) + Y_0*(-pow(a,
+                3)*pow(sin(phip), 3)*pow(sin(t), 3) + 3*pow(a, 2)*b*pow(sin(phip),
+                2)*pow(sin(t), 2)*cos(phip)*cos(t) - 3*a*pow(b,
+                2)*sin(phip)*sin(t)*pow(cos(phip), 2)*pow(cos(t), 2) + pow(b,
+                3)*pow(cos(phip), 3)*pow(cos(t), 3)) - Y_c*(-pow(a, 3)*pow(sin(phip),
+                3)*pow(sin(t), 3) + 3*pow(a, 2)*b*pow(sin(phip), 2)*pow(sin(t),
+                2)*cos(phip)*cos(t) - 3*a*pow(b, 2)*sin(phip)*sin(t)*pow(cos(phip),
+                2)*pow(cos(t), 2) + pow(b, 3)*pow(cos(phip), 3)*pow(cos(t), 3)) +
+                (pow(a, 4) - pow(a, 2)*pow(b, 2))*pow(sin(phip), 2)*pow(sin(t),
+                3)*cos(t) + (pow(a, 2)*pow(b, 2) - pow(b, 4))*sin(t)*pow(cos(phip),
+                2)*pow(cos(t), 3) - 2*(pow(a, 3)*b - a*pow(b, 3))*sin(phip)*pow(sin(t),
+                2)*cos(phip)*pow(cos(t), 2))*sqrt(pow(X_0, 2) - 2*X_0*(X_c +
+                a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + pow(X_c, 2) +
+                2*X_c*(a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + pow(Y_0, 2) -
+                2*Y_0*(Y_c + a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) + pow(Y_c, 2) +
+                2*Y_c*(a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) + (pow(a,
+                2)*pow(sin(phip), 2) + pow(a, 2)*pow(cos(phip), 2))*pow(cos(t), 2) +
+                (pow(b, 2)*pow(sin(phip), 2) + pow(b, 2)*pow(cos(phip), 2))*pow(sin(t),
+                2)))/((-X_0*a*b + X_c*a*b + (pow(a, 2)*b - pow(b,
+                3))*cos(phip)*pow(cos(t), 3) - ((pow(a, 3) - a*pow(b,
+                2))*sin(phip)*pow(cos(t), 2) - (pow(a, 3) - a*pow(b,
+                2))*sin(phip))*sin(t))*sqrt(pow(X_0, 2) - 2*X_0*(X_c +
+                a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + pow(X_c, 2) +
+                2*X_c*(a*cos(phip)*cos(t) - b*sin(phip)*sin(t)) + pow(Y_0, 2) -
+                2*Y_0*(Y_c + a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) + pow(Y_c, 2) +
+                2*Y_c*(a*sin(phip)*cos(t) + b*sin(t)*cos(phip)) + pow(a, 2)*pow(cos(t),
+                2) + pow(b, 2)*pow(sin(t), 2)));
         if (param == rmaj()) 
             deriv += ((-X_0 + X_c + a*cos(phip)*cos(t) -
                 b*sin(phip)*sin(t))*cos(phip)*cos(t) + (-Y_0 + Y_c + a*sin(phip)*cos(t)
