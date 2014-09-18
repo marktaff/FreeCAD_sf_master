@@ -465,9 +465,6 @@ void SoDatumLabel::GLRender(SoGLRenderAction * action)
         // For the symmetry constraint that does not have text, but does have arrows
         //this->imgHeight = 3.36f;
         //this->imgWidth  = 5.26f;
-        float scale = vv.getWorldToScreenScale(SbVec3f(0.f,0.f,0.f), 1.0f);
-        SbVec2s vp_size = SoViewportRegionElement::get(state).getWindowSize();
-        scale /= float(vp_size[0]);
 
         this->imgHeight = scale*25.0f;
         this->imgWidth = scale*25.0f;
