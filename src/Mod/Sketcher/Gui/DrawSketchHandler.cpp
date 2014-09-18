@@ -255,11 +255,11 @@ int DrawSketchHandler::seekAutoConstraint(std::vector<AutoConstraint> &suggested
             double projDist = projPnt.Length();
 
             if ( (projDist < radius + tangDeviation ) && (projDist > radius - tangDeviation)) {
-                // Find if nearest
-//                 if (projDist < smlTangDist) {
-//                     tangId = i;
-//                     smlTangDist = projDist;
-//                 }
+                //Find if nearest
+                if (projDist < tangDeviation) {
+                    tangId = i;
+                    tangDeviation = projDist;
+                }
             }
 
         } else if ((*it)->getTypeId() == Part::GeomArcOfCircle::getClassTypeId()) {
