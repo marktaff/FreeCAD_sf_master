@@ -585,8 +585,14 @@ int System::addConstraintTangent(Ellipse &e, Circle &c, int tagId)
     double dx = *(c.center.x) - *(e.center.x);
     double dy = *(c.center.y) - *(e.center.y);
     double d = sqrt(dx*dx + dy*dy);
-    return addConstraintTangentCircumf(e.center, c.center, e.radmaj, c.rad,
-                                       (d < *e.radmaj || d < *c.rad), tagId);    
+    
+    Constraint *constr = new ConstraintPoint2EllipseDistance(c.center,e,c.rad);
+    constr->setTag(tagId);
+    return addConstraint(constr);    
+    
+    
+    //return addConstraintTangentCircumf(e.center, c.center, e.radmaj, c.rad,
+    //                                   (d < *e.radmaj || d < *c.rad), tagId);    
 }
 
 int System::addConstraintTangent(Line &l, Arc &a, int tagId)
