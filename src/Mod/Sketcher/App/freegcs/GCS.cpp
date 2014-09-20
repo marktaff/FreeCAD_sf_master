@@ -493,8 +493,7 @@ int System::addConstraintPointOnCircle(Point &p, Circle &c, int tagId)
 
 int System::addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId)
 {
-    // TODO: Implement real constraint
-    //return addConstraintP2PDistance(p, c.center, c.radmaj, tagId);
+    // TODO: Implement real constraint => Done
     
     Constraint *constr = new ConstraintPointOnEllipse(p, e);
     constr->setTag(tagId);
@@ -574,7 +573,7 @@ int System::addConstraintTangent(Line &l, Circle &c, int tagId)
 
 int System::addConstraintTangent(Line &l, Ellipse &e, int tagId)
 {
-    // TODO: real ellipse implementation
+    // TODO: real ellipse implementation => Done
     Constraint *constr = new ConstraintEllipseTangentLine(l, e);
     constr->setTag(tagId);
     return addConstraint(constr);
