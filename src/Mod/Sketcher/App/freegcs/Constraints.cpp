@@ -1385,15 +1385,15 @@ double ConstraintPoint2EllipseDistance::error()
     double Y_0 = *p1y();
     double X_c = *e1x();
     double Y_c = *e1y();
-    double a = *rmaj();
-    double b = *rmin();
+    double a = *rmaj()+*distance();
+    double b = *rmin()+*distance();
     double phip = *phi();
     
     double err=-2*a + sqrt(pow(-X_0 + X_c + sqrt(pow(a, 2) - pow(b,
         2))*cos(phip), 2) + pow(-Y_0 + Y_c + sqrt(pow(a, 2) - pow(b,
         2))*sin(phip), 2)) + sqrt(pow(X_0 - X_c + sqrt(pow(a, 2) - pow(b,
         2))*cos(phip), 2) + pow(Y_0 - Y_c + sqrt(pow(a, 2) - pow(b,
-        2))*sin(phip), 2))-*distance();
+        2))*sin(phip), 2));
     return scale * err;
 }
 
@@ -1409,8 +1409,8 @@ double ConstraintPoint2EllipseDistance::grad(double *param)
         double Y_0 = *p1y();
         double X_c = *e1x();
         double Y_c = *e1y();
-        double a = *rmaj();
-        double b = *rmin();
+        double a = *rmaj()+*distance();
+        double b = *rmin()+*distance();
         double phip = *phi();
                 
         if (param == p1x()) 
@@ -1479,7 +1479,7 @@ double ConstraintPoint2EllipseDistance::grad(double *param)
                 2))*cos(phip), 2) + pow(Y_0 - Y_c + sqrt(pow(a, 2) - pow(b,
                 2))*sin(phip), 2));
        if (param == distance()) 
-            deriv += 1;
+            deriv += 0;
     }
     return scale * deriv;
 }
