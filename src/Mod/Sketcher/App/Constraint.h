@@ -31,24 +31,24 @@ namespace Sketcher
 {
 
 enum ConstraintType {
-    None,
-    Coincident,
-    Horizontal,
-    Vertical,
-    Parallel,
-    Tangent,
-    Distance,
-    DistanceX,
-    DistanceY,
-    Angle,
-    EllipseXUAngle,
-    Perpendicular,
-    Radius,
-    MajorRadius,
-    MinorRadius,
-    Equal,
-    PointOnObject,
-    Symmetric
+    None = 0,
+    Coincident = 1,
+    Horizontal = 2,
+    Vertical = 3,
+    Parallel = 4,
+    Tangent = 5,
+    Distance = 6,
+    DistanceX = 7,
+    DistanceY = 8,
+    Angle = 9,
+    Perpendicular = 10,
+    Radius = 11,
+    Equal = 12,
+    PointOnObject = 13,
+    Symmetric = 14,
+    MajorRadius = 15,
+    MinorRadius = 16,
+    EllipseXUAngle = 17
 };
 
 /// define if you want to use the end or start point
