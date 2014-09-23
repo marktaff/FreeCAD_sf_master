@@ -405,31 +405,43 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     double radmaj         = elips->getMajorRadius();
     double radmin         = elips->getMinorRadius();
     double phi            = elips->getAngleXU();
+    
+    double dist_C_F = sqrt(radmaj*radmaj-radmin*radmin);
+    // solver parameters
+    Base::Vector3d focus1 = center+dist_C_F*Vector3d(cos(phi), sin(phi),0); //+x
+    Base::Vector3d focus2 = center-dist_C_F*Vector3d(cos(phi), sin(phi),0); //-x
+    //double *radmin;
 
-    GCS::Point p1;
+    GCS::Point f1;
 
-    params.push_back(new double(center.x));
-    params.push_back(new double(center.y));
-    p1.x = params[params.size()-2];
-    p1.y = params[params.size()-1];
+    params.push_back(new double(focus1.x));
+    params.push_back(new double(focus1.y));
+    f1.x = params[params.size()-2];
+    f1.y = params[params.size()-1];
     
     def.midPointId = Points.size();
-    Points.push_back(p1);
+    Points.push_back(f1);
+    
+    GCS::Point f2;
+
+    params.push_back(new double(focus2.x));
+    params.push_back(new double(focus2.y));
+    f2.x = params[params.size()-2];
+    f2.y = params[params.size()-1];
+    
+    //def.midPointId = Points.size(); // this takes midPointId+1
+    Points.push_back(f2);
 
     // add the radius parameters
-    params.push_back(new double(radmaj));
-    double *rmaj = params[params.size()-1];
     params.push_back(new double(radmin));
     double *rmin = params[params.size()-1];
-    params.push_back(new double(phi));
-    double *iphi = params[params.size()-1];
      
     // set the ellipse for later constraints
     GCS::Ellipse e;
-    e.center = p1;
-    e.radmaj    = rmaj;
+    e.focus1    = f1;
+    e.focus2    = f2;
     e.radmin    = rmin;
-    e.phi       = iphi;
+
     def.index = Ellipses.size();
     Ellipses.push_back(e);
 
@@ -583,12 +595,6 @@ int Sketch::addConstraint(const Constraint *constraint)
             rtn = addAngleConstraint(constraint->First,constraint->Second,constraint->Value);
         else if (constraint->First != Constraint::GeoUndef) // orientation angle of a line
             rtn = addAngleConstraint(constraint->First,constraint->Value);
-        break;
-    case EllipseXUAngle:
-        if (constraint->Second != Constraint::GeoUndef) // angle between an ellipse and a line
-            rtn = addEllipseAngleXUConstraint(constraint->First,constraint->Second,constraint->Value);
-        else if (constraint->First != Constraint::GeoUndef) // angle between an ellipse and the X axis
-            rtn = addEllipseAngleXUConstraint(constraint->First,constraint->Value);
         break;
     case Radius:
     case MajorRadius:
@@ -956,7 +962,7 @@ int Sketch::addPerpendicularConstraint(int geoId1, PointPos pos1, int geoId2)
             else {
                 // TODO: Ellipse
                 GCS::Ellipse &c2 = Ellipses[Geoms[geoId2].index];
-                radius = c2.radmaj;
+                radius = c2.radmin;
             }
             if (pos1 == start)
                 GCSsys.addConstraintPerpendicularCircle2Arc(center, radius, a1, tag);
@@ -1561,50 +1567,6 @@ int Sketch::addAngleConstraint(int geoId1, PointPos pos1, int geoId2, PointPos p
     return ConstraintsCounter;
 }
 
-
-int Sketch::addEllipseAngleXUConstraint(int geoId, double value)
-{
-    geoId = checkGeoId(geoId);
-
-    if (Geoms[geoId].type != Ellipse)
-        return -1;
-
-    GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
-
-    // add the parameter for the angle
-    FixParameters.push_back(new double(value));
-    double *angle = FixParameters[FixParameters.size()-1];
-
-    int tag = ++ConstraintsCounter;
-    GCSsys.addConstraintEllipseAngleXU(e, angle, tag);
-    
-    return ConstraintsCounter;
-}
-
-// line to line angle constraint
-int Sketch::addEllipseAngleXUConstraint(int geoId1, int geoId2, double value)
-{
-    // TODO: Ellipse implementation - This is wrong - Just a placeholder
-    geoId1 = checkGeoId(geoId1);
-    geoId2 = checkGeoId(geoId2);
-
-    if (Geoms[geoId1].type != Line ||
-        Geoms[geoId2].type != Line)
-        return -1;
-
-    GCS::Line &l1 = Lines[Geoms[geoId1].index];
-    GCS::Line &l2 = Lines[Geoms[geoId2].index];
-
-    // add the parameter for the angle
-    FixParameters.push_back(new double(value));
-    double *angle = FixParameters[FixParameters.size()-1];
-
-    int tag = ++ConstraintsCounter;
-    GCSsys.addConstraintL2LAngle(l1, l2, angle, tag);
-    return ConstraintsCounter;
-}
-
-
 int Sketch::addEqualConstraint(int geoId1, int geoId2)
 {
     geoId1 = checkGeoId(geoId1);
@@ -1807,13 +1769,21 @@ bool Sketch::updateGeometry()
             } else if (it->type == Ellipse) {
                 // TODO: Ellipse
                 GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo);
-                ellipse->setCenter(Vector3d(*Points[it->midPointId].x,
-                                         *Points[it->midPointId].y,
-                                         0.0)
-                               );
-                ellipse->setMajorRadius(*Ellipses[it->index].radmaj);
-                ellipse->setMinorRadius(*Ellipses[it->index].radmin);
-                ellipse->setAngleXU(*Ellipses[it->index].phi);
+                
+                Base::Vector3d f1 = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
+                Base::Vector3d f2 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
+                double radmin = *Ellipses[it->index].radmin;
+                
+                Base::Vector3d center = ( f1 + f2 ) /2;
+                double radmaj = sqrt((f1-center)*(f1-center)+radmin*radmin);
+                
+                Base::Vector3d fdistance=f1-f2;
+                double phi = atan2(fdistance.y,fdistance.x);
+                
+                ellipse->setCenter(center);
+                ellipse->setMajorRadius(radmaj);
+                ellipse->setMinorRadius(radmin);
+                ellipse->setAngleXU(phi);
             }
         } catch (Base::Exception e) {
             Base::Console().Error("Updating geometry: Error build geometry(%d): %s\n",
@@ -2007,7 +1977,7 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             p0.x = &MoveParameters[0];
             p0.y = &MoveParameters[1];
             *p0.x = *center.x;
-            *p0.y = *center.y + *e.radmaj;
+            *p0.y = *center.y + *e.radmin;
             GCSsys.addConstraintPointOnEllipse(p0,e,-1);
             p1.x = &MoveParameters[2];
             p1.y = &MoveParameters[3];
