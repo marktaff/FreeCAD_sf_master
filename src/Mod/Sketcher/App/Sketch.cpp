@@ -409,9 +409,18 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     double dist_C_F = sqrt(radmaj*radmaj-radmin*radmin);
     // solver parameters
     Base::Vector3d focus1 = center+dist_C_F*Vector3d(cos(phi), sin(phi),0); //+x
-    Base::Vector3d focus2 = center-dist_C_F*Vector3d(cos(phi), sin(phi),0); //-x
     //double *radmin;
 
+    GCS::Point c;
+
+    params.push_back(new double(center.x));
+    params.push_back(new double(center.y));
+    c.x = params[params.size()-2];
+    c.y = params[params.size()-1];
+    
+    def.midPointId = Points.size(); // this takes midPointId+1
+    Points.push_back(c);
+    
     GCS::Point f1;
 
     params.push_back(new double(focus1.x));
@@ -419,18 +428,10 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     f1.x = params[params.size()-2];
     f1.y = params[params.size()-1];
     
-    def.midPointId = Points.size();
+    //def.midPointId = Points.size();
     Points.push_back(f1);
     
-    GCS::Point f2;
-
-    params.push_back(new double(focus2.x));
-    params.push_back(new double(focus2.y));
-    f2.x = params[params.size()-2];
-    f2.y = params[params.size()-1];
-    
-    //def.midPointId = Points.size(); // this takes midPointId+1
-    Points.push_back(f2);
+ 
 
     // add the radius parameters
     params.push_back(new double(radmin));
@@ -439,7 +440,7 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     // set the ellipse for later constraints
     GCS::Ellipse e;
     e.focus1    = f1;
-    e.focus2    = f2;
+    e.center    = c;
     e.radmin    = rmin;
 
     def.index = Ellipses.size();
@@ -1770,15 +1771,14 @@ bool Sketch::updateGeometry()
                 // TODO: Ellipse
                 GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo);
                 
-                Base::Vector3d f1 = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
-                Base::Vector3d f2 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
+                Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
+                Base::Vector3d f1 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
                 double radmin = *Ellipses[it->index].radmin;
                 
-                Base::Vector3d center = ( f1 + f2 ) /2;
                 double radmaj = sqrt((f1-center)*(f1-center)+radmin*radmin);
                 
-                Base::Vector3d fdistance=f1-f2;
-                double phi = atan2(fdistance.y,fdistance.x);
+                Base::Vector3d fd=f1-center;
+                double phi = atan2(fd.y,fd.x);
                 
                 ellipse->setCenter(center);
                 ellipse->setMajorRadius(radmaj);

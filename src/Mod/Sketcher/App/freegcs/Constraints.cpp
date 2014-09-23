@@ -916,10 +916,10 @@ ConstraintPointOnEllipse::ConstraintPointOnEllipse(Point &p, Ellipse &e)
 {
     pvec.push_back(p.x);
     pvec.push_back(p.y);
+    pvec.push_back(e.center.x);
+    pvec.push_back(e.center.y);
     pvec.push_back(e.focus1.x);
     pvec.push_back(e.focus1.y);
-    pvec.push_back(e.focus2.x);
-    pvec.push_back(e.focus2.y);
     pvec.push_back(e.radmin);
     origpvec = pvec;
     rescale();
@@ -939,18 +939,19 @@ double ConstraintPointOnEllipse::error()
 {    
     double X_0 = *p1x();
     double Y_0 = *p1y();
+    double X_c = *cx();
+    double Y_c = *cy();     
     double X_F1 = *f1x();
     double Y_F1 = *f1y();
-    double X_F2 = *f2x();
-    double Y_F2 = *f2y();    
     double b = *rmin();
     
-    double err=pow(X_0, 2) - 2*X_0*X_F2 + pow(X_F2, 2) + pow(Y_0, 2) -
-        2*Y_0*Y_F2 + pow(Y_F2, 2) - 1.0L/4.0L*pow(2*X_0*X_F1 - 2*X_0*X_F2 -
-        pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) +
-        pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2),
-        2)/(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2));
-    return scale * err;
+    double err=pow(X_0, 2) + 2*X_0*(X_F1 - 2*X_c) + pow(Y_0, 2) + 2*Y_0*(Y_F1
+        - 2*Y_c) + pow(X_F1 - 2*X_c, 2) + pow(Y_F1 - 2*Y_c, 2) -
+        1.0L/16.0L*pow(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) +
+        2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) +
+        pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) +
+        4*pow(Y_F1 - Y_c, 2), 2)/(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+        Y_c, 2));
 }
 
 double ConstraintPointOnEllipse::grad(double *param)
@@ -958,71 +959,83 @@ double ConstraintPointOnEllipse::grad(double *param)
     double deriv=0.;
     if (param == p1x() || param == p1y() ||
         param == f1x() || param == f1y() ||
-        param == f2x() || param == f2y() ||
+        param == cx() || param == cy() ||
         param == rmin()) {
                 
         double X_0 = *p1x();
         double Y_0 = *p1y();
+        double X_c = *cx();
+        double Y_c = *cy();     
         double X_F1 = *f1x();
         double Y_F1 = *f1y();
-        double X_F2 = *f2x();
-        double Y_F2 = *f2y();    
         double b = *rmin();
                 
         if (param == p1x()) 
-            deriv += 2*X_0 - 2*X_F2 - (X_F1 - X_F2)*(2*X_0*X_F1 - 2*X_0*X_F2 -
-                pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) +
-                pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2,
-                2))/(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2));
+            deriv += 2*X_0 + 2*X_F1 - 4*X_c - 1.0L/2.0L*(X_F1 - X_c)*(2*X_0*X_F1 +
+                2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) + 2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c)
+                - pow(Y_F1, 2) - 4*pow(b, 2) + pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c,
+                2) + pow(Y_F1 - 2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1
+                - X_c, 2) + pow(Y_F1 - Y_c, 2));
         if (param == p1y()) 
-            deriv += 2*Y_0 - 2*Y_F2 - (Y_F1 - Y_F2)*(2*X_0*X_F1 - 2*X_0*X_F2 -
-                pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) +
-                pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2,
-                2))/(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2));
+            deriv += 2*Y_0 + 2*Y_F1 - 4*Y_c - 1.0L/2.0L*(Y_F1 - Y_c)*(2*X_0*X_F1 +
+                2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) + 2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c)
+                - pow(Y_F1, 2) - 4*pow(b, 2) + pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c,
+                2) + pow(Y_F1 - 2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1
+                - X_c, 2) + pow(Y_F1 - Y_c, 2));
         if (param == f1x()) 
-            deriv += -(X_0 - X_F2)*(2*X_0*X_F1 - 2*X_0*X_F2 - pow(X_F1, 2) +
-                pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) + pow(Y_F2, 2) -
-                4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2))/(-4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2)) + (1.0L/2.0L)*(X_F1 -
-                X_F2)*pow(2*X_0*X_F1 - 2*X_0*X_F2 - pow(X_F1, 2) + pow(X_F2, 2) +
-                2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) + pow(Y_F2, 2) - 4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2), 2)/pow(-4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2), 2);
+            deriv += 2*X_0 + 2*X_F1 - 4*X_c + (1.0L/8.0L)*(X_F1 -
+                X_c)*pow(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) + 2*Y_0*Y_F1 +
+                2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) + pow(X_F1 - 2*X_c, 2)
+                + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2),
+                2)/pow(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 2) -
+                1.0L/2.0L*(X_0 + 2*X_F1 - 3*X_c)*(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) -
+                pow(X_F1, 2) + 2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) -
+                4*pow(b, 2) + pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2));
         if (param == f1y()) 
-            deriv +=-(Y_0 - Y_F2)*(2*X_0*X_F1 - 2*X_0*X_F2 - pow(X_F1, 2) +
-                pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) + pow(Y_F2, 2) -
-                4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2))/(-4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2)) + (1.0L/2.0L)*(Y_F1 -
-                Y_F2)*pow(2*X_0*X_F1 - 2*X_0*X_F2 - pow(X_F1, 2) + pow(X_F2, 2) +
-                2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) + pow(Y_F2, 2) - 4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2), 2)/pow(-4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2), 2);
-        if (param == f2x()) 
-            deriv += -2*X_0 + 2*X_F2 - 1.0L/2.0L*(X_F1 - X_F2)*pow(2*X_0*X_F1 -
-                2*X_0*X_F2 - pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 -
-                pow(Y_F1, 2) + pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) +
-                pow(Y_F1 - Y_F2, 2), 2)/pow(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) +
-                pow(Y_F1 - Y_F2, 2), 2) + (X_0 + X_F1 - 2*X_F2)*(2*X_0*X_F1 - 2*X_0*X_F2
-                - pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) +
-                pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2,
-                2))/(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2));
-        if (param == f2y()) 
-            deriv +=-2*Y_0 + 2*Y_F2 - 1.0L/2.0L*(Y_F1 - Y_F2)*pow(2*X_0*X_F1 -
-                2*X_0*X_F2 - pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 -
-                pow(Y_F1, 2) + pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) +
-                pow(Y_F1 - Y_F2, 2), 2)/pow(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) +
-                pow(Y_F1 - Y_F2, 2), 2) + (Y_0 + Y_F1 - 2*Y_F2)*(2*X_0*X_F1 - 2*X_0*X_F2
-                - pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) +
-                pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2,
-                2))/(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2));
+            deriv +=2*Y_0 + 2*Y_F1 - 4*Y_c + (1.0L/8.0L)*(Y_F1 -
+                Y_c)*pow(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) + 2*Y_0*Y_F1 +
+                2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) + pow(X_F1 - 2*X_c, 2)
+                + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2),
+                2)/pow(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 2) -
+                1.0L/2.0L*(Y_0 + 2*Y_F1 - 3*Y_c)*(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) -
+                pow(X_F1, 2) + 2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) -
+                4*pow(b, 2) + pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2));
+        if (param == cx()) 
+            deriv += -4*X_0 - 4*X_F1 + 8*X_c - 1.0L/8.0L*(X_F1 -
+                X_c)*pow(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) + 2*Y_0*Y_F1 +
+                2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) + pow(X_F1 - 2*X_c, 2)
+                + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2),
+                2)/pow(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 2) +
+                (1.0L/2.0L)*(X_0 + 3*X_F1 - 4*X_c)*(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) -
+                pow(X_F1, 2) + 2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) -
+                4*pow(b, 2) + pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2));
+        if (param == cy()) 
+            deriv +=-4*Y_0 - 4*Y_F1 + 8*Y_c - 1.0L/8.0L*(Y_F1 -
+                Y_c)*pow(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) + 2*Y_0*Y_F1 +
+                2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) + pow(X_F1 - 2*X_c, 2)
+                + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2),
+                2)/pow(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 2) +
+                (1.0L/2.0L)*(Y_0 + 3*Y_F1 - 4*Y_c)*(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) -
+                pow(X_F1, 2) + 2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) -
+                4*pow(b, 2) + pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                2*Y_c, 2) + 4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2));
         if (param == rmin()) 
-            deriv += 4*b*(2*X_0*X_F1 - 2*X_0*X_F2 - pow(X_F1, 2) + pow(X_F2, 2) +
-                2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) + pow(Y_F2, 2) - 4*pow(b, 2) +
-                pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2))/(-4*pow(b, 2) + pow(X_F1 -
-                X_F2, 2) + pow(Y_F1 - Y_F2, 2)) - 2*b*pow(2*X_0*X_F1 - 2*X_0*X_F2 -
-                pow(X_F1, 2) + pow(X_F2, 2) + 2*Y_0*Y_F1 - 2*Y_0*Y_F2 - pow(Y_F1, 2) +
-                pow(Y_F2, 2) - 4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2),
-                2)/pow(-4*pow(b, 2) + pow(X_F1 - X_F2, 2) + pow(Y_F1 - Y_F2, 2), 2);
+            deriv += b*(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) +
+                2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) +
+                pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) +
+                4*pow(Y_F1 - Y_c, 2))/(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - 1.0L/8.0L*b*pow(2*X_0*X_F1 + 2*X_0*(X_F1 - 2*X_c) - pow(X_F1, 2) +
+                2*Y_0*Y_F1 + 2*Y_0*(Y_F1 - 2*Y_c) - pow(Y_F1, 2) - 4*pow(b, 2) +
+                pow(X_F1 - 2*X_c, 2) + 4*pow(X_F1 - X_c, 2) + pow(Y_F1 - 2*Y_c, 2) +
+                4*pow(Y_F1 - Y_c, 2), 2)/pow(-pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1
+                - Y_c, 2), 2);
     }
     return scale * deriv;
 }
@@ -1034,10 +1047,10 @@ ConstraintEllipseTangentLine::ConstraintEllipseTangentLine(Line &l, Ellipse &e)
     pvec.push_back(l.p1.y);
     pvec.push_back(l.p2.x);
     pvec.push_back(l.p2.y);
+    pvec.push_back(e.center.x);
+    pvec.push_back(e.center.y);
     pvec.push_back(e.focus1.x);
     pvec.push_back(e.focus1.y);
-    pvec.push_back(e.focus2.x);
-    pvec.push_back(e.focus2.y);
     pvec.push_back(e.radmin);
     origpvec = pvec;
     rescale();
@@ -1067,17 +1080,17 @@ double ConstraintEllipseTangentLine::error()
     double Y_1 = *p1y();
     double X_2 = *p2x();
     double Y_2 = *p2y();
+    double X_c = *cx();
+    double Y_c = *cy();
     double X_F1 = *f1x();
-    double Y_F1 = *f1y();
-    double X_F2 = *f2x();
-    double Y_F2 = *f2y();    
+    double Y_F1 = *f1y(); 
     double b = *rmin();
     
-    double err=4*pow(b, 2) - pow(X_F1 - X_F2, 2) - pow(Y_F1 - Y_F2, 2) +
-        pow(X_F1 - X_F2 + 2*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1
-        - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 -
+    double err=4*pow(b, 2) - 4*pow(X_F1 - X_c, 2) - 4*pow(Y_F1 - Y_c, 2) +
+        4*pow(X_F1 - X_c + (Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 -
+        X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 -
         X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-        2)), 2) + pow(-Y_F1 + Y_F2 + 2*(X_1 - X_2)*(-(X_1 - X_2)*(Y_1 -
+        2)), 2) + 4*pow(-Y_F1 + Y_c + (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 -
         Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
         Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2)
         + pow(Y_1 - Y_2, 2)), 2);
@@ -1089,17 +1102,17 @@ double ConstraintEllipseTangentLine::grad(double *param)
     double deriv=0.;
     if (param == p1x() || param == p1y() ||
         param == f1x() || param == f1y() ||
-        param == f2x() || param == f2y() ||
+        param == cx() || param == cy() ||
         param == rmin()) {
                 
         double X_1 = *p1x();
         double Y_1 = *p1y();
         double X_2 = *p2x();
         double Y_2 = *p2y();
+        double X_c = *cx();
+        double Y_c = *cy();
         double X_F1 = *f1x();
-        double Y_F1 = *f1y();
-        double X_F2 = *f2x();
-        double Y_F2 = *f2y();    
+        double Y_F1 = *f1y(); 
         double b = *rmin();
         
         // DeepSOIC equation 
@@ -1107,7 +1120,7 @@ double ConstraintEllipseTangentLine::grad(double *param)
         // Partials:
         
         if (param == p1x()) 
-            deriv += -4*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
+            deriv += -8*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
                 Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
                 Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2)
                 + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (Y_1 - Y_2)*(-pow(X_1 - X_2, 2)*(Y_1 -
@@ -1115,26 +1128,26 @@ double ConstraintEllipseTangentLine::grad(double *param)
                 X_2)*(X_1 - X_F1)*(Y_1 - Y_2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
                 3.0L/2.0L) - (Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) +
                 (Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 -
-                X_2, 2) + pow(Y_1 - Y_2, 2)))*(X_F1 - X_F2 + 2*(Y_1 - Y_2)*(-(X_1 -
+                X_2, 2) + pow(Y_1 - Y_2, 2)))*(X_F1 - X_c + (Y_1 - Y_2)*(-(X_1 -
                 X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 -
                 X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) - 4*(-Y_F1 + Y_F2 +
-                2*(X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))*(pow(X_1 - X_2, 2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
-                3.0L/2.0L) + (X_1 - X_2)*(-pow(X_1 - X_2, 2)*(Y_1 - Y_F1)/pow(pow(X_1 -
-                X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)*(X_1 - X_F1)*(Y_1
-                - Y_2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) - (Y_1 -
-                Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (Y_1 -
-                Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) - (-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) - 8*(-Y_F1 + Y_c +
+                (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1
+                - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(pow(X_1 - X_2,
+                2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 -
+                X_2)*(-pow(X_1 - X_2, 2)*(Y_1 - Y_F1)/pow(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)*(X_1 - X_F1)*(Y_1 - Y_2)/pow(pow(X_1 -
+                X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) - (Y_1 - Y_2)/sqrt(pow(X_1 -
+                X_2, 2) + pow(Y_1 - Y_2, 2)) + (Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
+                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) - (-(X_1
+                - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 -
+                X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
         if (param == p1y()) 
-            deriv += -4*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
+            deriv += -8*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
                 Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
                 Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2)
                 + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 -
@@ -1142,101 +1155,100 @@ double ConstraintEllipseTangentLine::grad(double *param)
                 + (X_1 - X_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 -
                 X_F1)*pow(Y_1 - Y_2, 2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
                 3.0L/2.0L) - (X_1 - X_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(-Y_F1 + Y_F2 + 2*(X_1
-                - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(-Y_F1 + Y_c + (X_1 -
+                X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) - 8*(X_F1 - X_c + (Y_1
+                - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
                 Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
-                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) - 4*(X_F1 - X_F2
-                + 2*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))*(pow(Y_1 - Y_2, 2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
-                3.0L/2.0L) + (Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_2)*(Y_1 -
-                Y_F1)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 -
-                X_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*pow(Y_1
-                - Y_2, 2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) - (X_1 -
-                X_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) - (-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
+                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(pow(Y_1 - Y_2,
+                2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (Y_1 -
+                Y_2)*(-(X_1 - X_2)*(Y_1 - Y_2)*(Y_1 - Y_F1)/pow(pow(X_1 - X_2, 2) +
+                pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)/sqrt(pow(X_1 - X_2, 2) +
+                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*pow(Y_1 - Y_2, 2)/pow(pow(X_1 - X_2,
+                2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) - (X_1 - X_F1)/sqrt(pow(X_1 - X_2, 2)
+                + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) -
+                (-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) +
+                (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
        if (param == p2x()) 
-            deriv += 4*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
+            deriv += 8*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
                 Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
                 Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2)
                 + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (Y_1 - Y_2)*(-pow(X_1 - X_2, 2)*(Y_1 -
                 Y_F1)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 -
                 X_2)*(X_1 - X_F1)*(Y_1 - Y_2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
                 3.0L/2.0L) + (Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(X_F1 - X_F2 + 2*(Y_1
-                - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
-                Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
-                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) + 4*(-Y_F1 + Y_F2
-                + 2*(X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))*(pow(X_1 - X_2, 2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
-                3.0L/2.0L) + (X_1 - X_2)*(-pow(X_1 - X_2, 2)*(Y_1 - Y_F1)/pow(pow(X_1 -
-                X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)*(X_1 - X_F1)*(Y_1
-                - Y_2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (Y_1 -
-                Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) - (-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(X_F1 - X_c + (Y_1 -
+                Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) + 8*(-Y_F1 + Y_c +
+                (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1
+                - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(pow(X_1 - X_2,
+                2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 -
+                X_2)*(-pow(X_1 - X_2, 2)*(Y_1 - Y_F1)/pow(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)*(X_1 - X_F1)*(Y_1 - Y_2)/pow(pow(X_1 -
+                X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (Y_1 - Y_F1)/sqrt(pow(X_1 -
+                X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) - (-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
         if (param == p2y()) 
-            deriv += 4*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
+            deriv += 8*((X_1 - X_2)*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
                 Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
                 Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2)
                 + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 -
                 Y_2)*(Y_1 - Y_F1)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L)
                 + (X_1 - X_F1)*pow(Y_1 - Y_2, 2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
                 2), 3.0L/2.0L) - (X_1 - X_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(-Y_F1 + Y_F2 + 2*(X_1
-                - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(-Y_F1 + Y_c + (X_1 -
+                X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) + 8*(X_F1 - X_c + (Y_1
+                - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
                 Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
-                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2))) + 4*(X_F1 - X_F2
-                + 2*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))*(pow(Y_1 - Y_2, 2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
+                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))*(pow(Y_1 - Y_2,
+                2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
+                2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (Y_1 -
+                Y_2)*(-(X_1 - X_2)*(Y_1 - Y_2)*(Y_1 - Y_F1)/pow(pow(X_1 - X_2, 2) +
+                pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 - X_F1)*pow(Y_1 - Y_2,
+                2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) - (X_1 -
+                X_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2,
+                2) + pow(Y_1 - Y_2, 2)) - (-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
                 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
-                2) + pow(Y_1 - Y_2, 2)))/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
-                3.0L/2.0L) + (Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_2)*(Y_1 -
-                Y_F1)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2), 3.0L/2.0L) + (X_1 -
-                X_F1)*pow(Y_1 - Y_2, 2)/pow(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2),
-                3.0L/2.0L) - (X_1 - X_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) - (-(X_1 - X_2)*(Y_1 -
+                2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
+        if (param == f1x()) 
+            deriv += -8*X_F1 + 8*X_c - 8*(X_1 - X_2)*(Y_1 - Y_2)*(-Y_F1 + Y_c +
+                (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1
+                - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/(pow(X_1 - X_2,
+                2) + pow(Y_1 - Y_2, 2)) - 8*(pow(Y_1 - Y_2, 2)/(pow(X_1 - X_2, 2) +
+                pow(Y_1 - Y_2, 2)) - 1)*(X_F1 - X_c + (Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 -
                 Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
                 Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2)
                 + pow(Y_1 - Y_2, 2)));
-        if (param == f1x()) 
-            deriv += -2*X_F1 + 2*X_F2 - 4*(X_1 - X_2)*(Y_1 - Y_2)*(-Y_F1 + Y_F2 +
-                2*(X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) - 2*(2*pow(Y_1 - Y_2,
-                2)/(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) - 1)*(X_F1 - X_F2 + 2*(Y_1 -
-                Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
         if (param == f1y()) 
-            deriv +=-2*Y_F1 + 2*Y_F2 + 4*(X_1 - X_2)*(Y_1 - Y_2)*(X_F1 - X_F2 +
-                2*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) +
-                pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + 2*(2*pow(X_1 - X_2,
-                2)/(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) - 1)*(-Y_F1 + Y_F2 + 2*(X_1 -
-                X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2,
-                2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)));
-        if (param == f2x()) 
-            deriv += -4*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
+            deriv +=-8*Y_F1 + 8*Y_c + 8*(X_1 - X_2)*(Y_1 - Y_2)*(X_F1 - X_c + (Y_1
+                - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 -
+                Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/(pow(X_1 - X_2,
+                2) + pow(Y_1 - Y_2, 2)) + 8*(pow(X_1 - X_2, 2)/(pow(X_1 - X_2, 2) +
+                pow(Y_1 - Y_2, 2)) - 1)*(-Y_F1 + Y_c + (X_1 - X_2)*(-(X_1 - X_2)*(Y_1 -
+                Y_F1)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 -
+                Y_2)/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2)
+                + pow(Y_1 - Y_2, 2)));
+        if (param == cx()) 
+            deriv += -8*(Y_1 - Y_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
                 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
                 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2));
-        if (param == f2y()) 
-            deriv +=4*(X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
+        if (param == cy()) 
+            deriv += 8*(X_1 - X_2)*(-(X_1 - X_2)*(Y_1 - Y_F1)/sqrt(pow(X_1 - X_2,
                 2) + pow(Y_1 - Y_2, 2)) + (X_1 - X_F1)*(Y_1 - Y_2)/sqrt(pow(X_1 - X_2,
                 2) + pow(Y_1 - Y_2, 2)))/sqrt(pow(X_1 - X_2, 2) + pow(Y_1 - Y_2, 2));
         if (param == rmin()) 
