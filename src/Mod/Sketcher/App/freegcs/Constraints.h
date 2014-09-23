@@ -314,11 +314,11 @@ namespace GCS
     private:
         inline double* p1x() { return pvec[0]; }
         inline double* p1y() { return pvec[1]; }
-        inline double* e1x() { return pvec[2]; }
-        inline double* e1y() { return pvec[3]; }
-        inline double* rmaj() { return pvec[4]; }
-        inline double* rmin() { return pvec[5]; }
-        inline double* phi() { return pvec[6]; }
+        inline double* f1x() { return pvec[2]; }
+        inline double* f1y() { return pvec[3]; }
+        inline double* f2x() { return pvec[4]; }
+        inline double* f2y() { return pvec[5]; }
+        inline double* rmin() { return pvec[6]; }
     public:
         ConstraintPointOnEllipse(Point &p, Ellipse &e);
         virtual ConstraintType getTypeId();
@@ -334,33 +334,13 @@ namespace GCS
         inline double* p1y() { return pvec[1]; }
         inline double* p2x() { return pvec[2]; }
         inline double* p2y() { return pvec[3]; }        
-        inline double* e1x() { return pvec[4]; }
-        inline double* e1y() { return pvec[5]; }
-        inline double* rmaj() { return pvec[6]; }
-        inline double* rmin() { return pvec[7]; }
-        inline double* phi() { return pvec[8]; }
+        inline double* f1x() { return pvec[4]; }
+        inline double* f1y() { return pvec[5]; }
+        inline double* f2x() { return pvec[6]; }
+        inline double* f2y() { return pvec[7]; }
+        inline double* rmin() { return pvec[8]; }
     public:
         ConstraintEllipseTangentLine(Line &l, Ellipse &e);
-        virtual ConstraintType getTypeId();
-        virtual void rescale(double coef=1.);
-        virtual double error();
-        virtual double grad(double *);
-    };
-    
-    //Point2EllipseDistance
-    class ConstraintPoint2EllipseDistance : public Constraint
-    {
-    private:
-        inline double* p1x() { return pvec[0]; }
-        inline double* p1y() { return pvec[1]; }
-        inline double* e1x() { return pvec[2]; }
-        inline double* e1y() { return pvec[3]; }
-        inline double* rmaj() { return pvec[4]; }
-        inline double* rmin() { return pvec[5]; }
-        inline double* phi() { return pvec[6]; }
-        inline double* distance() {return pvec[7];}
-    public:
-        ConstraintPoint2EllipseDistance(Point &p, Ellipse &e, double* distance);
         virtual ConstraintType getTypeId();
         virtual void rescale(double coef=1.);
         virtual double error();

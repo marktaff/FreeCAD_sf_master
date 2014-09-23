@@ -582,17 +582,18 @@ int System::addConstraintTangent(Line &l, Ellipse &e, int tagId)
 int System::addConstraintTangent(Ellipse &e, Circle &c, int tagId)
 {
     // TODO: elipse
-    double dx = *(c.center.x) - *(e.center.x);
+    /*double dx = *(c.center.x) - *(e.center.x);
     double dy = *(c.center.y) - *(e.center.y);
-    double d = sqrt(dx*dx + dy*dy);
+    double d = sqrt(dx*dx + dy*dy);*/
     
-    Constraint *constr = new ConstraintPoint2EllipseDistance(c.center,e,c.rad);
+    /*Constraint *constr = new ConstraintPoint2EllipseDistance(c.center,e,c.rad);
     constr->setTag(tagId);
-    return addConstraint(constr);    
+    return addConstraint(constr);   */ 
     
     
     //return addConstraintTangentCircumf(e.center, c.center, e.radmaj, c.rad,
     //                                   (d < *e.radmaj || d < *c.rad), tagId);    
+    return 0;
 }
 
 int System::addConstraintTangent(Line &l, Arc &a, int tagId)
@@ -630,11 +631,12 @@ int System::addConstraintTangent(Circle &c, Arc &a, int tagId)
 int System::addConstraintTangent(Ellipse &e, Arc &a, int tagId)
 {
     // TODO: elipse
-    double dx = *(a.center.x) - *(e.center.x);
+    /*double dx = *(a.center.x) - *(e.center.x);
     double dy = *(a.center.y) - *(e.center.y);
     double d = sqrt(dx*dx + dy*dy);
     return addConstraintTangentCircumf(e.center, a.center, e.radmaj, a.rad,
-                                       (d < *e.radmaj || d < *a.rad), tagId);
+                                       (d < *e.radmaj || d < *a.rad), tagId);*/
+    return 0;
 }
 
 int System::addConstraintTangentLine2Arc(Point &p1, Point &p2, Arc &a, int tagId)
@@ -665,13 +667,14 @@ int System::addConstraintTangentCircle2Arc(Circle &c, Arc &a, int tagId)
 int System::addConstraintTangentEllipse2Arc(Ellipse &e, Arc &a, int tagId)
 {
     // TODO: Ellipse
-    addConstraintPointOnEllipse(a.start, e, tagId);
+    /*addConstraintPointOnEllipse(a.start, e, tagId);
     double dx = *(a.start.x) - *(e.center.x);
     double dy = *(a.start.y) - *(e.center.y);
     if (dx * cos(*(a.startAngle)) + dy * sin(*(a.startAngle)) > 0)
         return addConstraintP2PAngle(e.center, a.start, a.startAngle, 0, tagId);
     else
-        return addConstraintP2PAngle(e.center, a.start, a.startAngle, M_PI, tagId);
+        return addConstraintP2PAngle(e.center, a.start, a.startAngle, M_PI, tagId);*/
+    return 0;
 }
 
 int System::addConstraintTangentArc2Circle(Arc &a, Circle &c, int tagId)
@@ -688,13 +691,14 @@ int System::addConstraintTangentArc2Circle(Arc &a, Circle &c, int tagId)
 int System::addConstraintTangentArc2Ellipse(Arc &a, Ellipse &e, int tagId)
 {
     // TODO: Ellipse
-    addConstraintPointOnEllipse(a.end, e, tagId);
+    /*addConstraintPointOnEllipse(a.end, e, tagId);
     double dx = *(a.end.x) - *(e.center.x);
     double dy = *(a.end.y) - *(e.center.y);
     if (dx * cos(*(a.endAngle)) + dy * sin(*(a.endAngle)) > 0)
         return addConstraintP2PAngle(e.center, a.end, a.endAngle, 0, tagId);
     else
-        return addConstraintP2PAngle(e.center, a.end, a.endAngle, M_PI, tagId);
+        return addConstraintP2PAngle(e.center, a.end, a.endAngle, M_PI, tagId);*/
+    return 0;
 }
 
 int System::addConstraintTangentArc2Arc(Arc &a1, bool reverse1, Arc &a2, bool reverse2,
@@ -719,17 +723,13 @@ int System::addConstraintCircleRadius(Circle &c, double *radius, int tagId)
 
 int System::addConstraintEllipseMajRadius(Ellipse &e, double *radmaj, int tagId)
 {
-    return addConstraintEqual(e.radmaj, radmaj, tagId);
+    // TODO: Ellipse this is wrong, just a placeholder
+    return addConstraintEqual(e.radmin, radmaj, tagId);
 }
 
 int System::addConstraintEllipseMinRadius(Ellipse &e, double *radmin, int tagId)
 {
     return addConstraintEqual(e.radmin, radmin, tagId);
-}
-
-int System::addConstraintEllipseAngleXU(Ellipse &e, double *angle, int tagId)
-{
-    return addConstraintEqual(e.phi, angle, tagId);
 }
 
 int System::addConstraintArcRadius(Arc &a, double *radius, int tagId)
@@ -751,7 +751,7 @@ int System::addConstraintEqualRadius(Circle &c1, Circle &c2, int tagId)
 int System::addConstraintEqualRadii(Ellipse &e1, Ellipse &e2, int tagId)
 {
     // TODO: Ellipse
-    addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
+    //addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
     return addConstraintEqual(e1.radmin, e2.radmin, tagId);
 }
 
