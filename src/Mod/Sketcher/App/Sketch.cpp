@@ -1775,9 +1775,9 @@ bool Sketch::updateGeometry()
                 Base::Vector3d f1 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
                 double radmin = *Ellipses[it->index].radmin;
                 
-                double radmaj = sqrt((f1-center)*(f1-center)+radmin*radmin);
-                
                 Base::Vector3d fd=f1-center;
+                double radmaj = sqrt(fd*fd+radmin*radmin);
+                                
                 double phi = atan2(fd.y,fd.x);
                 
                 ellipse->setCenter(center);
