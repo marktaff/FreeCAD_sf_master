@@ -633,7 +633,9 @@ int System::addConstraintTangent(Ellipse &e, Arc &a, int tagId)
     // TODO: elipse
     /*double dx = *(a.center.x) - *(e.center.x);
     double dy = *(a.center.y) - *(e.center.y);
-    double d = sqrt(dx*dx + dy*dy);
+    double d = sqrt(dx*dx + dy*dy);Constraint *constr = new ConstraintEllipseTangentLine(l, e);
+    constr->setTag(tagId);
+    return addConstraint(constr);
     return addConstraintTangentCircumf(e.center, a.center, e.radmaj, a.rad,
                                        (d < *e.radmaj || d < *a.rad), tagId);*/
     return 0;
@@ -775,6 +777,32 @@ int System::addConstraintP2PSymmetric(Point &p1, Point &p2, Point &p, int tagId)
 {
     addConstraintPointOnPerpBisector(p, p1, p2, tagId);
     return addConstraintPointOnLine(p, p1, p2, tagId);
+}
+
+int System::addConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId)
+{
+    Constraint *constr = new ConstraintInternalAlignmentEllipseMajorDiameter(e, p1, p2);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
+int System::addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId)
+{
+    Constraint *constr = new ConstraintInternalAlignmentEllipseMinorDiameter(e, p1, p2);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
+int System::addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId)
+{
+    return addConstraintP2PCoincident(e.focus1,p1);
+}
+
+int System::addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, int tagId)
+{
+    Constraint *constr = new ConstraintInternalAlignmentEllipseFocus2(e, p1);
+    constr->setTag(tagId);
+    return addConstraint(constr);
 }
 
 void System::rescaleConstraint(int id, double coeff)

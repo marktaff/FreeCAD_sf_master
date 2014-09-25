@@ -180,7 +180,16 @@ public:
     /// add a symmetric constraint between three points, the last point is in the middle of the first two
     int addSymmetricConstraint(int geoId1, PointPos pos1, int geoId2, PointPos pos2, int geoId3, PointPos pos3);
     //@}
-
+    
+    /// Internal Alignment constraints
+    //@{
+    /// add InternalAlignmentEllipseMajorDiameter to a line and an ellipse
+    int addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2);
+    int addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2);
+    int addInternalAlignmentEllipseFocus1(int geoId1, int geoId2);
+    int addInternalAlignmentEllipseFocus2(int geoId1, int geoId2);
+    //@}
+    
     enum GeoType {
         None    = 0,
         Point   = 1, // 1 Point(start), 2 Parameters(x,y)

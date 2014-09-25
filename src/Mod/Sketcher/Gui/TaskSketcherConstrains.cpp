@@ -296,10 +296,7 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemActivated(QListWidgetI
         it->Type == Sketcher::DistanceX ||
         it->Type == Sketcher::DistanceY ||
         it->Type == Sketcher::Radius ||
-        it->Type == Sketcher::MajorRadius ||
-        it->Type == Sketcher::MinorRadius ||
-        it->Type == Sketcher::Angle ||
-        it->Type == Sketcher::EllipseXUAngle) {
+        it->Type == Sketcher::Angle) {
 
         EditDatumDialog *editDatumDialog = new EditDatumDialog(this->sketchView, it->ConstraintNbr);
         editDatumDialog->exec(false);
@@ -325,15 +322,10 @@ void TaskSketcherConstrains::on_listWidgetConstraints_itemChanged(QListWidgetIte
     case Sketcher::DistanceX:
     case Sketcher::DistanceY:
     case Sketcher::Radius:
-    case Sketcher::MajorRadius:
-    case Sketcher::MinorRadius:
         unitStr = Base::Quantity(v->Value,Base::Unit::Length).getUserString();
         break;
     case Sketcher::Angle:
         unitStr = Base::Quantity(Base::toDegrees<double>(std::abs(v->Value)),Base::Unit::Angle).getUserString();
-        break;
-    case Sketcher::EllipseXUAngle:
-        unitStr = Base::Quantity(Base::toDegrees<double>(v->Value),Base::Unit::Angle).getUserString();
         break;
     default:
         break;
@@ -461,34 +453,10 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
                     ui->listWidgetConstraints->addItem(item);
                 }
                 break;
-            case Sketcher::MajorRadius:
-                if (Filter<3 || !(*it)->Name.empty()) {
-                    ConstraintItem* item = new ConstraintItem(majradi,name,i-1,(*it)->Type);
-                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity((*it)->Value,Base::Unit::Length).getUserString());
-                    item->setData(Qt::UserRole, name);
-                    ui->listWidgetConstraints->addItem(item);
-                }
-                break;
-            case Sketcher::MinorRadius:
-                if (Filter<3 || !(*it)->Name.empty()) {
-                    ConstraintItem* item = new ConstraintItem(minradi,name,i-1,(*it)->Type);
-                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity((*it)->Value,Base::Unit::Length).getUserString());
-                    item->setData(Qt::UserRole, name);
-                    ui->listWidgetConstraints->addItem(item);
-                }
-                break;
             case Sketcher::Angle:
                 if (Filter<3 || !(*it)->Name.empty()) {
                     ConstraintItem* item = new ConstraintItem(angl,name,i-1,(*it)->Type);
                     name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>(std::abs((*it)->Value)),Base::Unit::Angle).getUserString());
-                    item->setData(Qt::UserRole, name);
-                    ui->listWidgetConstraints->addItem(item);
-                }
-                break;
-            case Sketcher::EllipseXUAngle:
-                if (Filter<3 || !(*it)->Name.empty()) {
-                    ConstraintItem* item = new ConstraintItem(ellipseXUAngl,name,i-1,(*it)->Type);
-                    name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>((*it)->Value),Base::Unit::Angle).getUserString());
                     item->setData(Qt::UserRole, name);
                     ui->listWidgetConstraints->addItem(item);
                 }
