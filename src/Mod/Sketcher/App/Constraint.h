@@ -46,9 +46,15 @@ enum ConstraintType {
     Equal = 12,
     PointOnObject = 13,
     Symmetric = 14,
-    MajorRadius = 15,
-    MinorRadius = 16,
-    EllipseXUAngle = 17
+    InternalAlignment = 15
+};
+
+enum InternalAlignmentType {
+    Undef                   = 0,
+    EllipseMajorDiameter    = 1,
+    EllipseMinorDiameter    = 2,
+    EllipseFocus1           = 3,
+    EllipseFocus2           = 4
 };
 
 /// define if you want to use the end or start point
@@ -77,6 +83,7 @@ public:
 
 public:
     ConstraintType Type;
+    InternalAlignmentType AlignmentType;
     std::string Name;
     double Value;
     int First;

@@ -598,11 +598,7 @@ int Sketch::addConstraint(const Constraint *constraint)
             rtn = addAngleConstraint(constraint->First,constraint->Value);
         break;
     case Radius:
-    case MajorRadius:
         rtn = addRadiusConstraint(constraint->First, constraint->Value);
-        break;
-    case MinorRadius:
-        rtn = addRadiusConstraint(constraint->First, constraint->Value,1);
         break;
     case Equal:
         rtn = addEqualConstraint(constraint->First,constraint->Second);
@@ -615,6 +611,22 @@ int Sketch::addConstraint(const Constraint *constraint)
         else
             rtn = addSymmetricConstraint(constraint->First,constraint->FirstPos,
                                          constraint->Second,constraint->SecondPos,constraint->Third);
+        break;
+    case InternalAlignment:
+        switch(constraint->AlignmentType) {
+            case EllipseMajorDiameter:
+                rtn = addInternalAlignmentEllipseMajorDiameter(constraint->First,constraint->Second);
+                break;
+            case EllipseMinorDiameter: 
+                rtn = addInternalAlignmentEllipseMinorDiameter(constraint->First,constraint->Second);
+                break;
+            case EllipseFocus1: 
+                rtn = addInternalAlignmentEllipseFocus1(constraint->First,constraint->Second);
+                break;
+            case EllipseFocus2: 
+                rtn = addInternalAlignmentEllipseFocus2(constraint->First,constraint->Second);
+                break;
+        }
         break;
     case None:
         break;
@@ -1725,6 +1737,118 @@ int Sketch::addSymmetricConstraint(int geoId1, PointPos pos1, int geoId2, PointP
     }
     return -1;
 }
+
+int Sketch::addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2)
+{
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+    
+    if (Geoms[geoId1].type != Ellipse)
+        return -1;
+    if (Geoms[geoId2].type != Line)
+        return -1;
+    
+    int pointId1 = getPointId(geoId2, start);
+    int pointId2 = getPointId(geoId2, end);
+    
+    if (pointId1 >= 0 && pointId1 < int(Points.size()) &&
+        pointId2 >= 0 && pointId2 < int(Points.size())) {
+        GCS::Point &p1 = Points[pointId1];
+        GCS::Point &p2 = Points[pointId2];
+        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+        
+        // constraints
+        // 1. start point with ellipse -a
+        // 2. end point with ellipse +a
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintInternalAlignmentEllipseMajorDiameter(e1, p1, p2, tag);
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+
+int Sketch::addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2)
+{
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+    
+    if (Geoms[geoId1].type != Ellipse)
+        return -1;
+    if (Geoms[geoId2].type != Line)
+        return -1;
+    
+    int pointId1 = getPointId(geoId2, start);
+    int pointId2 = getPointId(geoId2, end);
+    
+    if (pointId1 >= 0 && pointId1 < int(Points.size()) &&
+        pointId2 >= 0 && pointId2 < int(Points.size())) {
+        GCS::Point &p1 = Points[pointId1];
+        GCS::Point &p2 = Points[pointId2];
+        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+        
+        // constraints
+        // 1. start point with ellipse -a
+        // 2. end point with ellipse +a
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintInternalAlignmentEllipseMinorDiameter(e1, p1, p2, tag);
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+
+int Sketch::addInternalAlignmentEllipseFocus1(int geoId1, int geoId2)
+{
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+    
+    if (Geoms[geoId1].type != Ellipse)
+        return -1;
+    if (Geoms[geoId2].type != Point)
+        return -1;
+    
+    int pointId1 = getPointId(geoId2, start);
+    
+    if (pointId1 >= 0 && pointId1 < int(Points.size())) {
+        GCS::Point &p1 = Points[pointId1];
+        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+        
+        // constraints
+        // 1. start point with ellipse -a
+        // 2. end point with ellipse +a
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintInternalAlignmentEllipseFocus1(e1, p1, tag);
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+    
+
+int Sketch::addInternalAlignmentEllipseFocus2(int geoId1, int geoId2)
+{
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+    
+    if (Geoms[geoId1].type != Ellipse)
+        return -1;
+    if (Geoms[geoId2].type != Point)
+        return -1;
+    
+    int pointId1 = getPointId(geoId2, start);
+    
+    if (pointId1 >= 0 && pointId1 < int(Points.size())) {
+        GCS::Point &p1 = Points[pointId1];
+        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+        
+        // constraints
+        // 1. start point with ellipse -a
+        // 2. end point with ellipse +a
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintInternalAlignmentEllipseFocus2(e1, p1, tag);
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+
 
 bool Sketch::updateGeometry()
 {

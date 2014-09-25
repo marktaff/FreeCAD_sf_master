@@ -198,10 +198,7 @@ inline void SketcherAddWorkbenchConstraints(T& cons){
             << "Sketcher_ConstrainDistance"
             << "Sketcher_ConstrainRadius"
             << "Sketcher_ConstrainAngle"
-            << "Sketcher_ConstrainMajorRadius"
-            << "Sketcher_ConstrainMinorRadius"
-            << "Sketcher_EllipseXUAngle";
-
+            << "Sketcher_ConstrainInternalAlignment";
 }
 
 template <typename T>

@@ -165,6 +165,13 @@ namespace GCS
         int addConstraintEqualRadius(Arc &a1, Arc &a2, int tagId=0);
         int addConstraintP2PSymmetric(Point &p1, Point &p2, Line &l, int tagId=0);
         int addConstraintP2PSymmetric(Point &p1, Point &p2, Point &p, int tagId=0);
+        
+        // internal alignment constraints
+        int addConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
+        int addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
+        int addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId=0);
+        int addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, int tagId=0);
+        
         void rescaleConstraint(int id, double coeff);
 
         void declareUnknowns(VEC_pD &params);
