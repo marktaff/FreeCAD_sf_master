@@ -903,11 +903,8 @@ void ViewProviderSketch::editDoubleClicked(void)
             if (Constr->Type == Sketcher::Distance ||
                 Constr->Type == Sketcher::DistanceX || 
                 Constr->Type == Sketcher::DistanceY ||
-                Constr->Type == Sketcher::Radius || 
-                Constr->Type == Sketcher::MajorRadius ||
-                Constr->Type == Sketcher::MinorRadius ||
-                Constr->Type == Sketcher::Angle ||
-                Constr->Type == Sketcher::EllipseXUAngle) {
+                Constr->Type == Sketcher::Radius ||
+                Constr->Type == Sketcher::Angle) {
 
                 // Coin's SoIdleSensor causes problems on some platform while Qt seems to work properly (#0001517)
                 EditDatumDialog *editDatumDialog = new EditDatumDialog(this, *it);
@@ -1121,7 +1118,7 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
            || Constr->First != Constraint::GeoUndef);
 
     if (Constr->Type == Distance || Constr->Type == DistanceX || Constr->Type == DistanceY ||
-        Constr->Type == Radius || Constr->Type == MajorRadius || Constr->Type == MinorRadius) {
+        Constr->Type == Radius) {
 
         Base::Vector3d p1(0.,0.,0.), p2(0.,0.,0.);
         if (Constr->SecondPos != Sketcher::none) { // point to point distance
@@ -1164,23 +1161,7 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
                 double angle = atan2f(tmpDir.y, tmpDir.x);
                 p2 = p1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
             }
-            else if (geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
-                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
-                double radius = (Constr->Type == MajorRadius)?ellipse->getMajorRadius():ellipse->getMinorRadius();
-                p1 = ellipse->getCenter();
-                Base::Vector3d tmpDir  =  Base::Vector3d(toPos.fX, toPos.fY, 0) - p1;
-                //Base::Vector3d tmpDir2 =  (Constr->Type == MajorRadius) ?  
-                //                          (radius * Base::Vector3d(cos(ellipse->getAngleXU()), sin(ellipse->getAngleXU()), 0)):
-                //                          (radius * Base::Vector3d(cos(ellipse->getAngleXU()+M_PI/2), sin(ellipse->getAngleXU()+M_PI/2), 0));
-                
-                double angle = (Constr->Type == MajorRadius)?ellipse->getAngleXU():ellipse->getAngleXU()+M_PI/2;
-                //double angle = acos(tmpDir.Normalize() * tmpDir2.Normalize());
-                //angle = (abs(angle)>M_PI/2 && angle>0)?
-                //            ((Constr->Type == MajorRadius)?-ellipse->getAngleXU():ellipse->getAngleXU()-M_PI/2 ):
-                //            ((Constr->Type == MajorRadius)?ellipse->getAngleXU():ellipse->getAngleXU()+M_PI/2) ;
-                                
-                p2 = p1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);                        
-            } else
+            else 
                 return;
         } else
             return;
@@ -1188,14 +1169,14 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
         Base::Vector3d vec = Base::Vector3d(toPos.fX, toPos.fY, 0) - p2;
 
         Base::Vector3d dir;
-        if (Constr->Type == Distance || Constr->Type == Radius || Constr->Type == MajorRadius || Constr->Type == MinorRadius)
+        if (Constr->Type == Distance || Constr->Type == Radius)
             dir = (p2-p1).Normalize();
         else if (Constr->Type == DistanceX)
             dir = Base::Vector3d( (p2.x - p1.x >= FLT_EPSILON) ? 1 : -1, 0, 0);
         else if (Constr->Type == DistanceY)
             dir = Base::Vector3d(0, (p2.y - p1.y >= FLT_EPSILON) ? 1 : -1, 0);
 
-        if (Constr->Type == Radius || Constr->Type == MajorRadius || Constr->Type == MinorRadius) {
+        if (Constr->Type == Radius) {
             Constr->LabelDistance = vec.x * dir.x + vec.y * dir.y;
             Constr->LabelPosition = atan2f(dir.y, dir.x);
         } else {
@@ -1249,23 +1230,6 @@ void ViewProviderSketch::moveConstraint(int constNum, const Base::Vector2D &toPo
 
         Base::Vector3d vec = Base::Vector3d(toPos.fX, toPos.fY, 0) - p0;
         Constr->LabelDistance = vec.Length()/2;
-    }
-    else if (Constr->Type == EllipseXUAngle) {
-        Base::Vector3d p0(0.,0.,0.);
-        if (Constr->Second != Constraint::GeoUndef) { // Ellipse with reference to line
-            // TODO: ellipse - Ellipse to line angle support
-        }
-        else { // Ellipse to X-Axis (phi)
-            const Part::Geometry *geo = GeoById(geomlist, Constr->First);
-            if (geo->getTypeId() != Part::GeomEllipse::getClassTypeId())
-                return;
-            const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
-            p0 = ellipse->getCenter(); //+ ellipse->getMajorRadius() * Base::Vector3d(cos(ellipse->getAngleXU()),sin(ellipse->getAngleXU()),0.);
-        }
-        
-        Base::Vector3d vec = Base::Vector3d(toPos.fX, toPos.fY, 0) - p0;
-        Constr->LabelDistance = vec.Length()/2;
-        
     }
 
     // delete the cloned objects
@@ -2141,10 +2105,7 @@ void ViewProviderSketch::updateColor(void)
         Sketcher::Constraint* constraint = getSketchObject()->Constraints.getValues()[i];
         ConstraintType type = constraint->Type;
         bool hasDatumLabel  = (type == Sketcher::Angle ||
-                               type == Sketcher::EllipseXUAngle ||
                                type == Sketcher::Radius ||
-                               type == Sketcher::MajorRadius ||
-                               type == Sketcher::MinorRadius || // TODO: Ellipse implementation
                                type == Sketcher::Symmetric ||
                                type == Sketcher::Distance ||
                                type == Sketcher::DistanceX ||
@@ -2154,7 +2115,7 @@ void ViewProviderSketch::updateColor(void)
         bool hasMaterial = false;
 
         SoMaterial *m;
-        if (!hasDatumLabel && type != Sketcher::Coincident) {
+        if (!hasDatumLabel && type != Sketcher::Coincident && type !=InternalAlignment) {
             hasMaterial = true;
             m = dynamic_cast<SoMaterial *>(s->getChild(CONSTRAINT_SEPARATOR_INDEX_MATERIAL_OR_DATUMLABEL));
         }
@@ -3428,101 +3389,8 @@ Restart:
                     asciiText->pnts.finishEditing();
 
                 }
-                break;
-            case EllipseXUAngle:
-                {
-                    assert(Constr->First >= -extGeoCount && Constr->First < intGeoCount);
-                    assert((Constr->Second >= -extGeoCount && Constr->Second < intGeoCount) ||
-                           Constr->Second == Constraint::GeoUndef);
-
-                    SbVec3f p0;
-                    double startangle,range,endangle;
-                    if (Constr->Second != Constraint::GeoUndef) { // TODO: Ellipse this is the unsupported case
-                        const Part::Geometry *geo1 = GeoById(*geomlist, Constr->First);
-                        const Part::Geometry *geo2 = GeoById(*geomlist, Constr->Second);
-                        if (geo1->getTypeId() != Part::GeomEllipse::getClassTypeId() ||
-                            geo2->getTypeId() != Part::GeomLineSegment::getClassTypeId())
-                            break;
-                        const Part::GeomLineSegment *lineSeg1 = dynamic_cast<const Part::GeomLineSegment *>(geo1);
-                        const Part::GeomLineSegment *lineSeg2 = dynamic_cast<const Part::GeomLineSegment *>(geo2);
-
-                        bool flip1 = (Constr->FirstPos == end);
-                        bool flip2 = (Constr->SecondPos == end);
-                        Base::Vector3d dir1 = (flip1 ? -1. : 1.) * (lineSeg1->getEndPoint()-lineSeg1->getStartPoint());
-                        Base::Vector3d dir2 = (flip2 ? -1. : 1.) * (lineSeg2->getEndPoint()-lineSeg2->getStartPoint());
-                        Base::Vector3d pnt1 = flip1 ? lineSeg1->getEndPoint() : lineSeg1->getStartPoint();
-                        Base::Vector3d pnt2 = flip2 ? lineSeg2->getEndPoint() : lineSeg2->getStartPoint();
-
-                        // line-line intersection
-                        {
-                            double det = dir1.x*dir2.y - dir1.y*dir2.x;
-                            if ((det > 0 ? det : -det) < 1e-10) {
-                                // lines are coincident (or parallel) and in this case the center
-                                // of the point pairs with the shortest distance is used
-                                Base::Vector3d p1[2], p2[2];
-                                p1[0] = lineSeg1->getStartPoint();
-                                p1[1] = lineSeg1->getEndPoint();
-                                p2[0] = lineSeg2->getStartPoint();
-                                p2[1] = lineSeg2->getEndPoint();
-                                double length = DBL_MAX;
-                                for (int i=0; i <= 1; i++) {
-                                    for (int j=0; j <= 1; j++) {
-                                        double tmp = (p2[j]-p1[i]).Length();
-                                        if (tmp < length) {
-                                            length = tmp;
-                                            p0.setValue((p2[j].x+p1[i].x)/2,(p2[j].y+p1[i].y)/2,0);
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                double c1 = dir1.y*pnt1.x - dir1.x*pnt1.y;
-                                double c2 = dir2.y*pnt2.x - dir2.x*pnt2.y;
-                                double x = (dir1.x*c2 - dir2.x*c1)/det;
-                                double y = (dir1.y*c2 - dir2.y*c1)/det;
-                                p0 = SbVec3f(x,y,0);
-                            }
-                        }
-
-                        startangle = atan2(dir1.y,dir1.x);
-                        range = atan2(-dir1.y*dir2.x+dir1.x*dir2.y,
-                                      dir1.x*dir2.x+dir1.y*dir2.y);
-                        endangle = startangle + range;
-
-                    } else if (Constr->First != Constraint::GeoUndef) { // TODO: Ellipse This is the supported case
-                        const Part::Geometry *geo = GeoById(*geomlist, Constr->First);
-                        if (geo->getTypeId() != Part::GeomEllipse::getClassTypeId())
-                            break;
-                        const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
-
-                        p0 = Base::convertTo<SbVec3f>(ellipse->getCenter());
-
-                        startangle = 0.;
-                        range = ellipse->getAngleXU();
-                        endangle = startangle + range;
-                    } else
-                        break;
-
-                    SoDatumLabel *asciiText = dynamic_cast<SoDatumLabel *>(sep->getChild(CONSTRAINT_SEPARATOR_INDEX_MATERIAL_OR_DATUMLABEL));
-                    asciiText->string    = SbString(Base::Quantity(Base::toDegrees<double>(Constr->Value),Base::Unit::Angle).getUserString().toUtf8().constData());
-                    asciiText->datumtype = SoDatumLabel::ANGLE;
-                    asciiText->param1    = Constr->LabelDistance;
-                    asciiText->param2    = startangle;
-                    asciiText->param3    = range;
-
-                    asciiText->pnts.setNum(2);
-                    SbVec3f *verts = asciiText->pnts.startEditing();
-
-                    verts[0] = p0;
-
-                    asciiText->pnts.finishEditing();
-
-                }
                 break;                
             case Radius:
-            case MajorRadius:
-            major_radius=true;
-            case MinorRadius:
                 {
                     assert(Constr->First >= -extGeoCount && Constr->First < intGeoCount);
 
@@ -3544,13 +3412,6 @@ Restart:
                             double radius = circle->getRadius();
                             double angle = (double) Constr->LabelPosition;
                             pnt1 = circle->getCenter();
-                            pnt2 = pnt1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
-                        }
-                        else if (geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
-                            const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo);
-                            double radius = major_radius?ellipse->getMajorRadius():ellipse->getMinorRadius();
-                            double angle = major_radius?ellipse->getAngleXU():ellipse->getAngleXU()+M_PI/2;//(double) Constr->LabelPosition;
-                            pnt1 = ellipse->getCenter();
                             pnt2 = pnt1 + radius * Base::Vector3d(cos(angle),sin(angle),0.);
                         }
                         else
@@ -3634,10 +3495,7 @@ void ViewProviderSketch::rebuildConstraintsVisual(void)
             case DistanceX:
             case DistanceY:
             case Radius:
-            case MajorRadius:
-            case MinorRadius: // TODO: Ellipse
             case Angle:
-            case EllipseXUAngle:
             {
                 SoDatumLabel *text = new SoDatumLabel();
                 text->norm.setValue(norm);
@@ -3745,6 +3603,12 @@ void ViewProviderSketch::rebuildConstraintsVisual(void)
                 // #define CONSTRAINT_SEPARATOR_INDEX_FIRST_CONSTRAINTID 3
                 sep->addChild(new SoInfo());
 
+                edit->vConstrType.push_back((*it)->Type);
+            }
+            break;
+            case InternalAlignment:
+            {
+                // TODO: Implement visual representation (if any)
                 edit->vConstrType.push_back((*it)->Type);
             }
             break;

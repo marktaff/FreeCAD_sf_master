@@ -75,10 +75,7 @@ void EditDatumDialog::exec(bool atCursor)
         Constr->Type == Sketcher::DistanceX || 
         Constr->Type == Sketcher::DistanceY ||
         Constr->Type == Sketcher::Radius || 
-        Constr->Type == Sketcher::MajorRadius || 
-        Constr->Type == Sketcher::MinorRadius || 
-        Constr->Type == Sketcher::Angle ||
-        Constr->Type == Sketcher::EllipseXUAngle) {
+        Constr->Type == Sketcher::Angle) {
 
         if (sketch->hasConflicts()) {
             QMessageBox::critical(qApp->activeWindow(), QObject::tr("Distance constraint"),
@@ -96,14 +93,14 @@ void EditDatumDialog::exec(bool atCursor)
         double datum = Constr->Value;
         Base::Quantity init_val;
 
-        if (Constr->Type == Sketcher::Angle || Constr->Type == Sketcher::EllipseXUAngle) {
+        if (Constr->Type == Sketcher::Angle) {
             datum = Base::toDegrees<double>(datum);
             dlg.setWindowTitle(tr("Insert angle"));
             init_val.setUnit(Base::Unit::Angle);
             ui_ins_datum.label->setText(tr("Angle:"));
             ui_ins_datum.labelEdit->setParamGrpPath(QByteArray("User parameter:BaseApp/History/SketcherAngle"));
         }
-        else if (Constr->Type == Sketcher::Radius || Constr->Type == Sketcher::MajorRadius || Constr->Type == Sketcher::MinorRadius) {
+        else if (Constr->Type == Sketcher::Radius) {
             dlg.setWindowTitle(tr("Insert radius"));
             init_val.setUnit(Base::Unit::Length);
             ui_ins_datum.label->setText(tr("Radius:"));
@@ -149,19 +146,6 @@ void EditDatumDialog::exec(bool atCursor)
                         newDatum = ((datum >= 0) ? 1 : -1) * std::abs(newDatum);
                     else // flip sign
                         newDatum = ((datum >= 0) ? -1 : 1) * std::abs(newDatum);
-                }
-                
-                // If major or minor radius : Add here find the ellipse, and see if value is possible if not notify the user and do not apply change
-                if (Constr->Type == Sketcher::MajorRadius || Constr->Type == Sketcher::MinorRadius) {
-                    const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(sketch->getGeometry(Constr->First));
-                    
-                    if( (Constr->Type == Sketcher::MajorRadius && newDatum < ellipse->getMinorRadius()) ||
-                        (Constr->Type == Sketcher::MinorRadius && newDatum > ellipse->getMajorRadius()) ) {
-                        QMessageBox::warning(qApp->activeWindow(), QObject::tr("Wrong value"),
-                        QObject::tr("The major radius of an ellipse must be larger than or equal to the minor radius. You might want to rotate the ellipse 90º."));
-                        return;
-                    }
-                    
                 }
 
                 try {
