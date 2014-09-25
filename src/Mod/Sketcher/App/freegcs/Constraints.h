@@ -49,7 +49,10 @@ namespace GCS
         TangentCircumf = 12,
         P2OnEllipse = 13,
         TangentEllipseLine = 14,
-        Point2EllipseDistance = 15
+        Point2EllipseDistance = 15,
+        InternalAlignmentEllipseMajorDiameter = 16,
+        InternalAlignmentEllipseMinorDiameter = 17,
+        InternalAlignmentEllipseFocus2 = 18
     };
 
     class Constraint
@@ -341,6 +344,64 @@ namespace GCS
         inline double* rmin() { return pvec[8]; }
     public:
         ConstraintEllipseTangentLine(Line &l, Ellipse &e);
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+    
+    class ConstraintInternalAlignmentEllipseMajorDiameter : public Constraint
+    {
+    private:
+        inline double* p1x() { return pvec[0]; }
+        inline double* p1y() { return pvec[1]; }
+        inline double* p2x() { return pvec[2]; }
+        inline double* p2y() { return pvec[3]; }        
+        inline double* cx() { return pvec[4]; }
+        inline double* cy() { return pvec[5]; }
+        inline double* f1x() { return pvec[6]; }
+        inline double* f1y() { return pvec[7]; }
+        inline double* rmin() { return pvec[8]; }
+    public:
+        ConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2);
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+    
+    class ConstraintInternalAlignmentEllipseMinorDiameter : public Constraint
+    {
+    private:
+        inline double* p1x() { return pvec[0]; }
+        inline double* p1y() { return pvec[1]; }
+        inline double* p2x() { return pvec[2]; }
+        inline double* p2y() { return pvec[3]; }        
+        inline double* cx() { return pvec[4]; }
+        inline double* cy() { return pvec[5]; }
+        inline double* f1x() { return pvec[6]; }
+        inline double* f1y() { return pvec[7]; }
+        inline double* rmin() { return pvec[8]; }
+    public:
+        ConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2);
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+       
+    class ConstraintInternalAlignmentEllipseFocus2 : public Constraint
+    {
+    private:
+        inline double* p1x() { return pvec[0]; }
+        inline double* p1y() { return pvec[1]; }      
+        inline double* cx() { return pvec[2]; }
+        inline double* cy() { return pvec[3]; }
+        inline double* f1x() { return pvec[4]; }
+        inline double* f1y() { return pvec[5]; }
+        inline double* rmin() { return pvec[6]; }
+    public:
+        ConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1);
         virtual ConstraintType getTypeId();
         virtual void rescale(double coef=1.);
         virtual double error();
