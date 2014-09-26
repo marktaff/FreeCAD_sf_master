@@ -779,18 +779,27 @@ int System::addConstraintP2PSymmetric(Point &p1, Point &p2, Point &p, int tagId)
     return addConstraintPointOnLine(p, p1, p2, tagId);
 }
 
+int System::addConstraintInternalAlignmentPoint2Ellipse(Ellipse &e, Point &p1, InternalAlignmentType alignmentType, int tagId)
+{
+    Constraint *constr = new ConstraintInternalAlignmentPoint2Ellipse(e, p1, alignmentType);
+    constr->setTag(tagId);
+    return addConstraint(constr);   
+}
+
 int System::addConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId)
 {
-    Constraint *constr = new ConstraintInternalAlignmentEllipseMajorDiameter(e, p1, p2);
-    constr->setTag(tagId);
-    return addConstraint(constr);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMajorX,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMajorY,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMajorX,tagId);
+    return addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMajorY,tagId);    
 }
 
 int System::addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId)
 {
-    Constraint *constr = new ConstraintInternalAlignmentEllipseMinorDiameter(e, p1, p2);
-    constr->setTag(tagId);
-    return addConstraint(constr);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMinorX,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMinorY,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMinorX,tagId);
+    return addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMinorY,tagId);    
 }
 
 int System::addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId)
@@ -800,9 +809,8 @@ int System::addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, i
 
 int System::addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, int tagId)
 {
-    Constraint *constr = new ConstraintInternalAlignmentEllipseFocus2(e, p1);
-    constr->setTag(tagId);
-    return addConstraint(constr);
+    addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseFocus2X,tagId);
+    return addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseFocus2Y,tagId);
 }
 
 void System::rescaleConstraint(int id, double coeff)
