@@ -1693,4 +1693,494 @@ double ConstraintInternalAlignmentEllipseFocus2::grad(double *param)
     return scale * deriv;
 }
 
+// ConstraintInternalAlignmentPoint2Ellipse
+ConstraintInternalAlignmentPoint2Ellipse::ConstraintInternalAlignmentPoint2Ellipse(Ellipse &e, Point &p1, InternalAlignmentType alignmentType)
+{
+    pvec.push_back(p1.x);
+    pvec.push_back(p1.y);
+    pvec.push_back(e.center.x);
+    pvec.push_back(e.center.y);
+    pvec.push_back(e.focus1.x);
+    pvec.push_back(e.focus1.y);
+    pvec.push_back(e.radmin);
+    origpvec = pvec;
+    rescale();
+    AlignmentType=alignmentType;
+}
+
+ConstraintType ConstraintInternalAlignmentPoint2Ellipse::getTypeId()
+{
+    return InternalAlignmentPoint2Ellipse;
+}
+
+void ConstraintInternalAlignmentPoint2Ellipse::rescale(double coef)
+{
+    scale = coef * 1;
+}
+
+double ConstraintInternalAlignmentPoint2Ellipse::error()
+{    
+    // so first is to select the point (X_0,Y_0) in line to calculate
+    double X_1 = *p1x();
+    double Y_1 = *p1y();
+    double X_c = *cx();
+    double Y_c = *cy();
+    double X_F1 = *f1x();
+    double Y_F1 = *f1y(); 
+    double b = *rmin();
+    
+    switch(AlignmentType)
+    {
+        case EllipsePositiveMajorX:
+            return scale * (pow(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)),
+                2) );
+            break;
+        case EllipsePositiveMajorY:
+            return scale * (pow(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)),
+                2));
+            break;
+        case EllipseNegativeMajorX:
+            return scale * (pow(X_1 - X_c + (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)),
+                2));
+            break;        
+        case EllipseNegativeMajorY:
+            return scale * (pow(Y_1 - Y_c + (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)),
+                2));
+            break;        
+        case EllipsePositiveMinorX:
+            return scale * (X_1 - X_c + b*(Y_F1 - Y_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1
+                - Y_c, 2)));
+            break;        
+        case EllipsePositiveMinorY:
+            return scale * (Y_1 - Y_c - b*(X_F1 - X_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1
+                - Y_c, 2)));
+            break;        
+        case EllipseNegativeMinorX:
+            return scale * (X_1 - X_c - b*(Y_F1 - Y_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1
+                - Y_c, 2)));
+            break;        
+        case EllipseNegativeMinorY:
+            return scale * (Y_1 - Y_c + b*(X_F1 - X_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1
+                - Y_c, 2)));
+            break;        
+        case EllipseFocus2X:
+            return scale * X_1 + X_F1 - 2*X_c;
+            break;        
+        case EllipseFocus2Y:
+            return scale * Y_1 + Y_F1 - 2*Y_c;
+            break; 
+        default:
+            return 0;
+    }
+}
+
+double ConstraintInternalAlignmentPoint2Ellipse::grad(double *param)
+{      
+    double deriv=0.;
+    if (param == p1x() || param == p1y() ||
+        param == f1x() || param == f1y() ||
+        param == cx() || param == cy() ||
+        param == rmin()) {
+                
+        double X_1 = *p1x();
+        double Y_1 = *p1y();
+
+        double X_c = *cx();
+        double Y_c = *cy();
+        double X_F1 = *f1x();
+        double Y_F1 = *f1y(); 
+        double b = *rmin();
+                
+        if (param == p1x())
+            switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += 2*X_1 - 2*X_c - 2*(X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 -
+                    X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                    2));
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv += 0;
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += 2*X_1 - 2*X_c + 2*(X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 -
+                    X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                    2));
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += 0;
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += 1;
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += 0;
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += 1;
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += 0;
+                    break;        
+                case EllipseFocus2X:
+                    deriv += 1;                    
+                    break;        
+                case EllipseFocus2Y:
+                    deriv += 0;
+                    break; 
+                default:
+                    deriv+=0;
+            }
+        if (param == p1y()) 
+           switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += 0;
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv += 2*Y_1 - 2*Y_c - 2*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 -
+                        X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2));
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += 0;
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += 2*Y_1 - 2*Y_c + 2*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 -
+                        X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2));
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += 0;
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += 1;
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += 0;
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += 1;
+                    break;        
+                case EllipseFocus2X:
+                    deriv += 0;
+                    break;        
+                case EllipseFocus2Y:
+                    deriv += 1; 
+                    break; 
+                default:
+                    deriv+=0;
+            }
+        if (param == f1x()) 
+            switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += 2*(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(X_F1 - X_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(X_F1 - X_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv += 2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += -2*(X_1 - X_c + (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(X_F1 - X_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(X_F1 - X_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += -2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(Y_1 - Y_c + (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += -b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L);
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += b*pow(X_F1 - X_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) - b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L);
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += -b*pow(X_F1 - X_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) + b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseFocus2X:
+                    deriv += 1;                     
+                    break;        
+                case EllipseFocus2Y:
+                    deriv+=0;                    
+                    break; 
+                default:
+                    deriv+=0;
+            }
+        if (param == f1y()) 
+           switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += 2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv += 2*(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(Y_F1 - Y_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(Y_F1 - Y_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += -2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(X_1 - X_c + (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += -2*(Y_1 - Y_c + (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(Y_F1 - Y_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(Y_F1 - Y_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += -b*pow(Y_F1 - Y_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) + b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L);
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += b*pow(Y_F1 - Y_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) - b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += -b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L);
+                    break;        
+                case EllipseFocus2X:
+                    deriv += 0;                    
+                    break;        
+                case EllipseFocus2Y:
+                    deriv += 1;  
+                    break; 
+                default:
+                    deriv+=0;
+            }
+        if (param == cx()) 
+            switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += -2*(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(X_F1 - X_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(X_F1 - X_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + 1 -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv += -2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += 2*(X_1 - X_c + (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(X_F1 - X_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(X_F1 - X_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) - 1 -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += 2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(Y_1 - Y_c + (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L) - 1;
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += -b*pow(X_F1 - X_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) + b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += -b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L) - 1;
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += b*pow(X_F1 - X_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) - b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseFocus2X:
+                    deriv += -2;                    
+                    break;        
+                case EllipseFocus2Y:
+                    deriv+=0;                    
+                    break; 
+                default:
+                    deriv+=0;
+            }
+        if (param == cy()) 
+            switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += -2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv += -2*(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(Y_F1 - Y_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(Y_F1 - Y_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + 1 -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += 2*(-(X_F1 - X_c)*(Y_F1 - Y_c)/(sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                        Y_c, 2))) + (X_F1 - X_c)*(Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2),
+                        3.0L/2.0L))*(X_1 - X_c + (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += 2*(Y_1 - Y_c + (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2)))*(-pow(Y_F1 - Y_c, 2)/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))) +
+                        pow(Y_F1 - Y_c, 2)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) - 1 -
+                        sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1
+                        - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += b*pow(Y_F1 - Y_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) - b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += -b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L) - 1;
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += -b*pow(Y_F1 - Y_c, 2)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2), 3.0L/2.0L) + b/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += b*(X_F1 - X_c)*(Y_F1 - Y_c)/pow(pow(X_F1 - X_c, 2) + pow(Y_F1
+                        - Y_c, 2), 3.0L/2.0L) - 1;
+                    break;        
+                case EllipseFocus2X:
+                    deriv += 0;                    
+                    break;        
+                case EllipseFocus2Y:
+                    deriv += -2;                     
+                    break; 
+                default:
+                    deriv+=0;
+            }
+        if (param == rmin()) 
+            switch(AlignmentType)
+            {
+                case EllipsePositiveMajorX:
+                    deriv += -2*b*(X_F1 - X_c)*(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) +
+                        pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2)))/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipsePositiveMajorY:
+                    deriv +=-2*b*(Y_F1 - Y_c)*(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) +
+                        pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2)))/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;
+                case EllipseNegativeMajorX:
+                    deriv += 2*b*(X_F1 - X_c)*(X_1 - X_c + (X_F1 - X_c)*sqrt(pow(b, 2) +
+                        pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2)))/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipseNegativeMajorY:
+                    deriv += 2*b*(Y_F1 - Y_c)*(Y_1 - Y_c + (Y_F1 - Y_c)*sqrt(pow(b, 2) +
+                        pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) +
+                        pow(Y_F1 - Y_c, 2)))/(sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                        2))*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)));
+                    break;        
+                case EllipsePositiveMinorX:
+                    deriv += (Y_F1 - Y_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipsePositiveMinorY:
+                    deriv += -(X_F1 - X_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseNegativeMinorX:
+                    deriv += -(Y_F1 - Y_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseNegativeMinorY:
+                    deriv += (X_F1 - X_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2));
+                    break;        
+                case EllipseFocus2X:
+                    deriv += 0;                    
+                    break;        
+                case EllipseFocus2Y:
+                    deriv += 0;                    
+                    break; 
+                default:
+                    deriv+=0;
+            }
+    }
+    return scale * deriv;
+}
+
 } //namespace GCS

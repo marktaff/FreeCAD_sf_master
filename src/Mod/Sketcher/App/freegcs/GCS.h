@@ -167,6 +167,7 @@ namespace GCS
         int addConstraintP2PSymmetric(Point &p1, Point &p2, Point &p, int tagId=0);
         
         // internal alignment constraints
+        int addConstraintInternalAlignmentPoint2Ellipse(Ellipse &e, Point &p1, InternalAlignmentType alignmentType, int tagId=0);
         int addConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
         int addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
         int addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId=0);
