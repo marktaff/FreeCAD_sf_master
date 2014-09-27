@@ -3276,6 +3276,14 @@ Restart:
                                 pos = lineSeg->getStartPoint() + dir * length;
                                 relPos = norm * 1;  //TODO Huh?
                             }
+                            else if (geo2->getTypeId()== Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
+                                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo2);
+                                // tangency between a line and an ellipse
+                                float length = (ellipse->getCenter() - lineSeg->getStartPoint())*dir;
+
+                                pos = lineSeg->getStartPoint() + dir * length;
+                                relPos = norm * 1;  
+                            }                            
                             else if (geo2->getTypeId()== Part::GeomArcOfCircle::getClassTypeId()) {
                                 const Part::GeomArcOfCircle *arc = dynamic_cast<const Part::GeomArcOfCircle *>(geo2);
                                 // tangency between a line and an arc
