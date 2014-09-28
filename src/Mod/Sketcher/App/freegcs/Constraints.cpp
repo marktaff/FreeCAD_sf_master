@@ -1102,6 +1102,7 @@ double ConstraintEllipseTangentLine::grad(double *param)
 {      
     double deriv=0.;
     if (param == p1x() || param == p1y() ||
+        param == p2x() || param == p2y() ||
         param == f1x() || param == f1y() ||
         param == cx() || param == cy() ||
         param == rmin()) {
@@ -1442,7 +1443,6 @@ double ConstraintInternalAlignmentPoint2Ellipse::grad(double *param)
                 
         double X_1 = *p1x();
         double Y_1 = *p1y();
-
         double X_c = *cx();
         double Y_c = *cy();
         double X_F1 = *f1x();
