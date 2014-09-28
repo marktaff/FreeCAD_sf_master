@@ -1470,23 +1470,6 @@ int Sketch::addRadiusConstraint(int geoId, double value, int radiusnumber)
         GCSsys.addConstraintCircleRadius(c, radius, tag);
         return ConstraintsCounter;
     }
-    else if (Geoms[geoId].type == Ellipse) {
-        // TODO: Ellipse
-        GCS::Ellipse &e = Ellipses[Geoms[geoId].index];
-        // add the parameter for the radius
-        FixParameters.push_back(new double(value));
-        if(radiusnumber==0) {
-            double *radmaj = FixParameters[FixParameters.size()-1];
-            int tag = ++ConstraintsCounter;
-            GCSsys.addConstraintEllipseMajRadius(e, radmaj, tag);
-        }
-        else {
-            double *radmin = FixParameters[FixParameters.size()-1];
-            int tag = ++ConstraintsCounter;
-            GCSsys.addConstraintEllipseMinRadius(e, radmin, tag);            
-        }
-        return ConstraintsCounter;
-    }
     else if (Geoms[geoId].type == Arc) {
         GCS::Arc &a = Arcs[Geoms[geoId].index];
         // add the parameter for the radius

@@ -50,7 +50,8 @@ namespace GCS
         P2OnEllipse = 13,
         TangentEllipseLine = 14,
         Point2EllipseDistance = 15,
-        InternalAlignmentPoint2Ellipse = 16
+        InternalAlignmentPoint2Ellipse = 16,
+        EqualMajorAxesEllipse = 17
     };
     
     enum InternalAlignmentType {
@@ -380,6 +381,29 @@ namespace GCS
     private:
         InternalAlignmentType AlignmentType;
     };
+    
+    class ConstraintEqualMajorAxesEllipse : public Constraint
+    {
+    private:     
+        inline double* e1cx() { return pvec[0]; }
+        inline double* e1cy() { return pvec[1]; }
+        inline double* e1f1x() { return pvec[2]; }
+        inline double* e1f1y() { return pvec[3]; }
+        inline double* e1rmin() { return pvec[4]; }
+        inline double* e2cx() { return pvec[5]; }
+        inline double* e2cy() { return pvec[6]; }
+        inline double* e2f1x() { return pvec[7]; }
+        inline double* e2f1y() { return pvec[8]; }
+        inline double* e2rmin() { return pvec[9]; }
+    public:
+        ConstraintEqualMajorAxesEllipse(Ellipse &e1, Ellipse &e2);
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+    
+    
 
 } //namespace GCS
 

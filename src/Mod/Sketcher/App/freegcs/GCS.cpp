@@ -723,17 +723,6 @@ int System::addConstraintCircleRadius(Circle &c, double *radius, int tagId)
     return addConstraintEqual(c.rad, radius, tagId);
 }
 
-int System::addConstraintEllipseMajRadius(Ellipse &e, double *radmaj, int tagId)
-{
-    // TODO: Ellipse this is wrong, just a placeholder
-    return addConstraintEqual(e.radmin, radmaj, tagId);
-}
-
-int System::addConstraintEllipseMinRadius(Ellipse &e, double *radmin, int tagId)
-{
-    return addConstraintEqual(e.radmin, radmin, tagId);
-}
-
 int System::addConstraintArcRadius(Arc &a, double *radius, int tagId)
 {
     return addConstraintEqual(a.rad, radius, tagId);
@@ -754,7 +743,11 @@ int System::addConstraintEqualRadii(Ellipse &e1, Ellipse &e2, int tagId)
 {
     // TODO: Ellipse
     //addConstraintEqual(e1.radmaj, e2.radmaj, tagId);
-    return addConstraintEqual(e1.radmin, e2.radmin, tagId);
+    addConstraintEqual(e1.radmin, e2.radmin, tagId);
+    
+    Constraint *constr = new ConstraintEqualMajorAxesEllipse(e1,e2);
+    constr->setTag(tagId);
+    return addConstraint(constr);
 }
 
 int System::addConstraintEqualRadius(Circle &c1, Arc &a2, int tagId)
