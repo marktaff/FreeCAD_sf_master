@@ -337,6 +337,11 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
     QIcon equal( Gui::BitmapFactory().pixmap("Constraint_EqualLength") );
     QIcon pntoo( Gui::BitmapFactory().pixmap("Constraint_PointOnObject") );
     QIcon symm ( Gui::BitmapFactory().pixmap("Constraint_Symmetric") );
+    QIcon iaellipseminoraxis ( Gui::BitmapFactory().pixmap("Constraint_InternalAlignment_Ellipse_MinorAxis") );
+    QIcon iaellipsemajoraxis ( Gui::BitmapFactory().pixmap("Constraint_InternalAlignment_Ellipse_MajorAxis") );
+    QIcon iaellipsefocus1 ( Gui::BitmapFactory().pixmap("Constraint_InternalAlignment_Ellipse_Focus1") );
+    QIcon iaellipsefocus2 ( Gui::BitmapFactory().pixmap("Constraint_InternalAlignment_Ellipse_Focus2") );
+    QIcon iaellipseother ( Gui::BitmapFactory().pixmap("Constraint_InternalAlignment") );
 
     assert(sketchView);
     // Build up ListView with the constraints
@@ -435,6 +440,27 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
                     name = QString::fromLatin1("%1 (%2)").arg(name).arg(Base::Quantity(Base::toDegrees<double>(std::abs((*it)->Value)),Base::Unit::Angle).getUserString());
                     item->setData(Qt::UserRole, name);
                     ui->listWidgetConstraints->addItem(item);
+                }
+                break;
+            case Sketcher::InternalAlignment:
+                if (Filter<2 || (Filter==3 && !(*it)->Name.empty()))
+                switch((*it)->AlignmentType){
+                    case Sketcher::EllipseMajorDiameter:
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipseminoraxis,name,i-1,(*it)->Type));
+                        break;
+                    case Sketcher::EllipseMinorDiameter:
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipsemajoraxis,name,i-1,(*it)->Type));
+                        break;
+                    case Sketcher::EllipseFocus1: 
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipsefocus1,name,i-1,(*it)->Type));
+                        break;
+                    case Sketcher::EllipseFocus2: 
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipsefocus2,name,i-1,(*it)->Type));
+                        break;
+                    case Sketcher::Undef:
+                    default: 
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipseother,name,i-1,(*it)->Type));
+                        break;
                 }
                 break;
             default:

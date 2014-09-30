@@ -2037,7 +2037,7 @@ CmdSketcherConstrainInternalAlignment::CmdSketcherConstrainInternalAlignment()
     sToolTipText    = QT_TR_NOOP("Constraint an element to be aligned with the internal geometry of another element");
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
-    sPixmap         = "Constraint_Ellipse_Axis_Angle";
+    sPixmap         = "Constraint_InternalAlignment";
     sAccel          = "Ctrl+A";
     eType           = ForEdit;
 }
@@ -2106,63 +2106,157 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
         }
     }
     
-    // TODO: this assumes there is one ellipse. Expand to more generic code.
-    //EllipseMajorDiameter    = 1,
-    //EllipseMinorDiameter    = 2,
-    //EllipseFocus1           = 3,
-    //EllipseFocus2           = 4
+    int GeoId;
+    Sketcher::PointPos PosId;
+    getIdsFromName(SubNames[SubNames.size()-1], Obj, GeoId, PosId); // last selected element
+    
+    const Part::Geometry *geo = Obj->getGeometry(GeoId);
+       
+    // Currently it is only supported for ellipses
+    if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+    
+        // Priority list
+        // EllipseMajorDiameter    = 1,
+        // EllipseMinorDiameter    = 2,
+        // EllipseFocus1           = 3,
+        // EllipseFocus2           = 4
+        
+        if(ellipseids.size()>1){
+            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+                QObject::tr("You can not internally constraint an ellipse on other ellipse. Select only one ellipse."));
+            return;        
+        }
+                
+        if (pointids.size()>2) {
+            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+                QObject::tr("Maximum 2 points are supported."));
+            return;
+        }
+        
+        if (lineids.size()>2) {
+            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+                QObject::tr("Maximum 2 lines are supported."));
+            return;
+        }
+        
+        // look for which internal constraints are already applied
+        bool major=false;
+        bool minor=false;
+        bool focus1=false;
+        bool focus2=false;
+        bool extra_elements=false;
+        
+        const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+        
+        int i=1;
+        for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
+                it != vals.end(); ++it,++i) {
+            if((*it)->Type == Sketcher::InternalAlignment && (*it)->First == GeoId)
+            {
+                switch((*it)->AlignmentType){
+                    case Sketcher::EllipseMajorDiameter:
+                        major=true;
+                        break;
+                    case Sketcher::EllipseMinorDiameter:
+                        minor=true;
+                        break;
+                    case Sketcher::EllipseFocus1: 
+                        focus1=true;
+                        break;
+                    case Sketcher::EllipseFocus2: 
+                        focus2=true;
+                        break;
+                }
+            }
+        }
+        
+        if(major && minor && focus1 && focus2) {
+            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Nothing to constraint"),
+            QObject::tr("Currently all internal geometry of the ellipse is already exposed."));            
+            return;
+        }
+        
+        if((!(focus1 && focus2) && pointids.size()>=1) || // if some element is missing and we are adding an element of that type
+           (!(major && minor) && lineids.size()>=1) ){
+        
+            openCommand("add internal alignment constraint");
+            
+            if(pointids.size()>=1)
+            {
+                if(!focus1) {
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
+                        selection[0].getFeatName(),ellipseids[0],pointids[0]);
+                }
+                else if(!focus2) {
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
+                        selection[0].getFeatName(),ellipseids[0],pointids[0]);  
+                    focus2=true;
+                }
+                else
+                    extra_elements=true;
+            }
+            
+            if(pointids.size()==2)
+            {
+                if(!focus2) {
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
+                        selection[0].getFeatName(),ellipseids[0],pointids[1]);  
+                }
+                else
+                    extra_elements=true;
+            }
+            
+            if(lineids.size()>=1)
+            {
+                if(!major) {
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
+                        selection[0].getFeatName(),ellipseids[0],lineids[0]);
+                    
+                    Part::GeomLineSegment *geo = const_cast<Part::GeomLineSegment *>(static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0])));
+                    geo->Construction=true;
+                    
+                }
+                else if(!minor) {
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
+                            selection[0].getFeatName(),ellipseids[0],lineids[0]);      
+                    
+                    Part::GeomLineSegment *geo = const_cast<Part::GeomLineSegment *>(static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0])));
+                    geo->Construction=true;
+                    minor=true;
+                }
+                else
+                    extra_elements=true;
+            }
+            if(lineids.size()==2)
+            {
+                if(!minor){
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
+                        selection[0].getFeatName(),ellipseids[0],lineids[1]);
 
-    if (ellipseids.size()!=1) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("None of the geometries support internal alignment."));
-        return;
-    }
-    
-    if (pointids.size()>2) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Maximum 2 points are supported."));
-        return;
-    }
-    
-    if (lineids.size()>2) {
-        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-            QObject::tr("Maximum 2 lines are supported."));
-        return;
-    }
-    
-    openCommand("add internal alignment constraint");
-    
-    if(pointids.size()>=1)
-    {
-        // focus 1
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],pointids[0]);
-    }
-    if(pointids.size()==2)
-    {
-        // focus 2
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],pointids[1]);
-    }
-    if(lineids.size()>=1)
-    {
-        // Major Diameter
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],lineids[0]);
-    }
-    if(lineids.size()==2)
-    {
-        // Minor Diameter
-        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
-            selection[0].getFeatName(),ellipseids[0],lineids[1]);
-    }
+                    Part::GeomLineSegment *geo = const_cast<Part::GeomLineSegment *>(static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[1])));
+                    geo->Construction=true;
+                }
+                else
+                    extra_elements=true;
+            }
 
-    // finish the transaction and update
-    commitCommand();
-    updateActive();
+            // finish the transaction and update
+            commitCommand();
+            updateActive();
+            
+            if(extra_elements){
+                QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Extra elements"),
+                QObject::tr("More elements than possible for the given ellipse were provided. These were ignored."));
+            }
 
-    // clear the selection (convenience)
-    getSelection().clearSelection();
+            // clear the selection (convenience)
+            getSelection().clearSelection();
+        }
+    }
+    else {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+        QObject::tr("Currently internal geometry is only supported for ellipse. The last selected element must be an ellipse."));
+    }
 }
 
 bool CmdSketcherConstrainInternalAlignment::isActive(void)

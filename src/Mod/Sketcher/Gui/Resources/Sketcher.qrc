@@ -9,6 +9,11 @@
         <file>icons/Constraint_ExternalAngle.svg</file>
         <file>icons/Constraint_Horizontal.svg</file>
         <file>icons/Constraint_HorizontalDistance.svg</file>
+        <file>icons/Constraint_InternalAlignment.svg</file>
+        <file>icons/Constraint_InternalAlignment_Ellipse_Focus1.svg</file>
+        <file>icons/Constraint_InternalAlignment_Ellipse_Focus2.svg</file>
+        <file>icons/Constraint_InternalAlignment_Ellipse_MajorAxis.svg</file>
+        <file>icons/Constraint_InternalAlignment_Ellipse_MinorAxis.svg</file>
         <file>icons/Constraint_InternalAngle.svg</file>
         <file>icons/Constraint_Length.svg</file>
         <file>icons/Constraint_Parallel.svg</file>
@@ -62,9 +67,14 @@
         <file>icons/Sketcher_Element_Arc_StartingPoint.svg</file>
         <file>icons/Sketcher_Element_Circle_Edge.svg</file>
         <file>icons/Sketcher_Element_Circle_MidPoint.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_All.svg</file>
         <file>icons/Sketcher_Element_Ellipse_CentrePoint.svg</file>
         <file>icons/Sketcher_Element_Ellipse_Edge_1.svg</file>
         <file>icons/Sketcher_Element_Ellipse_Edge_2.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_Focus1.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_Focus2.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_MajorAxis.svg</file>
+        <file>icons/Sketcher_Element_Ellipse_MinorAxis.svg</file>
         <file>icons/Sketcher_Element_Line_Edge.svg</file>
         <file>icons/Sketcher_Element_Line_EndPoint.svg</file>
         <file>icons/Sketcher_Element_Line_StartingPoint.svg</file>
