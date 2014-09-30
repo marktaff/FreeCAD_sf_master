@@ -2148,9 +2148,8 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
         
         const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
         
-        int i=1;
         for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
-                it != vals.end(); ++it,++i) {
+                it != vals.end(); ++it) {
             if((*it)->Type == Sketcher::InternalAlignment && (*it)->First == GeoId)
             {
                 switch((*it)->AlignmentType){
@@ -2212,16 +2211,14 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
                         selection[0].getFeatName(),ellipseids[0],lineids[0]);
                     
-                    Part::GeomLineSegment *geo = const_cast<Part::GeomLineSegment *>(static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0])));
-                    geo->Construction=true;
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[0]);
                     
                 }
                 else if(!minor) {
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
                             selection[0].getFeatName(),ellipseids[0],lineids[0]);      
                     
-                    Part::GeomLineSegment *geo = const_cast<Part::GeomLineSegment *>(static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0])));
-                    geo->Construction=true;
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[0]);
                     minor=true;
                 }
                 else
@@ -2233,8 +2230,7 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
                         selection[0].getFeatName(),ellipseids[0],lineids[1]);
 
-                    Part::GeomLineSegment *geo = const_cast<Part::GeomLineSegment *>(static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[1])));
-                    geo->Construction=true;
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[1]);
                 }
                 else
                     extra_elements=true;
@@ -2251,6 +2247,10 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
 
             // clear the selection (convenience)
             getSelection().clearSelection();
+        }
+        else {
+            QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Extra elements"),
+            QObject::tr("More elements than possible for the given ellipse were provided. These were ignored."));
         }
     }
     else {
