@@ -679,6 +679,182 @@ bool CmdSketcherSelectElementsAssociatedWithConstraints::isActive(void)
     return isSketcherAcceleratorActive( getActiveGuiDocument(), true );
 }
 
+DEF_STD_CMD_A(CmdSketcherRestoreInternalAlignmentGeometry);
+
+CmdSketcherRestoreInternalAlignmentGeometry::CmdSketcherRestoreInternalAlignmentGeometry()
+    :Command("Sketcher_RestoreInternalAlignmentGeometry")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Show/Restore all internal geometry");
+    sToolTipText    = QT_TR_NOOP("Show/Restore all internal geometry");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_Element_Ellipse_All";
+    sAccel          = "CTRL+SHIFT+E";
+    eType           = ForEdit;
+}
+
+void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
+{
+    // get the selection
+    std::vector<Gui::SelectionObject> selection = getSelection().getSelectionEx();
+    Sketcher::SketchObject* Obj = dynamic_cast<Sketcher::SketchObject*>(selection[0].getObject());
+
+    // only one sketch with its subelements are allowed to be selected
+    if (selection.size() != 1) {
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+            QObject::tr("Select elements from a single sketch."));
+        return;
+    }
+
+    // get the needed lists and objects
+    const std::vector<std::string> &SubNames = selection[0].getSubNames();
+    const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+    
+    std::string doc_name = Obj->getDocument()->getName();
+    std::string obj_name = Obj->getNameInDocument();
+    std::stringstream ss;
+    
+    getSelection().clearSelection();
+    
+    // go through the selected subelements
+    for (std::vector<std::string>::const_iterator it=SubNames.begin(); it != SubNames.end(); ++it) {
+        // only handle edges
+        if (it->size() > 4 && it->substr(0,4) == "Edge") {
+            int GeoId = std::atoi(it->substr(4,4000).c_str()) - 1;
+            const Part::Geometry *geo = Obj->getGeometry(GeoId);            
+            // Only for supported types
+            if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
+
+                // First we search what has to be restored
+                bool major=false;
+                bool minor=false;
+                bool focus1=false;
+                bool focus2=false;
+                bool extra_elements=false;
+                
+                const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
+                
+                for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
+                        it != vals.end(); ++it) {
+                    if((*it)->Type == Sketcher::InternalAlignment && (*it)->First == GeoId)
+                    {
+                        switch((*it)->AlignmentType){
+                            case Sketcher::EllipseMajorDiameter:
+                                major=true;
+                                break;
+                            case Sketcher::EllipseMinorDiameter:
+                                minor=true;
+                                break;
+                            case Sketcher::EllipseFocus1: 
+                                focus1=true;
+                                break;
+                            case Sketcher::EllipseFocus2: 
+                                focus2=true;
+                                break;
+                        }
+                    }
+                }
+                
+                if(major && minor && focus1 && focus2)
+                {
+                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Nothing to restore"),
+                    QObject::tr("Currently all internal geometry of the ellipse is already exposed."));            
+                    return;
+                }
+                
+                Gui::Command::openCommand("Expose ellipse internal geometry");
+                
+                int currentgeoid= Obj->getHighestCurveIndex();
+                int incrgeo= 0;
+                int majorindex=-1;
+                int minorindex=-1;
+                
+                const Part::GeomEllipse *ellipse = static_cast<const Part::GeomEllipse *>(geo);
+
+                Base::Vector3d center=ellipse->getCenter();
+                double majord=ellipse->getMajorRadius();
+                double minord=ellipse->getMinorRadius();
+                
+                try{
+                    if(!major)
+                    {
+                        Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Line(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
+                        Obj->getNameInDocument(),
+                        center.x,center.y,center.x+majord,center.y); // create line for major axis
+                        
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
+                        selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain major axis
+                        majorindex=currentgeoid+incrgeo+1;
+                        incrgeo++;
+                    }
+                    if(!minor)
+                    {                       
+                        Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Line(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
+                        Obj->getNameInDocument(),
+                        center.x,center.y,center.x,center.y+minord); // create line for minor axis
+                        
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
+                        selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain minor axis
+                        minorindex=currentgeoid+incrgeo+1;
+                        incrgeo++;
+                    }
+                    if(!focus1)
+                    {
+                        Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
+                            Obj->getNameInDocument(),
+                            center.x+majord,center.y);
+                        
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
+                        selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain major axis
+                        incrgeo++;
+                    }
+                    if(!focus2)
+                    {
+                        Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
+                            Obj->getNameInDocument(),
+                            center.x-majord,center.y);
+                        
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
+                        Obj->getNameInDocument(),GeoId,currentgeoid+incrgeo+1); // constrain major axis     
+                    }
+                    
+                    // Make lines construction lines
+                    if(majorindex!=-1){
+                        doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",Obj->getNameInDocument(),majorindex);
+                    }
+                    
+                    if(minorindex!=-1){
+                        doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",Obj->getNameInDocument(),minorindex);
+                    }
+                    
+                    Gui::Command::commitCommand();
+                    Gui::Command::updateActive();
+                
+                }
+                catch (const Base::Exception& e) {
+                    Base::Console().Error("%s\n", e.what());
+                    Gui::Command::abortCommand();
+                    Gui::Command::updateActive();
+                }
+    
+            } // if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) 
+            else {
+                QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
+                QObject::tr("Currently internal geometry is only supported for ellipse. The last selected element must be an ellipse."));
+            }
+
+        }
+    }
+}
+
+bool CmdSketcherRestoreInternalAlignmentGeometry::isActive(void)
+{
+    return isSketcherAcceleratorActive( getActiveGuiDocument(), true );
+}
+
+
 void CreateSketcherCommandsConstraintAccel(void)
 {
     Gui::CommandManager &rcCmdMgr = Gui::Application::Instance->commandManager();
@@ -692,4 +868,5 @@ void CreateSketcherCommandsConstraintAccel(void)
     rcCmdMgr.addCommand(new CmdSketcherSelectRedundantConstraints());
     rcCmdMgr.addCommand(new CmdSketcherSelectConflictingConstraints());
     rcCmdMgr.addCommand(new CmdSketcherSelectElementsAssociatedWithConstraints());
+    rcCmdMgr.addCommand(new CmdSketcherRestoreInternalAlignmentGeometry());
 }
