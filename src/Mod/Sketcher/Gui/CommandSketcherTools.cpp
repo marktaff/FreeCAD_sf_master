@@ -774,8 +774,8 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                 const Part::GeomEllipse *ellipse = static_cast<const Part::GeomEllipse *>(geo);
 
                 Base::Vector3d center=ellipse->getCenter();
-                double majord=ellipse->getMajorRadius();
-                double minord=ellipse->getMinorRadius();
+                double majord=ellipse->getMajorRadius()*0.99;
+                double minord=ellipse->getMinorRadius()*0.99;
                 double phi=ellipse->getAngleXU();
                 
                 Base::Vector3d majorpositiveend = center + majord * Base::Vector3d(cos(phi),sin(phi),0);
