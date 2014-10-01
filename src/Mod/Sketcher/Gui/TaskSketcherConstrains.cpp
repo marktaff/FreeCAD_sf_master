@@ -470,10 +470,10 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
                 if (Filter<2 || (Filter==3 && !(*it)->Name.empty()))
                 switch((*it)->AlignmentType){
                     case Sketcher::EllipseMajorDiameter:
-                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipseminoraxis,name,i-1,(*it)->Type));
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipsemajoraxis,name,i-1,(*it)->Type));
                         break;
                     case Sketcher::EllipseMinorDiameter:
-                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipsemajoraxis,name,i-1,(*it)->Type));
+                        ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipseminoraxis,name,i-1,(*it)->Type));
                         break;
                     case Sketcher::EllipseFocus1: 
                         ui->listWidgetConstraints->addItem(new ConstraintItem(iaellipsefocus1,name,i-1,(*it)->Type));

@@ -776,16 +776,27 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                 Base::Vector3d center=ellipse->getCenter();
                 double majord=ellipse->getMajorRadius();
                 double minord=ellipse->getMinorRadius();
+                double phi=ellipse->getAngleXU();
+                
+                Base::Vector3d majorpositiveend = center + majord * Base::Vector3d(cos(phi),sin(phi),0);
+                Base::Vector3d majornegativeend = center - majord * Base::Vector3d(cos(phi),sin(phi),0);  
+                Base::Vector3d minorpositiveend = center + minord * Base::Vector3d(-sin(phi),cos(phi),0);
+                Base::Vector3d minornegativeend = center - minord * Base::Vector3d(-sin(phi),cos(phi),0);
+                
+                double df= sqrt(majord*majord-minord*minord);
+                
+                Base::Vector3d focus1P = center + df * Base::Vector3d(cos(phi),sin(phi),0);
+                Base::Vector3d focus2P = center - df * Base::Vector3d(cos(phi),sin(phi),0);
                 
                 try{
                     if(!major)
                     {
                         Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Line(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                         Obj->getNameInDocument(),
-                        center.x,center.y,center.x+majord,center.y); // create line for major axis
+                        majornegativeend.x,majornegativeend.y,majorpositiveend.x,majorpositiveend.y); // create line for major axis
                         
-                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
-                        selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain major axis
+                        //Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
+                        //selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain major axis
                         majorindex=currentgeoid+incrgeo+1;
                         incrgeo++;
                     }
@@ -793,10 +804,10 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                     {                       
                         Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Line(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                         Obj->getNameInDocument(),
-                        center.x,center.y,center.x,center.y+minord); // create line for minor axis
+                        minornegativeend.x,minornegativeend.y,minorpositiveend.x,minorpositiveend.y); // create line for minor axis
                         
-                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
-                        selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain minor axis
+                        //Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
+                        //selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain minor axis
                         minorindex=currentgeoid+incrgeo+1;
                         incrgeo++;
                     }
@@ -804,20 +815,20 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                     {
                         Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
                             Obj->getNameInDocument(),
-                            center.x+majord,center.y);
+                            focus1P.x,focus1P.y);
                         
-                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
-                        selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain major axis
+                        //Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
+                        //selection[0].getFeatName(),GeoId,currentgeoid+incrgeo+1); // constrain major axis
                         incrgeo++;
                     }
                     if(!focus2)
                     {
                         Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
                             Obj->getNameInDocument(),
-                            center.x-majord,center.y);
+                            focus2P.x,focus2P.y);
                         
-                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
-                        Obj->getNameInDocument(),GeoId,currentgeoid+incrgeo+1); // constrain major axis     
+                        //Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
+                        //Obj->getNameInDocument(),GeoId,currentgeoid+incrgeo+1); // constrain major axis     
                     }
                     
                     // Make lines construction lines
