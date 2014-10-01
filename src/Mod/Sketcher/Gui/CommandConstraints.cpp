@@ -2211,14 +2211,21 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
                         selection[0].getFeatName(),ellipseids[0],lineids[0]);
                     
-                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[0]);
+                    const Part::GeomLineSegment *geo = static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0]));
+                    
+                    if(!geo->Construction) 
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[0]);
                     
                 }
                 else if(!minor) {
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
                             selection[0].getFeatName(),ellipseids[0],lineids[0]);      
                     
-                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[0]);
+                    const Part::GeomLineSegment *geo = static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0]));
+                    
+                    if(!geo->Construction)
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[0]);
+                    
                     minor=true;
                 }
                 else
@@ -2229,8 +2236,11 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
                 if(!minor){
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
                         selection[0].getFeatName(),ellipseids[0],lineids[1]);
-
-                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[1]);
+                    
+                    const Part::GeomLineSegment *geo = static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[1]));
+                    
+                    if(!geo->Construction)
+                        Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",selection[0].getFeatName(),lineids[1]);
                 }
                 else
                     extra_elements=true;
