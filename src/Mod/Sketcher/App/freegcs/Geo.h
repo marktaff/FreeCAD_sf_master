@@ -74,6 +74,19 @@ namespace GCS
         Point focus1; //+x
         double *radmin;
     };
+    
+    class ArcOfEllipse
+    {
+    public:
+        ArcOfEllipse(){startAngle=0;endAngle=0;radmin = 0;}
+        double *startAngle;
+        double *endAngle;
+        double *radmin;
+        Point start;
+        Point end;
+        Point center;
+        Point focus1; //+x
+    };
 
 } //namespace GCS
 
