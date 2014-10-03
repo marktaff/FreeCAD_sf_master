@@ -2008,7 +2008,7 @@ CmdSketcherCreateEllipse::CmdSketcherCreateEllipse()
     sAppModule      = "Sketcher";
     sGroup          = QT_TR_NOOP("Sketcher");
     sMenuText       = QT_TR_NOOP("Create ellipse");
-    sToolTipText    = QT_TR_NOOP("Create a ellipse in the sketch");
+    sToolTipText    = QT_TR_NOOP("Create an ellipse in the sketch");
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_CreateEllipse";
@@ -2021,6 +2021,306 @@ void CmdSketcherCreateEllipse::activated(int iMsg)
 }
 
 bool CmdSketcherCreateEllipse::isActive(void)
+{
+    return isCreateGeoActive(getActiveGuiDocument());
+}
+
+// ======================================================================================
+
+/* XPM */
+static const char *cursor_createarcofellipse[]={
+"32 32 3 1",
+"+ c white",
+"# c red",
+". c None",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"................................",
+"+++++...+++++...................",
+"................................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+.........................",
+"......+..............#####......",
+"..................###.....#.....",
+"...............###.......##.....",
+".............##..........##.....",
+"...........##............##.....",
+"..........##.....###....##......",
+".........##.....#.#.....#.......",
+"........##.....###....##........",
+"........##...........##.........",
+".......##..........###..........",
+"......##........####............",
+"......#.....####................",
+"......######....................",
+"................................",
+"................................",
+"................................",
+"................................",
+"................................",
+"................................"};
+
+class DrawSketchHandlerArcOfEllipse : public DrawSketchHandler
+{
+public:
+    DrawSketchHandlerArcOfEllipse() : Mode(STATUS_SEEK_First),EditCurve(34){}
+    virtual ~DrawSketchHandlerArcOfEllipse(){}
+    /// mode table
+    enum SelectMode {
+        STATUS_SEEK_First,      /**< enum value ----. */
+        STATUS_SEEK_Second,     /**< enum value ----. */
+        STATUS_SEEK_Third,     /**< enum value ----. */      
+        STATUS_SEEK_Fourth,     /**< enum value ----. */
+        STATUS_Close
+    };
+
+    virtual void activated(ViewProviderSketch *sketchgui)
+    {
+        setCursor(QPixmap(cursor_createarcofellipse),7,7);
+    }
+
+    virtual void mouseMove(Base::Vector2D onSketchPos)
+    {
+        if (Mode==STATUS_SEEK_First) {
+            setPositionText(onSketchPos);
+            if (seekAutoConstraint(sugConstr1, onSketchPos, Base::Vector2D(0.f,0.f))) { // TODO: ellipse prio 1
+                renderSuggestConstraintsCursor(sugConstr1);
+                return;
+            }
+        }
+        else if (Mode==STATUS_SEEK_Second) {
+            double rx0 = onSketchPos.fX - EditCurve[0].fX;
+            double ry0 = onSketchPos.fY - EditCurve[0].fY;
+            for (int i=0; i < 16; i++) {
+                double angle = i*M_PI/16.0;
+                double rx = rx0 * cos(angle) + ry0 * sin(angle);
+                double ry = -rx0 * sin(angle) + ry0 * cos(angle);
+                EditCurve[1+i] = Base::Vector2D(EditCurve[0].fX + rx, EditCurve[0].fY + ry);
+                EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
+            }
+            EditCurve[33] = EditCurve[1];
+
+            // Display radius for user
+            float radius = (onSketchPos - EditCurve[0]).Length();
+
+            SbString text;
+            text.sprintf(" (%.1fR,%.1fR)", radius,radius);
+            setPositionText(onSketchPos, text);
+
+            sketchgui->drawEdit(EditCurve);
+            if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
+                                   AutoConstraint::CURVE)) {
+                renderSuggestConstraintsCursor(sugConstr2);
+                return;
+            }
+        }
+        else if (Mode==STATUS_SEEK_Third) {
+            double rx0 = EditCurve[1].fX - EditCurve[0].fX;    // first semidiameter
+            double ry0 = EditCurve[1].fY - EditCurve[0].fY;     // first semidiameter
+                        
+            // angle between the major axis of the ellipse and the X axis
+            double a = (EditCurve[1]-EditCurve[0]).Length();
+            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
+            
+            // This is the angle at cursor point
+            double angleatpoint = acos((onSketchPos.fX-EditCurve[0].fX+(onSketchPos.fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
+            double b=(onSketchPos.fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
+                        
+            for (int i=1; i < 16; i++) {
+                double angle = i*M_PI/16.0;
+                double rx = a * cos(angle) * cos(phi) - b * sin(angle) * sin(phi); 
+                double ry = a * cos(angle) * sin(phi) + b * sin(angle) * cos(phi);
+                EditCurve[1+i] = Base::Vector2D(EditCurve[0].fX + rx, EditCurve[0].fY + ry);
+                EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
+            }
+            EditCurve[33] = EditCurve[1];
+            EditCurve[17] = EditCurve[16];
+
+            // Display radius for user
+            SbString text;
+            text.sprintf(" (%.1fR,%.1fR)", a, b);
+            setPositionText(onSketchPos, text);
+
+            sketchgui->drawEdit(EditCurve);
+            if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
+                                   AutoConstraint::CURVE)) {
+                renderSuggestConstraintsCursor(sugConstr2);
+                return;
+            }
+        }
+        else if (Mode==STATUS_SEEK_Fourth) { // here we differ from ellipse creation
+            
+            double rx0 = EditCurve[1].fX - EditCurve[0].fX;    // first semidiameter
+            double ry0 = EditCurve[1].fY - EditCurve[0].fY;     // first semidiameter
+                        
+            // angle between the major axis of the ellipse and the X axis
+            double a = (EditCurve[1]-EditCurve[0]).Length();
+            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
+            
+            // This is the angle at cursor point
+            double angleatpoint = acos((onSketchPos.fX-EditCurve[0].fX+(onSketchPos.fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
+            double b=(onSketchPos.fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
+                        
+            for (int i=1; i < 16; i++) {
+                double angle = i*M_PI/16.0;
+                double rx = a * cos(angle) * cos(phi) - b * sin(angle) * sin(phi); 
+                double ry = a * cos(angle) * sin(phi) + b * sin(angle) * cos(phi);
+                EditCurve[1+i] = Base::Vector2D(EditCurve[0].fX + rx, EditCurve[0].fY + ry);
+                EditCurve[17+i] = Base::Vector2D(EditCurve[0].fX - rx, EditCurve[0].fY - ry);
+            }
+            EditCurve[33] = EditCurve[1];
+            EditCurve[17] = EditCurve[16];
+
+            // Display radius for user
+            SbString text;
+            text.sprintf(" (%.1fR,%.1fR)", a, b);
+            setPositionText(onSketchPos, text);
+
+            sketchgui->drawEdit(EditCurve);
+            if (seekAutoConstraint(sugConstr2, onSketchPos, Base::Vector2D(0.f,0.f),
+                                   AutoConstraint::CURVE)) {
+                renderSuggestConstraintsCursor(sugConstr2);
+                return;
+            }
+        }
+        
+        
+        
+        applyCursor();
+    }
+
+    virtual bool pressButton(Base::Vector2D onSketchPos)
+    {
+        if (Mode==STATUS_SEEK_First){
+            EditCurve[0] = onSketchPos;
+            centerPoint = onSketchPos;
+            Mode = STATUS_SEEK_Second;
+        } 
+        else if(Mode==STATUS_SEEK_Second) {
+            EditCurve[1] = onSketchPos;
+            axisPoint = onSketchPos;
+            Mode = STATUS_SEEK_Third;
+        }
+        else if(Mode==STATUS_SEEK_Third) {
+            startingPoint = onSketchPos;
+            Mode = STATUS_SEEK_Fourth;
+        } 
+        else { // Fourth
+            endPoint = onSketchPos;
+            Mode = STATUS_Close;
+        }
+        return true;
+    }
+
+    virtual bool releaseButton(Base::Vector2D onSketchPos)
+    {
+        if (Mode==STATUS_Close) {
+            unsetCursor();
+            resetPositionText();
+            
+            // angle between the major axis of the ellipse and the X axis
+            double a = (EditCurve[1]-EditCurve[0]).Length();
+            double phi = atan2f(EditCurve[1].fY-EditCurve[0].fY,EditCurve[1].fX-EditCurve[0].fX);
+            
+            // This is the angle at cursor point
+            double angleatpoint = acos((EditCurve[2].fX-EditCurve[0].fX+(EditCurve[2].fY-EditCurve[0].fY)*tan(phi))/(a*(cos(phi)+tan(phi)*sin(phi))));
+            double b=(EditCurve[2].fY-EditCurve[0].fY-a*cos(angleatpoint)*sin(phi))/(sin(angleatpoint)*cos(phi));
+                        
+            Base::Vector2D majAxisDir,minAxisDir,minAxisPoint,majAxisPoint;
+            // We always create a CCW ellipse, because we want our XY reference system to be in the +X +Y direction
+            // Our normal will then always be in the +Z axis (local +Z axis of the sketcher)
+            
+            if(a>b)
+            {
+                // force second semidiameter to be perpendicular to first semidiamater
+                majAxisDir = EditCurve[1] - EditCurve[0];
+                Base::Vector2D perp(-majAxisDir.fY,majAxisDir.fX);
+                perp.Normalize();
+                perp.Scale(abs(b));
+                minAxisPoint = EditCurve[0]+perp;
+                majAxisPoint = EditCurve[0]+majAxisDir;
+            }
+            else {
+                // force second semidiameter to be perpendicular to first semidiamater
+                minAxisDir = EditCurve[1] - EditCurve[0];
+                Base::Vector2D perp(minAxisDir.fY,-minAxisDir.fX);
+                perp.Normalize();
+                perp.Scale(abs(b));
+                majAxisPoint = EditCurve[0]+perp; 
+                minAxisPoint = EditCurve[0]+minAxisDir;
+            }
+            
+            startAngle=-30;
+            endAngle=60;
+            
+            Gui::Command::openCommand("Add sketch arc of ellipse");
+            Gui::Command::doCommand(Gui::Command::Doc,
+                "App.ActiveDocument.%s.addGeometry(Part.ArcOfEllipse"
+                "(Part.Ellipse(App.Vector(%f,%f,0),App.Vector(%f,%f,0),App.Vector(%f,%f,0)),"
+                "%f,%f))",
+                    sketchgui->getObject()->getNameInDocument(),
+                    majAxisPoint.fX, majAxisPoint.fY,                                    
+                    minAxisPoint.fX, minAxisPoint.fY,
+                    EditCurve[0].fX, EditCurve[0].fY,
+                      startAngle, endAngle); //arcAngle > 0 ? 0 : 1);
+
+            Gui::Command::commitCommand();
+            Gui::Command::updateActive();
+            
+            // add auto constraints for the center point
+            if (sugConstr1.size() > 0) {
+                createAutoConstraints(sugConstr1, getHighestCurveIndex(), Sketcher::mid);
+                sugConstr1.clear();
+            }
+
+            // add suggested constraints for circumference
+            if (sugConstr2.size() > 0) {
+                //createAutoConstraints(sugConstr2, getHighestCurveIndex(), Sketcher::none);
+                sugConstr2.clear();
+            }
+
+            EditCurve.clear();
+            sketchgui->drawEdit(EditCurve);
+            sketchgui->purgeHandler(); // no code after this line, Handler get deleted in ViewProvider
+        }
+        return true;
+    }
+protected:
+    SelectMode Mode;
+    std::vector<Base::Vector2D> EditCurve;
+    Base::Vector2D centerPoint, axisPoint, startingPoint, endPoint;
+    double rx, ry, startAngle, endAngle, arcAngle;
+    std::vector<AutoConstraint> sugConstr1, sugConstr2;
+
+};
+
+DEF_STD_CMD_A(CmdSketcherCreateArcOfEllipse);
+
+CmdSketcherCreateArcOfEllipse::CmdSketcherCreateArcOfEllipse()
+  : Command("Sketcher_CreateArcOfEllipse")
+{
+    sAppModule      = "Sketcher";
+    sGroup          = QT_TR_NOOP("Sketcher");
+    sMenuText       = QT_TR_NOOP("Create an arc of ellipse");
+    sToolTipText    = QT_TR_NOOP("Create an arc of ellipse in the sketch");
+    sWhatsThis      = sToolTipText;
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Sketcher_Elliptical_Arc";
+    eType           = ForEdit;
+}
+
+void CmdSketcherCreateArcOfEllipse::activated(int iMsg)
+{
+    ActivateHandler(getActiveGuiDocument(),new DrawSketchHandlerArcOfEllipse() );
+}
+
+bool CmdSketcherCreateArcOfEllipse::isActive(void)
 {
     return isCreateGeoActive(getActiveGuiDocument());
 }
@@ -3793,6 +4093,7 @@ void CreateSketcherCommandsCreateGeo(void)
     rcCmdMgr.addCommand(new CmdSketcherCreate3PointCircle());
     rcCmdMgr.addCommand(new CmdSketcherCompCreateCircle());
     rcCmdMgr.addCommand(new CmdSketcherCreateEllipse());
+    rcCmdMgr.addCommand(new CmdSketcherCreateArcOfEllipse());
     rcCmdMgr.addCommand(new CmdSketcherCreateLine());
     rcCmdMgr.addCommand(new CmdSketcherCreatePolyline());
     rcCmdMgr.addCommand(new CmdSketcherCreateRectangle());

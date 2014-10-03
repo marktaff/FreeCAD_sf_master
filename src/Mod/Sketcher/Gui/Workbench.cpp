@@ -137,13 +137,15 @@ inline void SketcherAddWorkspaceArcs<Gui::MenuItem>(Gui::MenuItem& geom){
             << "Sketcher_Create3PointArc"
             << "Sketcher_CreateCircle"
             << "Sketcher_Create3PointCircle"
-            << "Sketcher_CreateEllipse";
+            << "Sketcher_CreateEllipse"
+            << "Sketcher_CreateArcOfEllipse";
 }
 template <>
 inline void SketcherAddWorkspaceArcs<Gui::ToolBarItem>(Gui::ToolBarItem& geom){
     geom    << "Sketcher_CompCreateArc"
             << "Sketcher_CompCreateCircle"
-            << "Sketcher_CreateEllipse";
+            << "Sketcher_CreateEllipse"
+            << "Sketcher_CreateArcOfEllipse";
 }
 template <typename T>
 void SketcherAddWorkspaceRegularPolygon(T& geom);
@@ -179,9 +181,11 @@ inline void SketcherAddWorkbenchGeometries(T& geom){
             /*<< "Sketcher_CreateDraftLine"*/;
 }
 
-
 template <typename T>
-inline void SketcherAddWorkbenchConstraints(T& cons){
+inline void SketcherAddWorkbenchConstraints(T& cons);
+
+template <>
+inline void SketcherAddWorkbenchConstraints<Gui::MenuItem>(Gui::MenuItem& cons){
     cons    << "Sketcher_ConstrainCoincident"
             << "Sketcher_ConstrainPointOnObject"
             << "Sketcher_ConstrainVertical"
@@ -199,6 +203,26 @@ inline void SketcherAddWorkbenchConstraints(T& cons){
             << "Sketcher_ConstrainRadius"
             << "Sketcher_ConstrainAngle"
             << "Sketcher_ConstrainInternalAlignment";
+}
+
+template <>
+inline void SketcherAddWorkbenchConstraints<Gui::ToolBarItem>(Gui::ToolBarItem& cons){
+    cons    << "Sketcher_ConstrainCoincident"
+            << "Sketcher_ConstrainPointOnObject"
+            << "Sketcher_ConstrainVertical"
+            << "Sketcher_ConstrainHorizontal"
+            << "Sketcher_ConstrainParallel"
+            << "Sketcher_ConstrainPerpendicular"
+            << "Sketcher_ConstrainTangent"
+            << "Sketcher_ConstrainEqual"
+            << "Sketcher_ConstrainSymmetric"
+            << "Separator"
+            << "Sketcher_ConstrainLock"
+            << "Sketcher_ConstrainDistanceX"
+            << "Sketcher_ConstrainDistanceY"
+            << "Sketcher_ConstrainDistance"
+            << "Sketcher_ConstrainRadius"
+            << "Sketcher_ConstrainAngle";
 }
 
 template <typename T>

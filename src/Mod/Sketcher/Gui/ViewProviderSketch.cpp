@@ -2826,6 +2826,39 @@ void ViewProviderSketch::draw(bool temp)
             Points.push_back(end);
             Points.push_back(center);
         }
+        else if ((*it)->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId()) { // add an arc
+            const Part::GeomArcOfEllipse *arc = dynamic_cast<const Part::GeomArcOfEllipse *>(*it);
+            Handle_Geom_TrimmedCurve curve = Handle_Geom_TrimmedCurve::DownCast(arc->handle());
+
+            double startangle, endangle;
+            arc->getRange(startangle, endangle);
+            if (startangle > endangle) // if arc is reversed
+                std::swap(startangle, endangle);
+
+            double range = endangle-startangle;
+            int countSegments = std::max(6, int(50.0 * range / (2 * M_PI)));
+            double segment = range / countSegments;
+
+            Base::Vector3d center = arc->getCenter();
+            Base::Vector3d start  = arc->getStartPoint();
+            Base::Vector3d end    = arc->getEndPoint();
+
+            for (int i=0; i < countSegments; i++) {
+                gp_Pnt pnt = curve->Value(startangle);
+                Coords.push_back(Base::Vector3d(pnt.X(), pnt.Y(), pnt.Z()));
+                startangle += segment;
+            }
+
+            // end point
+            gp_Pnt pnt = curve->Value(endangle);
+            Coords.push_back(Base::Vector3d(pnt.X(), pnt.Y(), pnt.Z()));
+
+            Index.push_back(countSegments+1);
+            edit->CurvIdToGeoId.push_back(GeoId);
+            Points.push_back(start);
+            Points.push_back(end);
+            Points.push_back(center);
+        }
         else if ((*it)->getTypeId() == Part::GeomBSplineCurve::getClassTypeId()) { // add a bspline
             const Part::GeomBSplineCurve *spline = dynamic_cast<const Part::GeomBSplineCurve *>(*it);
             Handle_Geom_BSplineCurve curve = Handle_Geom_BSplineCurve::DownCast(spline->handle());
