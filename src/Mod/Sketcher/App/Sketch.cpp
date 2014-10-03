@@ -40,6 +40,7 @@
 #include <Mod/Part/App/Geometry.h>
 #include <Mod/Part/App/GeometryCurvePy.h>
 #include <Mod/Part/App/ArcOfCirclePy.h>
+#include <Mod/Part/App/ArcOfEllipsePy.h>
 #include <Mod/Part/App/CirclePy.h>
 #include <Mod/Part/App/EllipsePy.h>
 #include <Mod/Part/App/LinePy.h>
@@ -79,6 +80,7 @@ void Sketch::clear(void)
     Arcs.clear();
     Circles.clear();
     Ellipses.clear();
+    ArcsOfEllipse.clear();
 
     // deleting the doubles allocated with new
     for (std::vector<double*>::iterator it = Parameters.begin(); it != Parameters.end(); ++it)
@@ -173,6 +175,10 @@ int Sketch::addGeometry(const Part::Geometry *geo, bool fixed)
         const GeomArcOfCircle *aoc = dynamic_cast<const GeomArcOfCircle*>(geo);
         // create the definition struct for that geom
         return addArc(*aoc, fixed);
+    } else if (geo->getTypeId() == GeomArcOfEllipse::getClassTypeId()) { // add an arc
+        const GeomArcOfEllipse *aoe = dynamic_cast<const GeomArcOfEllipse*>(geo);
+        // create the definition struct for that geom
+        return addArcOfEllipse(*aoe, fixed);
     } else {
         Base::Exception("Sketch::addGeometry(): Unknown or unsupported type added to a sketch");
         return 0;
@@ -346,6 +352,99 @@ int Sketch::addArc(const Part::GeomArcOfCircle &circleSegment, bool fixed)
     return Geoms.size()-1;
 }
 
+
+
+int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool fixed)
+{
+    std::vector<double *> &params = fixed ? FixParameters : Parameters;
+
+    // create our own copy
+    GeomArcOfEllipse *aoe = static_cast<GeomArcOfEllipse*>(ellipseSegment.clone());
+    // create the definition struct for that geom
+    GeoDef def;
+    def.geo  = aoe;
+    def.type = ArcOfEllipse;
+
+    Base::Vector3d center   = aoe->getCenter();
+    Base::Vector3d startPnt = aoe->getStartPoint();
+    Base::Vector3d endPnt   = aoe->getEndPoint();
+    double radmaj         = aoe->getMajorRadius();
+    double radmin         = aoe->getMinorRadius();
+    double phi            = aoe->getAngleXU();
+    
+    double dist_C_F = sqrt(radmaj*radmaj-radmin*radmin);
+    // solver parameters
+    Base::Vector3d focus1 = center+dist_C_F*Vector3d(cos(phi), sin(phi),0); //+x
+    
+    double startAngle, endAngle;
+    aoe->getRange(startAngle, endAngle);
+
+    GCS::Point p1, p2, p3;
+    GCS::Point f1; 
+
+    params.push_back(new double(startPnt.x));
+    params.push_back(new double(startPnt.y));
+    p1.x = params[params.size()-2];
+    p1.y = params[params.size()-1];
+
+    params.push_back(new double(endPnt.x));
+    params.push_back(new double(endPnt.y));
+    p2.x = params[params.size()-2];
+    p2.y = params[params.size()-1];
+
+    params.push_back(new double(center.x));
+    params.push_back(new double(center.y));
+    p3.x = params[params.size()-2];
+    p3.y = params[params.size()-1];
+    
+    params.push_back(new double(focus1.x));
+    params.push_back(new double(focus1.y));
+    f1.x = params[params.size()-2];
+    f1.y = params[params.size()-1];
+    
+    def.startPointId = Points.size();
+    Points.push_back(p1);
+    def.endPointId = Points.size();
+    Points.push_back(p2);
+    def.midPointId = Points.size();
+    Points.push_back(p3);
+    
+    Points.push_back(f1);
+    
+
+       // add the radius parameters
+    params.push_back(new double(radmin));
+    double *rmin = params[params.size()-1];
+    params.push_back(new double(startAngle));
+    double *a1 = params[params.size()-1];
+    params.push_back(new double(endAngle));
+    double *a2 = params[params.size()-1];
+    
+    
+
+    // set the arc for later constraints
+    GCS::ArcOfEllipse a;
+    a.start      = p1;
+    a.end        = p2;
+    a.center     = p3;
+    a.focus1     = f1;
+    a.radmin     = rmin;
+    a.startAngle = a1;
+    a.endAngle   = a2;
+    def.index = ArcsOfEllipse.size();
+    ArcsOfEllipse.push_back(a);
+
+    // store complete set
+    Geoms.push_back(def);
+
+    // arcs require an ArcRules constraint for the end points
+    /*if (!fixed)
+        GCSsys.addConstraintArcRules(a);*/ // TODO: ArcOfEllipse implementation.
+
+    // return the position of the newly added geometry
+    return Geoms.size()-1;
+}
+
 int Sketch::addCircle(const Part::GeomCircle &cir, bool fixed)
 {
     std::vector<double *> &params = fixed ? FixParameters : Parameters;
@@ -485,7 +584,11 @@ Py::Tuple Sketch::getPyGeometry(void) const
         } else if (it->type == Ellipse) {
             GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo->clone());
             tuple[i] = Py::asObject(new EllipsePy(ellipse));
-        } else {
+        } else if (it->type == ArcOfEllipse) {
+            GeomArcOfEllipse *ellipse = dynamic_cast<GeomArcOfEllipse*>(it->geo->clone());
+            tuple[i] = Py::asObject(new ArcOfEllipsePy(ellipse));
+        } 
+        else {
             // not implemented type in the sketch!
         }
     }
@@ -1867,6 +1970,25 @@ bool Sketch::updateGeometry()
                               );
                 aoc->setRadius(*myArc.rad);
                 aoc->setRange(*myArc.startAngle, *myArc.endAngle);
+            } else if (it->type == ArcOfEllipse) {
+                GCS::ArcOfEllipse &myArc = ArcsOfEllipse[it->index];
+
+                GeomArcOfEllipse *aoe = dynamic_cast<GeomArcOfEllipse*>(it->geo);
+                
+                Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
+                Base::Vector3d f1 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
+                double radmin = *ArcsOfEllipse[it->index].radmin;
+                
+                Base::Vector3d fd=f1-center;
+                double radmaj = sqrt(fd*fd+radmin*radmin);
+                                
+                double phi = atan2(fd.y,fd.x);
+                
+                aoe->setCenter(center);
+                aoe->setMajorRadius(radmaj);
+                aoe->setMinorRadius(radmin);
+                aoe->setAngleXU(phi);
+                aoe->setRange(*myArc.startAngle, *myArc.endAngle);
             } else if (it->type == Circle) {
                 GeomCircle *circ = dynamic_cast<GeomCircle*>(it->geo);
                 circ->setCenter(Vector3d(*Points[it->midPointId].x,
