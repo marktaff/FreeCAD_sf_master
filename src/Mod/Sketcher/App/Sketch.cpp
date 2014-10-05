@@ -145,6 +145,8 @@ const char* nameByType(Sketch::GeoType type)
         return "circle";
     case Sketch::Ellipse:
         return "ellipse";
+    case Sketch::ArcOfEllipse:
+        return "arcofellipse";
     case Sketch::None:
     default:
         return "unknown";
@@ -1228,6 +1230,12 @@ int Sketch::addTangentConstraint(int geoId1, int geoId2)
             GCS::Ellipse &e = Ellipses[Geoms[geoId2].index];
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintTangent(l, e, tag);
+            return ConstraintsCounter;
+        } else if (Geoms[geoId2].type == ArcOfEllipse) {
+            // TODO: real implementation
+            GCS::ArcOfEllipse &a = ArcsOfEllipse[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintTangent(l, a, tag);
             return ConstraintsCounter;
         }
     } else if (Geoms[geoId1].type == Circle) {

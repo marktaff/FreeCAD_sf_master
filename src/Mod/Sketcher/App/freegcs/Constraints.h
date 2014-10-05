@@ -358,6 +358,7 @@ namespace GCS
         inline double* rmin() { return pvec[8]; }
     public:
         ConstraintEllipseTangentLine(Line &l, Ellipse &e);
+        ConstraintEllipseTangentLine(Line &l, ArcOfEllipse &a);
         virtual ConstraintType getTypeId();
         virtual void rescale(double coef=1.);
         virtual double error();

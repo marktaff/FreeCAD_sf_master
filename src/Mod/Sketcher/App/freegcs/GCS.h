@@ -142,6 +142,7 @@ namespace GCS
                                               Arc &a2, bool reverse2, int tagId=0);
         int addConstraintTangent(Line &l, Circle &c, int tagId=0);
         int addConstraintTangent(Line &l, Ellipse &e, int tagId=0);
+        int addConstraintTangent(Line &l, ArcOfEllipse &a, int tagId=0);
         int addConstraintTangent(Ellipse &e, Circle &c, int tagId=0);
         int addConstraintTangent(Line &l, Arc &a, int tagId=0);
         int addConstraintTangent(Circle &c1, Circle &c2, int tagId=0);
