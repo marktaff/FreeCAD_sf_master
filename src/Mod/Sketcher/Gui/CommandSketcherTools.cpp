@@ -725,8 +725,7 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
             int GeoId = std::atoi(it->substr(4,4000).c_str()) - 1;
             const Part::Geometry *geo = Obj->getGeometry(GeoId);            
             // Only for supported types
-            if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
-
+            if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId() || geo->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId()) {
                 // First we search what has to be restored
                 bool major=false;
                 bool minor=false;
@@ -771,12 +770,31 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                 int majorindex=-1;
                 int minorindex=-1;
                 
-                const Part::GeomEllipse *ellipse = static_cast<const Part::GeomEllipse *>(geo);
+                Base::Vector3d center;
+                double majord;
+                double minord;
+                double phi;
+                
+                if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId()){
+                    const Part::GeomEllipse *ellipse = static_cast<const Part::GeomEllipse *>(geo);
+                    
+                    center=ellipse->getCenter();
+                    majord=ellipse->getMajorRadius();
+                    minord=ellipse->getMinorRadius();
+                    phi=ellipse->getAngleXU();
+                }
+                else {
+                    const Part::GeomArcOfEllipse *aoe = static_cast<const Part::GeomArcOfEllipse *>(geo);
+                    
+                    center=aoe->getCenter();
+                    majord=aoe->getMajorRadius();
+                    minord=aoe->getMinorRadius();
+                    phi=aoe->getAngleXU();                    
+                }
 
-                Base::Vector3d center=ellipse->getCenter();
-                double majord=ellipse->getMajorRadius()*0.99;
-                double minord=ellipse->getMinorRadius()*0.99;
-                double phi=ellipse->getAngleXU();
+                majord*=0.99;
+                minord*=0.99;
+
                 
                 Base::Vector3d majorpositiveend = center + majord * Base::Vector3d(cos(phi),sin(phi),0);
                 Base::Vector3d majornegativeend = center - majord * Base::Vector3d(cos(phi),sin(phi),0);  
@@ -853,7 +871,7 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
             } // if(geo->getTypeId() == Part::GeomEllipse::getClassTypeId()) 
             else {
                 QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
-                QObject::tr("Currently internal geometry is only supported for ellipse. The last selected element must be an ellipse."));
+                QObject::tr("Currently internal geometry is only supported for ellipse and arc of ellipse. The last selected element must be an ellipse or an arc of ellipse."));
             }
 
         }

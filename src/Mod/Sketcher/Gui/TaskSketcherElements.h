@@ -72,9 +72,6 @@ protected Q_SLOTS:
     void doPointOnObjectConstraint();
     void doSymetricConstraint();
     void doTangentConstraint();
-    void doMajorRadiusConstraint();
-    void doMinorRadiusConstraint();
-    void doEllipseAngleConstraint();
     // Other Commands
     void doToggleConstruction();    
     // Acelerators
