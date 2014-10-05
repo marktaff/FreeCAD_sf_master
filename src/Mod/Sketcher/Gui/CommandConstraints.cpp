@@ -2184,12 +2184,12 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
             if(pointids.size()>=1)
             {
                 if(!focus1) {
-                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d)) ",
-                        selection[0].getFeatName(),ellipseids[0],pointids[0]);
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus1',%d,%d,%d)) ",
+                        selection[0].getFeatName(),pointids[0],Sketcher::start,ellipseids[0]);
                 }
                 else if(!focus2) {
-                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
-                        selection[0].getFeatName(),ellipseids[0],pointids[0]);  
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d,%d)) ",
+                        selection[0].getFeatName(),pointids[0],Sketcher::start,ellipseids[0]);  
                     focus2=true;
                 }
                 else
@@ -2199,8 +2199,8 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
             if(pointids.size()==2)
             {
                 if(!focus2) {
-                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d)) ",
-                        selection[0].getFeatName(),ellipseids[0],pointids[1]);  
+                    Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseFocus2',%d,%d,%d)) ",
+                        selection[0].getFeatName(),pointids[1],Sketcher::start,ellipseids[0]);  
                 }
                 else
                     extra_elements=true;
@@ -2210,7 +2210,7 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
             {
                 if(!major) {
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
-                        selection[0].getFeatName(),ellipseids[0],lineids[0]);
+                        selection[0].getFeatName(),lineids[0],ellipseids[0]);
                     
                     const Part::GeomLineSegment *geo = static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0]));
                     
@@ -2220,7 +2220,7 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
                 }
                 else if(!minor) {
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
-                            selection[0].getFeatName(),ellipseids[0],lineids[0]);      
+                            selection[0].getFeatName(),lineids[0],ellipseids[0]);      
                     
                     const Part::GeomLineSegment *geo = static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[0]));
                     
@@ -2236,7 +2236,7 @@ void CmdSketcherConstrainInternalAlignment::activated(int iMsg)
             {
                 if(!minor){
                     Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMinorDiameter',%d,%d)) ",
-                        selection[0].getFeatName(),ellipseids[0],lineids[1]);
+                        selection[0].getFeatName(),lineids[1],ellipseids[0]);
                     
                     const Part::GeomLineSegment *geo = static_cast<const Part::GeomLineSegment *>(Obj->getGeometry(lineids[1]));
                     
