@@ -1424,10 +1424,10 @@ double ConstraintInternalAlignmentPoint2Ellipse::error()
                 - Y_c, 2)));
             break;        
         case EllipseFocus2X:
-            return scale * X_1 + X_F1 - 2*X_c;
+            return scale * (X_1 + X_F1 - 2*X_c);
             break;        
         case EllipseFocus2Y:
-            return scale * Y_1 + Y_F1 - 2*Y_c;
+            return scale * (Y_1 + Y_F1 - 2*Y_c);
             break; 
         default:
             return 0;
