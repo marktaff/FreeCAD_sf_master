@@ -3258,10 +3258,20 @@ Restart:
                                 pos = lineSeg->getStartPoint() + dir * length;
                                 relPos = norm * 1;  //TODO Huh?
                             }
-                            else if (geo2->getTypeId()== Part::GeomEllipse::getClassTypeId()) { // TODO: ellipse
-                                const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo2);
+                            else if (geo2->getTypeId()== Part::GeomEllipse::getClassTypeId() || 
+                                     geo2->getTypeId()== Part::GeomArcOfEllipse::getClassTypeId()) { // TODO: ellipse
+                                     
+                                Base::Vector3d center;
+                                if(geo2->getTypeId()== Part::GeomEllipse::getClassTypeId()){
+                                    const Part::GeomEllipse *ellipse = dynamic_cast<const Part::GeomEllipse *>(geo2);
+                                    center=ellipse->getCenter();
+                                } else {
+                                    const Part::GeomArcOfEllipse *aoc = dynamic_cast<const Part::GeomArcOfEllipse *>(geo2);
+                                    center=aoc->getCenter();                                    
+                                }
+                                                    
                                 // tangency between a line and an ellipse
-                                float length = (ellipse->getCenter() - lineSeg->getStartPoint())*dir;
+                                float length = (center - lineSeg->getStartPoint())*dir;
 
                                 pos = lineSeg->getStartPoint() + dir * length;
                                 relPos = norm * 1;  
