@@ -500,6 +500,33 @@ int System::addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId)
     return addConstraint(constr);
 }
 
+int System::addConstraintEllipticalArcRangeToEndPoints(Point &p, ArcOfEllipse &a, double *angle, int tagId)
+{
+    Constraint *constr = new ConstraintEllipticalArcRangeToEndPoints(a.start,a,a.startAngle);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
+
+int System::addConstraintArcOfEllipseRules(ArcOfEllipse &a, int tagId)
+{    
+    /*       addConstraintP2PAngle(a.center, a.start, a.startAngle, tagId);
+    return       addConstraintP2PAngle(a.center, a.end, a.endAngle, tagId);*/
+    
+            addConstraintEllipticalArcRangeToEndPoints(a.start,a,a.startAngle, tagId);
+            addConstraintEllipticalArcRangeToEndPoints(a.end,a,a.endAngle, tagId);
+    
+           addConstraintPointOnArcOfEllipse(a.start, a, tagId);
+    return addConstraintPointOnArcOfEllipse(a.end, a, tagId);
+}
+
+int System::addConstraintPointOnArcOfEllipse(Point &p, ArcOfEllipse &a, int tagId)
+{
+    Constraint *constr = new ConstraintPointOnEllipse(p, a);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
 int System::addConstraintPointOnArc(Point &p, Arc &a, int tagId)
 {
     return addConstraintP2PDistance(p, a.center, a.rad, tagId);
@@ -804,6 +831,40 @@ int System::addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, i
 {
     addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseFocus2X,tagId);
     return addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseFocus2Y,tagId);
+}
+
+int System::addConstraintInternalAlignmentPoint2Ellipse(ArcOfEllipse &a, Point &p1, InternalAlignmentType alignmentType, int tagId)
+{
+    Constraint *constr = new ConstraintInternalAlignmentPoint2Ellipse(a, p1, alignmentType);
+    constr->setTag(tagId);
+    return addConstraint(constr);   
+}
+
+int System::addConstraintInternalAlignmentEllipseMajorDiameter(ArcOfEllipse &a, Point &p1, Point &p2, int tagId)
+{
+    addConstraintInternalAlignmentPoint2Ellipse(a,p1,EllipsePositiveMajorX,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(a,p1,EllipsePositiveMajorY,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(a,p2,EllipseNegativeMajorX,tagId);
+    return addConstraintInternalAlignmentPoint2Ellipse(a,p2,EllipseNegativeMajorY,tagId);    
+}
+
+int System::addConstraintInternalAlignmentEllipseMinorDiameter(ArcOfEllipse &a, Point &p1, Point &p2, int tagId)
+{
+    addConstraintInternalAlignmentPoint2Ellipse(a,p1,EllipsePositiveMinorX,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(a,p1,EllipsePositiveMinorY,tagId);
+    addConstraintInternalAlignmentPoint2Ellipse(a,p2,EllipseNegativeMinorX,tagId);
+    return addConstraintInternalAlignmentPoint2Ellipse(a,p2,EllipseNegativeMinorY,tagId);    
+}
+
+int System::addConstraintInternalAlignmentEllipseFocus1(ArcOfEllipse &a, Point &p1, int tagId)
+{
+    return addConstraintP2PCoincident(a.focus1,p1);
+}
+
+int System::addConstraintInternalAlignmentEllipseFocus2(ArcOfEllipse &a, Point &p1, int tagId)
+{
+    addConstraintInternalAlignmentPoint2Ellipse(a,p1,EllipseFocus2X,tagId);
+    return addConstraintInternalAlignmentPoint2Ellipse(a,p1,EllipseFocus2Y,tagId);
 }
 
 void System::rescaleConstraint(int id, double coeff)
@@ -1598,7 +1659,9 @@ int System::diagnose()
     // Debug code starts
     std::stringstream stream;
     
+    stream << "[";
     stream << J ;
+    stream << "]";
     
     const std::string tmp = stream.str();
     
