@@ -606,6 +606,14 @@ int System::addConstraintTangent(Line &l, Ellipse &e, int tagId)
     return addConstraint(constr);
 }
 
+int System::addConstraintTangent(Line &l, ArcOfEllipse &a, int tagId)
+{
+    // TODO: real ellipse implementation => Done
+    Constraint *constr = new ConstraintEllipseTangentLine(l, a);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
 int System::addConstraintTangent(Ellipse &e, Circle &c, int tagId)
 {
     // TODO: elipse
