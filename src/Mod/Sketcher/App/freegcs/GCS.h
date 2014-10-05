@@ -126,6 +126,9 @@ namespace GCS
         int addConstraintArcRules(Arc &a, int tagId=0);
         int addConstraintPointOnCircle(Point &p, Circle &c, int tagId=0);
         int addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId=0);
+        int addConstraintEllipticalArcRangeToEndPoints(Point &p, ArcOfEllipse &a, double *angle, int tagId=0);
+        int addConstraintArcOfEllipseRules(ArcOfEllipse &a, int tagId=0);
+        int addConstraintPointOnArcOfEllipse(Point &p, ArcOfEllipse &a, int tagId=0);
         int addConstraintPointOnArc(Point &p, Arc &a, int tagId=0);
         int addConstraintPerpendicularLine2Arc(Point &p1, Point &p2, Arc &a,
                                                int tagId=0);
@@ -170,6 +173,11 @@ namespace GCS
         int addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId=0);
         int addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId=0);
         int addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, int tagId=0);
+        int addConstraintInternalAlignmentPoint2Ellipse(ArcOfEllipse &a, Point &p1, InternalAlignmentType alignmentType, int tagId=0);
+        int addConstraintInternalAlignmentEllipseMajorDiameter(ArcOfEllipse &a, Point &p1, Point &p2, int tagId=0);
+        int addConstraintInternalAlignmentEllipseMinorDiameter(ArcOfEllipse &a, Point &p1, Point &p2, int tagId=0);
+        int addConstraintInternalAlignmentEllipseFocus1(ArcOfEllipse &a, Point &p1, int tagId=0);
+        int addConstraintInternalAlignmentEllipseFocus2(ArcOfEllipse &a, Point &p1, int tagId=0);
         
         void rescaleConstraint(int id, double coeff);
 

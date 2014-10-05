@@ -925,6 +925,19 @@ ConstraintPointOnEllipse::ConstraintPointOnEllipse(Point &p, Ellipse &e)
     rescale();
 }
 
+ConstraintPointOnEllipse::ConstraintPointOnEllipse(Point &p, ArcOfEllipse &a)
+{
+    pvec.push_back(p.x);
+    pvec.push_back(p.y);
+    pvec.push_back(a.center.x);
+    pvec.push_back(a.center.y);
+    pvec.push_back(a.focus1.x);
+    pvec.push_back(a.focus1.y);
+    pvec.push_back(a.radmin);
+    origpvec = pvec;
+    rescale();
+}
+
 ConstraintType ConstraintPointOnEllipse::getTypeId()
 {
     return P2OnEllipse;
@@ -1321,6 +1334,20 @@ ConstraintInternalAlignmentPoint2Ellipse::ConstraintInternalAlignmentPoint2Ellip
     pvec.push_back(e.focus1.x);
     pvec.push_back(e.focus1.y);
     pvec.push_back(e.radmin);
+    origpvec = pvec;
+    rescale();
+    AlignmentType=alignmentType;
+}
+
+ConstraintInternalAlignmentPoint2Ellipse::ConstraintInternalAlignmentPoint2Ellipse(ArcOfEllipse &a, Point &p1, InternalAlignmentType alignmentType)
+{
+    pvec.push_back(p1.x);
+    pvec.push_back(p1.y);
+    pvec.push_back(a.center.x);
+    pvec.push_back(a.center.y);
+    pvec.push_back(a.focus1.x);
+    pvec.push_back(a.focus1.y);
+    pvec.push_back(a.radmin);
     origpvec = pvec;
     rescale();
     AlignmentType=alignmentType;
@@ -1858,5 +1885,248 @@ double ConstraintEqualMajorAxesEllipse::grad(double *param)
     return scale * deriv;
 }
 
+// EllipticalArcRangeToEndPoints
+ConstraintEllipticalArcRangeToEndPoints::ConstraintEllipticalArcRangeToEndPoints(Point &p, ArcOfEllipse &a, double *angle_t)
+{
+    pvec.push_back(p.x);
+    pvec.push_back(p.y);
+    pvec.push_back(angle_t);
+    pvec.push_back(a.center.x);
+    pvec.push_back(a.center.y);
+    pvec.push_back(a.focus1.x);
+    pvec.push_back(a.focus1.y);
+    pvec.push_back(a.radmin);
+    origpvec = pvec;
+    rescale();
+}
+
+ConstraintType ConstraintEllipticalArcRangeToEndPoints::getTypeId()
+{
+    return EllipticalArcRangeToEndPoints;
+}
+
+void ConstraintEllipticalArcRangeToEndPoints::rescale(double coef)
+{
+    scale = coef * 1;
+}
+
+double ConstraintEllipticalArcRangeToEndPoints::error()
+{    
+    double X_0 = *p1x();
+    double Y_0 = *p1y();
+    double X_c = *cx();
+    double Y_c = *cy();     
+    double X_F1 = *f1x();
+    double Y_F1 = *f1y();
+    double b = *rmin();
+    double alpha_t = *angle();
+    
+    double err=atan((((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+        Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+        2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+        Y_c))*cos(alpha_t)/b)/(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+        Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+        2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+        Y_c))*sin(alpha_t)/b));
+    return scale * err;
+}
+
+double ConstraintEllipticalArcRangeToEndPoints::grad(double *param)
+{
+    double deriv=0.;
+    if (param == p1x() || param == p1y() ||
+        param == f1x() || param == f1y() ||
+        param == cx() || param == cy() ||
+        param == rmin()) {
+
+        double X_0 = *p1x();
+        double Y_0 = *p1y();
+        double X_c = *cx();
+        double Y_c = *cy();
+        double X_F1 = *f1x();
+        double Y_F1 = *f1y();
+        double b = *rmin();
+        double alpha_t = *angle();
+
+        if (param == p1x())
+            deriv += -(-((X_F1 - X_c)*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) + (Y_F1 - Y_c)*cos(alpha_t)/b)/(((X_0 -
+                X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b,
+                2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 -
+                Y_c) + (X_F1 - X_c)*(Y_0 - Y_c))*sin(alpha_t)/b) + ((X_F1 -
+                X_c)*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - (Y_F1 - Y_c)*sin(alpha_t)/b)*(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1
+                - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == p1y())
+            deriv += -(-((Y_F1 - Y_c)*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) - (X_F1 - X_c)*cos(alpha_t)/b)/(((X_0 -
+                X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b,
+                2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 -
+                Y_c) + (X_F1 - X_c)*(Y_0 - Y_c))*sin(alpha_t)/b) + ((Y_F1 -
+                Y_c)*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) + (X_F1 - X_c)*sin(alpha_t)/b)*(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1
+                - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == f1x())
+            deriv += -((((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)*((X_0 - X_c)*cos(alpha_t)/sqrt(pow(b, 2) +
+                pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)) - (X_F1 - X_c)*((X_0 -
+                X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/pow(pow(b, 2)
+                + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + (Y_0 -
+                Y_c)*sin(alpha_t)/b)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) - ((X_0 - X_c)*sin(alpha_t)/sqrt(pow(b, 2) +
+                pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)) - (X_F1 - X_c)*((X_0 -
+                X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/pow(pow(b, 2)
+                + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) - (Y_0 -
+                Y_c)*cos(alpha_t)/b)/(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == f1y())
+            deriv +=-((((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)*((Y_0 - Y_c)*cos(alpha_t)/sqrt(pow(b, 2) +
+                pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)) - (Y_F1 - Y_c)*((X_0 -
+                X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/pow(pow(b, 2)
+                + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) - (X_0 -
+                X_c)*sin(alpha_t)/b)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) - ((Y_0 - Y_c)*sin(alpha_t)/sqrt(pow(b, 2) +
+                pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)) - (Y_F1 - Y_c)*((X_0 -
+                X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/pow(pow(b, 2)
+                + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + (X_0 -
+                X_c)*cos(alpha_t)/b)/(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == cx())
+            deriv += ((((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)*(-(X_F1 - X_c)*((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/pow(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + (X_0 + X_F1 -
+                2*X_c)*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                Y_c, 2)) + (Y_0 - Y_F1)*sin(alpha_t)/b)/pow(((X_0 - X_c)*(X_F1 - X_c) +
+                (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 -
+                X_c)*(Y_0 - Y_c))*sin(alpha_t)/b, 2) - (-(X_F1 - X_c)*((X_0 - X_c)*(X_F1
+                - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/pow(pow(b, 2) + pow(X_F1
+                - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + (X_0 + X_F1 -
+                2*X_c)*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                Y_c, 2)) - (Y_0 - Y_F1)*cos(alpha_t)/b)/(((X_0 - X_c)*(X_F1 - X_c) +
+                (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 -
+                X_c)*(Y_0 - Y_c))*sin(alpha_t)/b))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0
+                - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == cy())
+            deriv +=((((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)*(-(Y_F1 - Y_c)*((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/pow(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + (Y_0 + Y_F1 -
+                2*Y_c)*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                Y_c, 2)) - (X_0 - X_F1)*sin(alpha_t)/b)/pow(((X_0 - X_c)*(X_F1 - X_c) +
+                (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 -
+                X_c)*(Y_0 - Y_c))*sin(alpha_t)/b, 2) - (-(Y_F1 - Y_c)*((X_0 - X_c)*(X_F1
+                - X_c) + (Y_0 - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/pow(pow(b, 2) + pow(X_F1
+                - X_c, 2) + pow(Y_F1 - Y_c, 2), 3.0L/2.0L) + (Y_0 + Y_F1 -
+                2*Y_c)*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 -
+                Y_c, 2)) + (X_0 - X_F1)*cos(alpha_t)/b)/(((X_0 - X_c)*(X_F1 - X_c) +
+                (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 -
+                X_c)*(Y_0 - Y_c))*sin(alpha_t)/b))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0
+                - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == rmin())
+            deriv += ((((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b)*(b*((X_0 - X_c)*(X_F1 - X_c) + (Y_0 - Y_c)*(Y_F1 -
+                Y_c))*cos(alpha_t)/pow(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
+                2), 3.0L/2.0L) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/pow(b, 2))/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) - (b*((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/pow(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2), 3.0L/2.0L) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 -
+                X_c)*(Y_0 - Y_c))*cos(alpha_t)/pow(b, 2))/(((X_0 - X_c)*(X_F1 - X_c) +
+                (Y_0 - Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c,
+                2) + pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 -
+                X_c)*(Y_0 - Y_c))*sin(alpha_t)/b))/(pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0
+                - Y_c)*(Y_F1 - Y_c))*sin(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) - (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*cos(alpha_t)/b, 2)/pow(((X_0 - X_c)*(X_F1 - X_c) + (Y_0 -
+                Y_c)*(Y_F1 - Y_c))*cos(alpha_t)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+                pow(Y_F1 - Y_c, 2)) + (-(X_0 - X_c)*(Y_F1 - Y_c) + (X_F1 - X_c)*(Y_0 -
+                Y_c))*sin(alpha_t)/b, 2) + 1);
+        if (param == angle())
+            deriv += 1; 
+    }
+    return scale * deriv;
+}    
+
+double ConstraintEllipticalArcRangeToEndPoints::maxStep(MAP_pD_D &dir, double lim)
+{
+    // step(angle()) <= pi/18 = 10°
+    MAP_pD_D::iterator it = dir.find(angle());
+    if (it != dir.end()) {
+        double step = std::abs(it->second);
+        if (step > M_PI/18.)
+            lim = std::min(lim, (M_PI/18.) / step);
+    }
+    return lim;
+}
 
 } //namespace GCS

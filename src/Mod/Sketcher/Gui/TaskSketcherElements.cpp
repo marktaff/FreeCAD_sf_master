@@ -148,10 +148,7 @@ void ElementView::contextMenuEvent (QContextMenuEvent* event)
     CONTEXT_ITEM("Constraint_Length","Length Constraint","Sketcher_ConstrainDistance",doLengthConstraint,true)
     CONTEXT_ITEM("Constraint_Radius","Radius Constraint","Sketcher_ConstrainRadius",doRadiusConstraint,true)
     CONTEXT_ITEM("Constraint_InternalAngle","Angle Constraint","Sketcher_ConstrainAngle",doAngleConstraint,true)
-    CONTEXT_ITEM("Constraint_Ellipse_Major_Radius","Major Radius Constraint","Sketcher_ConstrainMajorRadius",doMajorRadiusConstraint,true)
-    CONTEXT_ITEM("Constraint_Ellipse_Minor_Radius","Minor Radius Constraint","Sketcher_ConstrainMinorRadius",doMinorRadiusConstraint,true)
-    CONTEXT_ITEM("Constraint_Ellipse_Axis_Angle","Ellipse angle Constraint","Sketcher_EllipseXUAngle",doEllipseAngleConstraint,true)
-    
+  
     menu.addSeparator();
     
     CONTEXT_ITEM("Sketcher_AlterConstruction","Toggle construction line","Sketcher_ToggleConstruction",doToggleConstruction,true)
@@ -191,9 +188,6 @@ CONTEXT_MEMBER_DEF("Sketcher_ConstrainEqual",doEqualConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_ConstrainPointOnObject",doPointOnObjectConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_ConstrainSymmetric",doSymetricConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_ConstrainTangent",doTangentConstraint)
-CONTEXT_MEMBER_DEF("Sketcher_ConstrainMajorRadius",doMajorRadiusConstraint)
-CONTEXT_MEMBER_DEF("Sketcher_ConstrainMinorRadius",doMinorRadiusConstraint)
-CONTEXT_MEMBER_DEF("Sketcher_EllipseXUAngle",doEllipseAngleConstraint)
 CONTEXT_MEMBER_DEF("Sketcher_CloseShape",doCloseShape)
 CONTEXT_MEMBER_DEF("Sketcher_ConnectLines",doConnect)
 CONTEXT_MEMBER_DEF("Sketcher_ToggleConstruction",doToggleConstruction)

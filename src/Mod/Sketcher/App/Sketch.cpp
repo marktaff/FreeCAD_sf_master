@@ -438,8 +438,8 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     Geoms.push_back(def);
 
     // arcs require an ArcRules constraint for the end points
-    /*if (!fixed)
-        GCSsys.addConstraintArcRules(a);*/ // TODO: ArcOfEllipse implementation.
+    if (!fixed)
+        GCSsys.addConstraintArcOfEllipseRules(a); // TODO: ArcOfEllipse implementation.
 
     // return the position of the newly added geometry
     return Geoms.size()-1;
@@ -1771,6 +1771,12 @@ int Sketch::addPointOnObjectConstraint(int geoId1, PointPos pos1, int geoId2)
             GCSsys.addConstraintPointOnEllipse(p1, e, tag);
             return ConstraintsCounter;
         }
+        else if (Geoms[geoId2].type == ArcOfEllipse) {
+            GCS::ArcOfEllipse &a = ArcsOfEllipse[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintPointOnArcOfEllipse(p1, a, tag);
+            return ConstraintsCounter;
+        }
     }
     return -1;
 }
@@ -1829,7 +1835,7 @@ int Sketch::addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2)
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
-    if (Geoms[geoId1].type != Ellipse)
+    if (Geoms[geoId1].type != Ellipse && Geoms[geoId1].type != ArcOfEllipse)
         return -1;
     if (Geoms[geoId2].type != Line)
         return -1;
@@ -1841,14 +1847,25 @@ int Sketch::addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2)
         pointId2 >= 0 && pointId2 < int(Points.size())) {
         GCS::Point &p1 = Points[pointId1];
         GCS::Point &p2 = Points[pointId2];
-        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
-        
-        // constraints
-        // 1. start point with ellipse -a
-        // 2. end point with ellipse +a
-        int tag = ++ConstraintsCounter;
-        GCSsys.addConstraintInternalAlignmentEllipseMajorDiameter(e1, p1, p2, tag);
-        return ConstraintsCounter;
+     
+        if(Geoms[geoId1].type == Ellipse) {
+            GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+            
+            // constraints
+            // 1. start point with ellipse -a
+            // 2. end point with ellipse +a
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseMajorDiameter(e1, p1, p2, tag);
+            return ConstraintsCounter;
+            
+        }
+        else {
+            GCS::ArcOfEllipse &a1 = ArcsOfEllipse[Geoms[geoId1].index];
+            
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseMajorDiameter(a1, p1, p2, tag);
+            return ConstraintsCounter;
+        }
     }
     return -1;
 }
@@ -1858,7 +1875,7 @@ int Sketch::addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2)
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
-    if (Geoms[geoId1].type != Ellipse)
+    if (Geoms[geoId1].type != Ellipse && Geoms[geoId1].type != ArcOfEllipse)
         return -1;
     if (Geoms[geoId2].type != Line)
         return -1;
@@ -1870,14 +1887,24 @@ int Sketch::addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2)
         pointId2 >= 0 && pointId2 < int(Points.size())) {
         GCS::Point &p1 = Points[pointId1];
         GCS::Point &p2 = Points[pointId2];
-        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
-        
-        // constraints
-        // 1. start point with ellipse -a
-        // 2. end point with ellipse +a
-        int tag = ++ConstraintsCounter;
-        GCSsys.addConstraintInternalAlignmentEllipseMinorDiameter(e1, p1, p2, tag);
-        return ConstraintsCounter;
+    
+        if(Geoms[geoId1].type == Ellipse) {
+            GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+            
+            // constraints
+            // 1. start point with ellipse -a
+            // 2. end point with ellipse +a
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseMinorDiameter(e1, p1, p2, tag);
+            return ConstraintsCounter;
+        }
+        else {
+            GCS::ArcOfEllipse &a1 = ArcsOfEllipse[Geoms[geoId1].index];
+            
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseMinorDiameter(a1, p1, p2, tag);
+            return ConstraintsCounter;
+        }
     }
     return -1;
 }
@@ -1887,7 +1914,7 @@ int Sketch::addInternalAlignmentEllipseFocus1(int geoId1, int geoId2)
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
-    if (Geoms[geoId1].type != Ellipse)
+    if (Geoms[geoId1].type != Ellipse && Geoms[geoId1].type != ArcOfEllipse)
         return -1;
     if (Geoms[geoId2].type != Point)
         return -1;
@@ -1896,14 +1923,24 @@ int Sketch::addInternalAlignmentEllipseFocus1(int geoId1, int geoId2)
     
     if (pointId1 >= 0 && pointId1 < int(Points.size())) {
         GCS::Point &p1 = Points[pointId1];
-        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
         
-        // constraints
-        // 1. start point with ellipse -a
-        // 2. end point with ellipse +a
-        int tag = ++ConstraintsCounter;
-        GCSsys.addConstraintInternalAlignmentEllipseFocus1(e1, p1, tag);
-        return ConstraintsCounter;
+        if(Geoms[geoId1].type == Ellipse) {
+            GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+            
+            // constraints
+            // 1. start point with ellipse -a
+            // 2. end point with ellipse +a
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseFocus1(e1, p1, tag);
+            return ConstraintsCounter;
+        }
+        else {
+            GCS::ArcOfEllipse &a1 = ArcsOfEllipse[Geoms[geoId1].index];
+            
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseFocus1(a1, p1, tag);
+            return ConstraintsCounter;
+        }
     }
     return -1;
 }
@@ -1914,7 +1951,7 @@ int Sketch::addInternalAlignmentEllipseFocus2(int geoId1, int geoId2)
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
-    if (Geoms[geoId1].type != Ellipse)
+    if (Geoms[geoId1].type != Ellipse && Geoms[geoId1].type != ArcOfEllipse)
         return -1;
     if (Geoms[geoId2].type != Point)
         return -1;
@@ -1923,14 +1960,24 @@ int Sketch::addInternalAlignmentEllipseFocus2(int geoId1, int geoId2)
     
     if (pointId1 >= 0 && pointId1 < int(Points.size())) {
         GCS::Point &p1 = Points[pointId1];
-        GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
         
-        // constraints
-        // 1. start point with ellipse -a
-        // 2. end point with ellipse +a
-        int tag = ++ConstraintsCounter;
-        GCSsys.addConstraintInternalAlignmentEllipseFocus2(e1, p1, tag);
-        return ConstraintsCounter;
+        if(Geoms[geoId1].type == Ellipse) {
+            GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
+            
+            // constraints
+            // 1. start point with ellipse -a
+            // 2. end point with ellipse +a
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseFocus2(e1, p1, tag);
+            return ConstraintsCounter;
+        }
+        else {
+            GCS::ArcOfEllipse &a1 = ArcsOfEllipse[Geoms[geoId1].index];
+            
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintInternalAlignmentEllipseFocus2(a1, p1, tag);
+            return ConstraintsCounter;
+        }
     }
     return -1;
 }
@@ -2188,8 +2235,8 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             GCSsys.rescaleConstraint(i-1, 0.01);
             GCSsys.rescaleConstraint(i, 0.01);
         }
-        } else if (Geoms[geoId].type == Ellipse) {
-            // TODO: Ellipse
+    } else if (Geoms[geoId].type == Ellipse) {
+        // TODO: Ellipse
         GCS::Point &center = Points[Geoms[geoId].midPointId];
         GCS::Point p0,p1;
         if (pos == mid) {
@@ -2208,6 +2255,44 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             *p0.x = *center.x;
             *p0.y = *center.y + *e.radmin;
             GCSsys.addConstraintPointOnEllipse(p0,e,-1);
+            p1.x = &MoveParameters[2];
+            p1.y = &MoveParameters[3];
+            *p1.x = *center.x;
+            *p1.y = *center.y;
+            int i=GCSsys.addConstraintP2PCoincident(p1,center,-1);
+            GCSsys.rescaleConstraint(i-1, 0.01);
+            GCSsys.rescaleConstraint(i, 0.01);
+        }
+    } else if (Geoms[geoId].type == ArcOfEllipse) {
+        // TODO: ArcOfEllipse
+        GCS::Point &center = Points[Geoms[geoId].midPointId];
+        GCS::Point p0,p1;
+        if (pos == mid) {
+            MoveParameters.resize(2); // cx,cy
+            p0.x = &MoveParameters[0];
+            p0.y = &MoveParameters[1];
+            *p0.x = *center.x;
+            *p0.y = *center.y;
+            GCSsys.addConstraintP2PCoincident(p0,center,-1);
+        } else if (pos == start || pos == end || pos == none) {
+            // TODO: Ellipse
+            MoveParameters.resize(4); // x,y,cx,cy
+            if (pos == start || pos == end) {
+                GCS::Point &p = (pos == start) ? Points[Geoms[geoId].startPointId]
+                                            : Points[Geoms[geoId].endPointId];;
+                p0.x = &MoveParameters[0];
+                p0.y = &MoveParameters[1];
+                *p0.x = *p.x;
+                *p0.y = *p.y;
+                GCSsys.addConstraintP2PCoincident(p0,p,-1);
+            } else if (pos == none) {
+                GCS::ArcOfEllipse &a = ArcsOfEllipse[Geoms[geoId].index];
+                p0.x = &MoveParameters[0];
+                p0.y = &MoveParameters[1];
+                *p0.x = *center.x;
+                *p0.y = *center.y + *a.radmin;
+                GCSsys.addConstraintPointOnArcOfEllipse(p0,a,-1);
+            }
             p1.x = &MoveParameters[2];
             p1.y = &MoveParameters[3];
             *p1.x = *center.x;
@@ -2305,6 +2390,11 @@ int Sketch::movePoint(int geoId, PointPos pos, Base::Vector3d toPoint, bool rela
         }
     } else if (Geoms[geoId].type == Ellipse) {
         if (pos == mid || pos == none) {
+            MoveParameters[0] = toPoint.x;
+            MoveParameters[1] = toPoint.y;
+        }
+    } else if (Geoms[geoId].type == ArcOfEllipse) {
+        if (pos == start || pos == end || pos == mid || pos == none) {
             MoveParameters[0] = toPoint.x;
             MoveParameters[1] = toPoint.y;
         }
