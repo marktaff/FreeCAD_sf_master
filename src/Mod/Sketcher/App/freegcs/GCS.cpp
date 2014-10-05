@@ -690,6 +690,18 @@ int System::addConstraintTangentArc2Line(Arc &a, Point &p1, Point &p2, int tagId
     return addConstraintP2PAngle(p1, p2, a.endAngle, incrAngle, tagId);
 }
 
+int System::addConstraintTangentLine2ArcOfEllipse(Point &p1, Point &p2, Line &l, ArcOfEllipse &a, int tagId)
+{
+    addConstraintP2PCoincident(p2, a.start, tagId);
+    return addConstraintTangent(l, a, tagId);
+}
+
+int System::addConstraintTangentArcOfEllipse2Line(ArcOfEllipse &a, Line &l, Point &p1, Point &p2, int tagId)
+{
+    addConstraintP2PCoincident(p1, a.end, tagId);
+    return addConstraintTangent(l, a, tagId);
+}
+
 int System::addConstraintTangentCircle2Arc(Circle &c, Arc &a, int tagId)
 {
     addConstraintPointOnCircle(a.start, c, tagId);

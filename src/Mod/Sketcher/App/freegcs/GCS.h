@@ -149,6 +149,8 @@ namespace GCS
         int addConstraintTangent(Arc &a1, Arc &a2, int tagId=0);
         int addConstraintTangent(Circle &c, Arc &a, int tagId=0);
         int addConstraintTangent(Ellipse &e, Arc &a, int tagId=0);
+        int addConstraintTangentLine2ArcOfEllipse(Point &p1, Point &p2, Line &l, ArcOfEllipse &a, int tagId=0);
+        int addConstraintTangentArcOfEllipse2Line(ArcOfEllipse &a, Line &l, Point &p1, Point &p2, int tagId=0);
         int addConstraintTangentLine2Arc(Point &p1, Point &p2, Arc &a, int tagId=0);
         int addConstraintTangentArc2Line(Arc &a, Point &p1, Point &p2, int tagId=0);
         int addConstraintTangentCircle2Arc(Circle &c, Arc &a, int tagId=0);
