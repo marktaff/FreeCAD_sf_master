@@ -1840,6 +1840,8 @@ int Sketch::addSymmetricConstraint(int geoId1, PointPos pos1, int geoId2, PointP
 
 int Sketch::addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2)
 {
+    std::swap(geoId1, geoId2);
+    
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
@@ -1880,6 +1882,8 @@ int Sketch::addInternalAlignmentEllipseMajorDiameter(int geoId1, int geoId2)
 
 int Sketch::addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2)
 {
+    std::swap(geoId1, geoId2);
+    
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
@@ -1919,6 +1923,8 @@ int Sketch::addInternalAlignmentEllipseMinorDiameter(int geoId1, int geoId2)
 
 int Sketch::addInternalAlignmentEllipseFocus1(int geoId1, int geoId2)
 {
+    std::swap(geoId1, geoId2);
+    
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
@@ -1956,6 +1962,8 @@ int Sketch::addInternalAlignmentEllipseFocus1(int geoId1, int geoId2)
 
 int Sketch::addInternalAlignmentEllipseFocus2(int geoId1, int geoId2)
 {
+    std::swap(geoId1, geoId2);
+    
     geoId1 = checkGeoId(geoId1);
     geoId2 = checkGeoId(geoId2);
     
