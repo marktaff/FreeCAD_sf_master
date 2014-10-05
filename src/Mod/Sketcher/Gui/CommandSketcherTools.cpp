@@ -686,8 +686,8 @@ CmdSketcherRestoreInternalAlignmentGeometry::CmdSketcherRestoreInternalAlignment
 {
     sAppModule      = "Sketcher";
     sGroup          = QT_TR_NOOP("Sketcher");
-    sMenuText       = QT_TR_NOOP("Show/Restore all internal geometry");
-    sToolTipText    = QT_TR_NOOP("Show/Restore all internal geometry");
+    sMenuText       = QT_TR_NOOP("Show/hide internal geometry");
+    sToolTipText    = QT_TR_NOOP("Show all internal geometry / hide unused internal geometry");
     sWhatsThis      = sToolTipText;
     sStatusTip      = sToolTipText;
     sPixmap         = "Sketcher_Element_Ellipse_All";
@@ -733,24 +733,33 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                 bool focus2=false;
                 bool extra_elements=false;
                 
+                int majorelementindex=-1;
+                int minorelementindex=-1;
+                int focus1elementindex=-1;
+                int focus2elementindex=-1;
+                
                 const std::vector< Sketcher::Constraint * > &vals = Obj->Constraints.getValues();
                 
                 for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
                         it != vals.end(); ++it) {
-                    if((*it)->Type == Sketcher::InternalAlignment && (*it)->First == GeoId)
+                    if((*it)->Type == Sketcher::InternalAlignment && (*it)->Second == GeoId)
                     {
                         switch((*it)->AlignmentType){
                             case Sketcher::EllipseMajorDiameter:
                                 major=true;
+                                majorelementindex=(*it)->First;
                                 break;
                             case Sketcher::EllipseMinorDiameter:
                                 minor=true;
+                                minorelementindex=(*it)->First;
                                 break;
                             case Sketcher::EllipseFocus1: 
                                 focus1=true;
+                                focus1elementindex=(*it)->First;
                                 break;
                             case Sketcher::EllipseFocus2: 
                                 focus2=true;
+                                focus2elementindex=(*it)->First;
                                 break;
                         }
                     }
@@ -758,8 +767,73 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                 
                 if(major && minor && focus1 && focus2)
                 {
-                    QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Nothing to restore"),
-                    QObject::tr("Currently all internal geometry of the ellipse is already exposed."));            
+                    // Hide unused geometry here
+                    int majorconstraints=0; // number of constraints associated to the geoid of the major axis
+                    int minorconstraints=0;
+                    int focus1constraints=0;
+                    int focus2constraints=0;
+                    
+                    for (std::vector< Sketcher::Constraint * >::const_iterator it= vals.begin();
+                        it != vals.end(); ++it) {
+                        
+                        if((*it)->Second == majorelementindex || (*it)->First == majorelementindex || (*it)->Third == majorelementindex)
+                            majorconstraints++;
+                        else if((*it)->Second == minorelementindex || (*it)->First == minorelementindex || (*it)->Third == minorelementindex)
+                            minorconstraints++;
+                        else if((*it)->Second == focus1elementindex || (*it)->First == focus1elementindex || (*it)->Third == focus1elementindex)
+                            focus1constraints++;
+                        else if((*it)->Second == focus2elementindex || (*it)->First == focus2elementindex || (*it)->Third == focus2elementindex)
+                            focus2constraints++;
+                    }
+                    // those with less than 2 constraints must be removed
+                    if(majorconstraints>=2 && minorconstraints>=2 && focus1constraints>=2 && focus2constraints>=2)
+                        return; // nothing to delete
+                    
+                    App::Document* doc = App::GetApplication().getActiveDocument();
+                    
+                    if (!doc) return;
+                    
+                    doc->openTransaction("Delete");
+                    
+                    if(majorconstraints<2) {
+                        ss.str(std::string());
+                        ss << "Edge" << majorelementindex + 1;
+                        Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());                   
+                    }
+                    
+                    if(minorconstraints<2) {
+                        ss.str(std::string());
+                        ss << "Edge" << minorelementindex + 1;
+                        Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());                   
+                    }
+                    
+                    if(focus1constraints<2) {
+                        ss.str(std::string());
+                        int vertex = Obj->getVertexIndexGeoPos(focus1elementindex,Sketcher::start);
+                        if(vertex>-1){
+                            ss << "Vertex" <<  vertex + 1;
+                            Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());                  
+                        }
+                    }
+                    
+                    if(focus2constraints<2) {
+                        ss.str(std::string());
+                        int vertex = Obj->getVertexIndexGeoPos(focus2elementindex,Sketcher::start);
+                        if(vertex>-1){
+                            ss << "Vertex" <<  vertex + 1;
+                            Gui::Selection().addSelection(doc_name.c_str(), obj_name.c_str(), ss.str().c_str());                  
+                        }
+                    }
+                    
+                    SketcherGui::ViewProviderSketch* vp = dynamic_cast<SketcherGui::ViewProviderSketch*>(getActiveGuiDocument()->getInEdit());
+
+                    if (vp) {
+                        std::vector<Gui::SelectionObject> sel = Gui::Selection().getSelectionEx(doc->getName());
+                        vp->onDelete(sel[0].getSubNames());
+                    }
+                    
+                    
+                    doc->commitTransaction();
                     return;
                 }
                 

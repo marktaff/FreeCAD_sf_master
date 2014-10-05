@@ -75,6 +75,10 @@
         <file>icons/Sketcher_Element_Ellipse_Focus2.svg</file>
         <file>icons/Sketcher_Element_Ellipse_MajorAxis.svg</file>
         <file>icons/Sketcher_Element_Ellipse_MinorAxis.svg</file>
+        <file>icons/Sketcher_Element_Elliptical_Arc_Centre_Point.svg</file>
+        <file>icons/Sketcher_Element_Elliptical_Arc_Edge.svg</file>
+        <file>icons/Sketcher_Element_Elliptical_Arc_End_Point.svg</file>
+        <file>icons/Sketcher_Element_Elliptical_Arc_Start_Point.svg</file>
         <file>icons/Sketcher_Element_Line_Edge.svg</file>
         <file>icons/Sketcher_Element_Line_EndPoint.svg</file>
         <file>icons/Sketcher_Element_Line_StartingPoint.svg</file>
