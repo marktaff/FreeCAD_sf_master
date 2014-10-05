@@ -502,7 +502,7 @@ int System::addConstraintPointOnEllipse(Point &p, Ellipse &e, int tagId)
 
 int System::addConstraintEllipticalArcRangeToEndPoints(Point &p, ArcOfEllipse &a, double *angle, int tagId)
 {
-    Constraint *constr = new ConstraintEllipticalArcRangeToEndPoints(a.start,a,a.startAngle);
+    Constraint *constr = new ConstraintEllipticalArcRangeToEndPoints(p,a,angle);
     constr->setTag(tagId);
     return addConstraint(constr);
 }

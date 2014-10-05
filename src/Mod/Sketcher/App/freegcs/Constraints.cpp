@@ -1937,7 +1937,7 @@ double ConstraintEllipticalArcRangeToEndPoints::grad(double *param)
     if (param == p1x() || param == p1y() ||
         param == f1x() || param == f1y() ||
         param == cx() || param == cy() ||
-        param == rmin()) {
+        param == rmin() || param == angle()) {
 
         double X_0 = *p1x();
         double Y_0 = *p1y();
