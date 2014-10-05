@@ -1457,6 +1457,35 @@ int Sketch::addTangentConstraint(int geoId1, PointPos pos1, int geoId2, PointPos
             else
                 return -1;
         }
+        if (Geoms[geoId2].type == ArcOfEllipse) {
+            GCS::ArcOfEllipse &a2 = ArcsOfEllipse[Geoms[geoId2].index];
+            if (pos2 == start) {
+                if (pos1 == start) {
+                    int tag = ++ConstraintsCounter;
+                    GCSsys.addConstraintTangentLine2ArcOfEllipse(l1.p2, l1.p1, l1, a2, tag);
+                    return ConstraintsCounter;
+                }
+                else if (pos1 == end) {
+                    int tag = ++ConstraintsCounter;
+                    GCSsys.addConstraintTangentLine2ArcOfEllipse(l1.p1, l1.p2, l1, a2, tag);
+                    return ConstraintsCounter;
+                }
+            }
+            else if (pos2 == end) {
+                if (pos1 == start) {
+                    int tag = ++ConstraintsCounter;
+                    GCSsys.addConstraintTangentArcOfEllipse2Line(a2, l1, l1.p1, l1.p2, tag);
+                    return ConstraintsCounter;
+                }
+                else if (pos1 == end) {
+                    int tag = ++ConstraintsCounter;
+                    GCSsys.addConstraintTangentArcOfEllipse2Line(a2, l1, l1.p2, l1.p1, tag);
+                    return ConstraintsCounter;
+                }
+            }
+            else
+                return -1;
+        }
     }
     else if (Geoms[geoId1].type == Arc) {
         GCS::Arc &a1 = Arcs[Geoms[geoId1].index];
