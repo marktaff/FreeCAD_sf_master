@@ -1029,6 +1029,21 @@ ConstraintEllipseTangentLine::ConstraintEllipseTangentLine(Line &l, Ellipse &e)
     rescale();
 }
 
+ConstraintEllipseTangentLine::ConstraintEllipseTangentLine(Line &l, ArcOfEllipse &a)
+{
+    pvec.push_back(l.p1.x);
+    pvec.push_back(l.p1.y);
+    pvec.push_back(l.p2.x);
+    pvec.push_back(l.p2.y);
+    pvec.push_back(a.center.x);
+    pvec.push_back(a.center.y);
+    pvec.push_back(a.focus1.x);
+    pvec.push_back(a.focus1.y);
+    pvec.push_back(a.radmin);
+    origpvec = pvec;
+    rescale();    
+}
+
 ConstraintType ConstraintEllipseTangentLine::getTypeId()
 {
     return TangentEllipseLine;
