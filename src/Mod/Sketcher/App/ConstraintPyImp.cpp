@@ -101,10 +101,6 @@ int ConstraintPy::PyInit(PyObject* args, PyObject* /*kwd*/)
                     this->getConstraintPtr()->AlignmentType=EllipseMajorDiameter;
                 else if(strstr(ConstraintType,"EllipseMinorDiameter") != NULL)
                     this->getConstraintPtr()->AlignmentType=EllipseMinorDiameter;                    
-                else if(strstr(ConstraintType,"EllipseFocus1") != NULL)
-                    this->getConstraintPtr()->AlignmentType=EllipseFocus1; 
-                else if(strstr(ConstraintType,"EllipseFocus2") != NULL)
-                    this->getConstraintPtr()->AlignmentType=EllipseFocus2;
                 else {
                     this->getConstraintPtr()->AlignmentType=Undef;
                     valid = false;
@@ -172,6 +168,20 @@ int ConstraintPy::PyInit(PyObject* args, PyObject* /*kwd*/)
             else if (strcmp("PointOnObject", ConstraintType) == 0) {
                 this->getConstraintPtr()->Type = PointOnObject;
                 valid = true;
+            }
+            else if (strstr(ConstraintType,"InternalAlignment") != NULL) {
+                this->getConstraintPtr()->Type = InternalAlignment;
+                
+                valid = true;
+                   
+                if(strstr(ConstraintType,"EllipseFocus1") != NULL)
+                    this->getConstraintPtr()->AlignmentType=EllipseFocus1; 
+                else if(strstr(ConstraintType,"EllipseFocus2") != NULL)
+                    this->getConstraintPtr()->AlignmentType=EllipseFocus2;
+                else {
+                    this->getConstraintPtr()->AlignmentType=Undef;
+                    valid = false;
+                }
             }
             if (valid) {
                 this->getConstraintPtr()->First    = FirstIndex;
