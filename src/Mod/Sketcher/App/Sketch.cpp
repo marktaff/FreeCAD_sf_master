@@ -401,8 +401,8 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     
     params.push_back(new double(focus1.x));
     params.push_back(new double(focus1.y));
-    f1.x = params[params.size()-2];
-    f1.y = params[params.size()-1];
+    double *f1_x = params[params.size()-2];
+    double *f1_y = params[params.size()-1];
     
     def.startPointId = Points.size();
     Points.push_back(p1);
@@ -411,7 +411,7 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     def.midPointId = Points.size();
     Points.push_back(p3);
     
-    Points.push_back(f1);
+    //Points.push_back(f1);
     
 
        // add the radius parameters
@@ -429,7 +429,8 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     a.start      = p1;
     a.end        = p2;
     a.center     = p3;
-    a.focus1     = f1;
+    a.focus1_X   = f1_x;
+    a.focus1_Y   = f1_y;
     a.radmin     = rmin;
     a.startAngle = a1;
     a.endAngle   = a2;
@@ -521,26 +522,20 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
     
     def.midPointId = Points.size(); // this takes midPointId+1
     Points.push_back(c);
-    
-    GCS::Point f1;
 
     params.push_back(new double(focus1.x));
     params.push_back(new double(focus1.y));
-    f1.x = params[params.size()-2];
-    f1.y = params[params.size()-1];
+    double *f1_x = params[params.size()-2];
+    double *f1_y = params[params.size()-1];
     
-    //def.midPointId = Points.size();
-    Points.push_back(f1);
-    
- 
-
     // add the radius parameters
     params.push_back(new double(radmin));
     double *rmin = params[params.size()-1];
      
     // set the ellipse for later constraints
     GCS::Ellipse e;
-    e.focus1    = f1;
+    e.focus1_X  = f1_x;
+    e.focus1_Y  = f1_y;
     e.center    = c;
     e.radmin    = rmin;
 
@@ -2068,8 +2063,8 @@ bool Sketch::updateGeometry()
                 GeomArcOfEllipse *aoe = dynamic_cast<GeomArcOfEllipse*>(it->geo);
                 
                 Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
-                Base::Vector3d f1 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
-                double radmin = *ArcsOfEllipse[it->index].radmin;
+                Base::Vector3d f1 = Vector3d(*myArc.focus1_X, *myArc.focus1_Y, 0.0);
+                double radmin = *myArc.radmin;
                 
                 Base::Vector3d fd=f1-center;
                 double radmaj = sqrt(fd*fd+radmin*radmin);
@@ -2098,7 +2093,7 @@ bool Sketch::updateGeometry()
                 GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo);
                 
                 Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
-                Base::Vector3d f1 = Vector3d(*Points[it->midPointId+1].x, *Points[it->midPointId+1].y, 0.0);
+                Base::Vector3d f1 = Vector3d(*Ellipses[it->index].focus1_X, *Ellipses[it->index].focus1_Y, 0.0);
                 double radmin = *Ellipses[it->index].radmin;
                 
                 Base::Vector3d fd=f1-center;
@@ -2475,33 +2470,6 @@ int Sketch::getPointId(int geoId, PointPos pos) const
         return Geoms[geoId].endPointId;
     case mid:
         return Geoms[geoId].midPointId;
-    case none:
-        break;
-    }
-    return -1;
-}
-
-int Sketch::getVisiblePointId(int geoId, PointPos pos) const
-{
-    // do a range check first
-    if (geoId < 0 || geoId >= (int)Geoms.size())
-        return -1;
-    
-    int invisiblepoints = 0;
-    int i;
-    
-    // calculate the number of points in the solver that are not visible in the UI
-    for(i=0;i<geoId;i++)
-        if(Geoms[i].type == Ellipse || Geoms[i].type == ArcOfEllipse)
-            invisiblepoints++;
-    
-    switch (pos) {
-    case start:
-        return Geoms[geoId].startPointId-invisiblepoints;
-    case end:
-        return Geoms[geoId].endPointId-invisiblepoints;
-    case mid:
-        return Geoms[geoId].midPointId-invisiblepoints;
     case none:
         break;
     }
