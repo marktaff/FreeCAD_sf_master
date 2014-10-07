@@ -707,19 +707,19 @@ void TaskSketcherElements::slotElementsChanged(void)
             (type == Part::GeomCircle::getClassTypeId()        && element==3) ? Sketcher_Element_Circle_MidPoint :
             none,
             type == Part::GeomPoint::getClassTypeId()         ? ( isNamingBoxChecked ?
-                                                                (tr("Point") + QString::fromLatin1("(Edge%1)").arg(-j)):
+                                                                (tr("Point") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Point")))         :
             type == Part::GeomLineSegment::getClassTypeId()        ? ( isNamingBoxChecked ?
-                                                                (tr("Line") + QString::fromLatin1("(Edge%1)").arg(-j)):
+                                                                (tr("Line") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Line")))         :
             type == Part::GeomArcOfCircle::getClassTypeId()        ? ( isNamingBoxChecked ?
-                                                                (tr("Arc") + QString::fromLatin1("(Edge%1)").arg(-j)):
+                                                                (tr("Arc") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Arc")))         :
             type == Part::GeomCircle::getClassTypeId()        ? ( isNamingBoxChecked ?
-                                                                (tr("Circle") + QString::fromLatin1("(Edge%1)").arg(-j)):
+                                                                (tr("Circle") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Circle")))         :
             ( isNamingBoxChecked ?
-            (tr("Other") + QString::fromLatin1("(Edge%1)").arg(-j)):
+            (tr("Other") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
             (QString::fromLatin1("%1-").arg(i)+tr("Other"))),
             -j,
             sketchView->getSketchObject()->getVertexIndexGeoPos(-j,Sketcher::start),
