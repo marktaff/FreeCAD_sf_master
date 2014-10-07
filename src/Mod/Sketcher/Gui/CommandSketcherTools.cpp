@@ -885,7 +885,7 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                     {
                         Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addGeometry(Part.Line(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                         Obj->getNameInDocument(),
-                        majornegativeend.x,majornegativeend.y,majorpositiveend.x,majorpositiveend.y); // create line for major axis
+                        majorpositiveend.x,majorpositiveend.y,majornegativeend.x,majornegativeend.y); // create line for major axis
                         
                         Gui::Command::doCommand(Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('InternalAlignment:EllipseMajorDiameter',%d,%d)) ",
                         selection[0].getFeatName(),currentgeoid+incrgeo+1,GeoId); // constrain major axis
