@@ -866,9 +866,6 @@ void CmdSketcherRestoreInternalAlignmentGeometry::activated(int iMsg)
                     phi=aoe->getAngleXU();                    
                 }
 
-                majord*=0.99;
-                minord*=0.99;
-
                 
                 Base::Vector3d majorpositiveend = center + majord * Base::Vector3d(cos(phi),sin(phi),0);
                 Base::Vector3d majornegativeend = center - majord * Base::Vector3d(cos(phi),sin(phi),0);  
