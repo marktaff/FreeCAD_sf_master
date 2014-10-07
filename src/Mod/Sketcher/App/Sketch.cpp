@@ -382,7 +382,6 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     aoe->getRange(startAngle, endAngle);
 
     GCS::Point p1, p2, p3;
-    GCS::Point f1; 
 
     params.push_back(new double(startPnt.x));
     params.push_back(new double(startPnt.y));
