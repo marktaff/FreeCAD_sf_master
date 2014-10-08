@@ -1806,7 +1806,7 @@ void CmdSketcherConstrainEqual::activated(int iMsg)
     }
 
     std::vector<int> ids;
-    bool lineSel = false, arcSel = false, circSel = false, hasAlreadyExternal = false;
+    bool lineSel = false, arcSel = false, circSel = false, ellipsSel = false, arcEllipsSel=false, hasAlreadyExternal = false;
 
     for (std::vector<std::string>::const_iterator it=SubNames.begin(); it != SubNames.end(); ++it) {
 
@@ -1838,8 +1838,12 @@ void CmdSketcherConstrainEqual::activated(int iMsg)
             lineSel = true;
         else if (geo->getTypeId() != Part::GeomArcOfCircle::getClassTypeId())
             arcSel = true;
-        else if (geo->getTypeId() != Part::GeomCircle::getClassTypeId()) // TODO: ellipse
+        else if (geo->getTypeId() != Part::GeomCircle::getClassTypeId()) 
             circSel = true;
+        else if (geo->getTypeId() != Part::GeomEllipse::getClassTypeId()) // TODO: ellipse
+            ellipsSel = true;
+        else if (geo->getTypeId() != Part::GeomArcOfEllipse::getClassTypeId()) // TODO: ellipse
+            arcEllipsSel = true;
         else {
             QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
                 QObject::tr("Select two or more edges of similar type"));
@@ -1849,7 +1853,7 @@ void CmdSketcherConstrainEqual::activated(int iMsg)
         ids.push_back(GeoId);
     }
 
-    if (lineSel && (arcSel || circSel)) {
+    if (lineSel && (arcSel || circSel) && (ellipsSel || arcEllipsSel)) {
         QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Wrong selection"),
             QObject::tr("Select two or more edges of similar type"));
         return;
