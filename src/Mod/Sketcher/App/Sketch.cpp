@@ -400,8 +400,8 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     
     params.push_back(new double(focus1.x));
     params.push_back(new double(focus1.y));
-    double *f1_x = params[params.size()-2];
-    double *f1_y = params[params.size()-1];
+    double *f1X = params[params.size()-2];
+    double *f1Y = params[params.size()-1];
     
     def.startPointId = Points.size();
     Points.push_back(p1);
@@ -428,8 +428,8 @@ int Sketch::addArcOfEllipse(const Part::GeomArcOfEllipse &ellipseSegment, bool f
     a.start      = p1;
     a.end        = p2;
     a.center     = p3;
-    a.focus1_X   = f1_x;
-    a.focus1_Y   = f1_y;
+    a.focus1X   = f1X;
+    a.focus1Y   = f1Y;
     a.radmin     = rmin;
     a.startAngle = a1;
     a.endAngle   = a2;
@@ -524,8 +524,8 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
 
     params.push_back(new double(focus1.x));
     params.push_back(new double(focus1.y));
-    double *f1_x = params[params.size()-2];
-    double *f1_y = params[params.size()-1];
+    double *f1X = params[params.size()-2];
+    double *f1Y = params[params.size()-1];
     
     // add the radius parameters
     params.push_back(new double(radmin));
@@ -533,8 +533,8 @@ int Sketch::addEllipse(const Part::GeomEllipse &elip, bool fixed)
      
     // set the ellipse for later constraints
     GCS::Ellipse e;
-    e.focus1_X  = f1_x;
-    e.focus1_Y  = f1_y;
+    e.focus1X  = f1X;
+    e.focus1Y  = f1Y;
     e.center    = c;
     e.radmin    = rmin;
 
@@ -2062,7 +2062,7 @@ bool Sketch::updateGeometry()
                 GeomArcOfEllipse *aoe = dynamic_cast<GeomArcOfEllipse*>(it->geo);
                 
                 Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
-                Base::Vector3d f1 = Vector3d(*myArc.focus1_X, *myArc.focus1_Y, 0.0);
+                Base::Vector3d f1 = Vector3d(*myArc.focus1X, *myArc.focus1Y, 0.0);
                 double radmin = *myArc.radmin;
                 
                 Base::Vector3d fd=f1-center;
@@ -2092,7 +2092,7 @@ bool Sketch::updateGeometry()
                 GeomEllipse *ellipse = dynamic_cast<GeomEllipse*>(it->geo);
                 
                 Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
-                Base::Vector3d f1 = Vector3d(*Ellipses[it->index].focus1_X, *Ellipses[it->index].focus1_Y, 0.0);
+                Base::Vector3d f1 = Vector3d(*Ellipses[it->index].focus1X, *Ellipses[it->index].focus1Y, 0.0);
                 double radmin = *Ellipses[it->index].radmin;
                 
                 Base::Vector3d fd=f1-center;

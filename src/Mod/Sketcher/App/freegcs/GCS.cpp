@@ -845,8 +845,8 @@ int System::addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point
 
 int System::addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId)
 {
-           addConstraintEqual(e.focus1_X, p1.x, tagId);
-    return addConstraintEqual(e.focus1_Y, p1.y, tagId);
+           addConstraintEqual(e.focus1X, p1.x, tagId);
+    return addConstraintEqual(e.focus1Y, p1.y, tagId);
 }
 
 int System::addConstraintInternalAlignmentEllipseFocus2(Ellipse &e, Point &p1, int tagId)
@@ -880,8 +880,8 @@ int System::addConstraintInternalAlignmentEllipseMinorDiameter(ArcOfEllipse &a, 
 
 int System::addConstraintInternalAlignmentEllipseFocus1(ArcOfEllipse &a, Point &p1, int tagId)
 {
-           addConstraintEqual(a.focus1_X, p1.x, tagId);
-    return addConstraintEqual(a.focus1_Y, p1.y, tagId);
+           addConstraintEqual(a.focus1X, p1.x, tagId);
+    return addConstraintEqual(a.focus1Y, p1.y, tagId);
 }
 
 int System::addConstraintInternalAlignmentEllipseFocus2(ArcOfEllipse &a, Point &p1, int tagId)
