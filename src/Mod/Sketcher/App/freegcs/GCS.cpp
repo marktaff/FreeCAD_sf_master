@@ -798,6 +798,24 @@ int System::addConstraintEqualRadii(Ellipse &e1, Ellipse &e2, int tagId)
     return addConstraint(constr);
 }
 
+int System::addConstraintEqualRadii(ArcOfEllipse &a1, ArcOfEllipse &a2, int tagId)
+{
+    addConstraintEqual(a1.radmin, a2.radmin, tagId);
+    
+    Constraint *constr = new ConstraintEqualMajorAxesEllipse(a1,a2);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
+int System::addConstraintEqualRadii(ArcOfEllipse &a1, Ellipse &e2, int tagId)
+{
+    addConstraintEqual(a1.radmin, e2.radmin, tagId);
+    
+    Constraint *constr = new ConstraintEqualMajorAxesEllipse(a1,e2);
+    constr->setTag(tagId);
+    return addConstraint(constr);
+}
+
 int System::addConstraintEqualRadius(Circle &c1, Arc &a2, int tagId)
 {
     return addConstraintEqual(c1.rad, a2.rad, tagId);
