@@ -828,61 +828,61 @@ int System::addConstraintInternalAlignmentPoint2Ellipse(Ellipse &e, Point &p1, I
 }
 
 int System::addConstraintInternalAlignmentEllipseMajorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId)
-{
-    //chechk which of the points is closer to satisfying positivemajor
-    double err1=0.0, err2=0.0;
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p1,EllipsePositiveMajorX);
-    err1+=abs(constr.error());
-    };
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p1,EllipsePositiveMajorY);
-    err1+=abs(constr.error());
-    };
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p2,EllipsePositiveMajorX);
-    err2+=abs(constr.error());
-    };
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p2,EllipsePositiveMajorY);
-    err2+=abs(constr.error());
-    };
-    if(err1<=err2){
+{   
+    double X_1=*p1.x;
+    double Y_1=*p1.y;
+    double X_2=*p2.x;
+    double Y_2=*p2.y;
+    double X_c=*e.center.x;
+    double Y_c=*e.center.y;
+    double X_F1=*e.focus1X;
+    double Y_F1=*e.focus1Y;
+    double b=*e.radmin;
+    
+    double closertopositivemajor=pow(X_1 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c,
+        2) + pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)),
+        2) - pow(X_2 - X_c - (X_F1 - X_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+        pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)), 2) +
+        pow(Y_1 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+        pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)), 2) -
+        pow(Y_2 - Y_c - (Y_F1 - Y_c)*sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) +
+        pow(Y_F1 - Y_c, 2))/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)), 2);
+    
+    if(closertopositivemajor>0){
+        //p2 is closer to  positivemajor. Assign constraints back-to-front.
+        addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipsePositiveMajorX,tagId);
+        addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipsePositiveMajorY,tagId);
+        addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseNegativeMajorX,tagId);
+        return addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseNegativeMajorY,tagId);         
+    }
+    else{
         //p1 is closer to  positivemajor
         addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMajorX,tagId);
         addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMajorY,tagId);
         addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMajorX,tagId);
         return addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMajorY,tagId);
-    } else {
-        //p2 is closer to  positivemajor. Assign constraints back-to-front.
-        addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipsePositiveMajorX,tagId);
-        addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipsePositiveMajorY,tagId);
-        addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseNegativeMajorX,tagId);
-        return addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseNegativeMajorY,tagId);
     }
 }
 
 int System::addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point &p1, Point &p2, int tagId)
 {
-    //chechk which of the points is closer to satisfying positivemajor
-    double err1=0.0, err2=0.0;
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p1,EllipsePositiveMinorX);
-    err1+=abs(constr.error());
-    };
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p1,EllipsePositiveMinorY);
-    err1+=abs(constr.error());
-    };
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p2,EllipsePositiveMinorX);
-    err2+=abs(constr.error());
-    };
-    {
-    ConstraintInternalAlignmentPoint2Ellipse constr (e,p2,EllipsePositiveMinorY);
-    err2+=abs(constr.error());
-    };
-    if(err1<=err2){
+    double X_1=*p1.x;
+    double Y_1=*p1.y;
+    double X_2=*p2.x;
+    double Y_2=*p2.y;
+    double X_c=*e.center.x;
+    double Y_c=*e.center.y;
+    double X_F1=*e.focus1X;
+    double Y_F1=*e.focus1Y;
+    double b=*e.radmin;
+    
+    double closertopositiveminor= pow(X_1 - X_c + b*(Y_F1 - Y_c)/sqrt(pow(X_F1 - X_c, 2) +
+        pow(Y_F1 - Y_c, 2)), 2) - pow(X_2 - X_c + b*(Y_F1 - Y_c)/sqrt(pow(X_F1 -
+        X_c, 2) + pow(Y_F1 - Y_c, 2)), 2) + pow(-Y_1 + Y_c + b*(X_F1 -
+        X_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)), 2) - pow(-Y_2 + Y_c
+        + b*(X_F1 - X_c)/sqrt(pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2)), 2);
+        
+    if(closertopositiveminor>0){
         addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMinorX,tagId);
         addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipsePositiveMinorY,tagId);
         addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipseNegativeMinorX,tagId);
@@ -892,7 +892,7 @@ int System::addConstraintInternalAlignmentEllipseMinorDiameter(Ellipse &e, Point
         addConstraintInternalAlignmentPoint2Ellipse(e,p2,EllipsePositiveMinorY,tagId);
         addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseNegativeMinorX,tagId);
         return addConstraintInternalAlignmentPoint2Ellipse(e,p1,EllipseNegativeMinorY,tagId);
-    };
+    }
 }
 
 int System::addConstraintInternalAlignmentEllipseFocus1(Ellipse &e, Point &p1, int tagId)
