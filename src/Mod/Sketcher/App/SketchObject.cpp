@@ -1202,6 +1202,176 @@ int SketchObject::trim(int GeoId, const Base::Vector3d& point)
                 }
             }
         }
+    } else if (geo->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId()) {
+        const Part::GeomArcOfEllipse *aoe = dynamic_cast<const Part::GeomArcOfEllipse*>(geo);
+        Base::Vector3d center = aoe->getCenter();
+        double startAngle, endAngle;
+        aoe->getRange(startAngle, endAngle);
+        double dir = (startAngle < endAngle) ? 1 : -1; // this is always == 1
+        double arcLength = (endAngle - startAngle)*dir;
+        double theta0 = Base::fmod(
+                atan2(-aoe->getMajorRadius()*((point.x-center.x)*sin(aoe->getAngleXU())-(point.y-center.y)*cos(aoe->getAngleXU())),
+                            aoe->getMinorRadius()*((point.x-center.x)*cos(aoe->getAngleXU())+(point.y-center.y)*sin(aoe->getAngleXU()))
+                )- startAngle, 2.f*M_PI); // x0
+        if (GeoId1 >= 0 && GeoId2 >= 0) {
+            double theta1 = Base::fmod(
+                atan2(-aoe->getMajorRadius()*((point1.x-center.x)*sin(aoe->getAngleXU())-(point1.y-center.y)*cos(aoe->getAngleXU())),
+                            aoe->getMinorRadius()*((point1.x-center.x)*cos(aoe->getAngleXU())+(point1.y-center.y)*sin(aoe->getAngleXU()))
+                )- startAngle, 2.f*M_PI) * dir; // x1
+            double theta2 = Base::fmod(
+                atan2(-aoe->getMajorRadius()*((point2.x-center.x)*sin(aoe->getAngleXU())-(point2.y-center.y)*cos(aoe->getAngleXU())),
+                            aoe->getMinorRadius()*((point2.x-center.x)*cos(aoe->getAngleXU())+(point2.y-center.y)*sin(aoe->getAngleXU()))
+                )- startAngle, 2.f*M_PI) * dir; // x2
+                
+            if (theta1 > theta2) {
+                std::swap(GeoId1,GeoId2);
+                std::swap(point1,point2);
+                std::swap(theta1,theta2);
+            }
+            if (theta1 >= 0.001*arcLength && theta2 <= 0.999*arcLength) {
+                // Trim Point between intersection points
+                if (theta1 < theta0 && theta2 > theta0) {
+                    int newGeoId = addGeometry(geo);
+                    // go through all constraints and replace the point (GeoId,end) with (newGeoId,end)
+                    transferConstraints(GeoId, end, newGeoId, end);
+
+                    Part::GeomArcOfEllipse *aoe1 = dynamic_cast<Part::GeomArcOfEllipse*>(geomlist[GeoId]);
+                    Part::GeomArcOfEllipse *aoe2 = dynamic_cast<Part::GeomArcOfEllipse*>(geomlist[newGeoId]);
+                    aoe1->setRange(startAngle, startAngle + theta1);
+                    aoe2->setRange(startAngle + theta2, endAngle);
+
+                    // constrain the trimming points on the corresponding geometries
+                    Sketcher::Constraint *newConstr = new Sketcher::Constraint();
+
+                    // Build Constraints associated with new pair of arcs
+                    newConstr->Type = Sketcher::Equal;
+                    newConstr->First = GeoId;
+                    newConstr->Second = newGeoId;
+                    addConstraint(newConstr);
+
+                    PointPos secondPos1 = Sketcher::none, secondPos2 = Sketcher::none;
+                    ConstraintType constrType1 = Sketcher::PointOnObject, constrType2 = Sketcher::PointOnObject;
+
+                    for (std::vector<Constraint *>::const_iterator it=constraints.begin();
+                         it != constraints.end(); ++it) {
+                        Constraint *constr = *(it);
+                        if (secondPos1 == Sketcher::none &&
+                            (constr->First == GeoId1  && constr->Second == GeoId)) {
+                            constrType1= Sketcher::Coincident;
+                            secondPos1 = constr->FirstPos;
+                        } else if (secondPos2 == Sketcher::none &&
+                                   (constr->First == GeoId2  && constr->Second == GeoId)) {
+                            constrType2 = Sketcher::Coincident;
+                            secondPos2 = constr->FirstPos;
+                        }
+                    }
+
+                    newConstr->Type = constrType1;
+                    newConstr->First = GeoId;
+                    newConstr->FirstPos = end;
+                    newConstr->Second = GeoId1;
+
+                    if (constrType1 == Sketcher::Coincident) {
+                      newConstr->SecondPos = secondPos1;
+                      delConstraintOnPoint(GeoId1, secondPos1, false);
+                    }
+
+                    addConstraint(newConstr);
+
+                    // Reset secondpos in case it was set previously
+                    newConstr->SecondPos = Sketcher::none;
+
+                    newConstr->Type = constrType2;
+                    newConstr->First = newGeoId;
+                    newConstr->FirstPos = start;
+                    newConstr->Second = GeoId2;
+
+                    if (constrType2 == Sketcher::Coincident) {
+                      newConstr->SecondPos = secondPos2;
+                      delConstraintOnPoint(GeoId2, secondPos2, false);
+                    }
+
+                    addConstraint(newConstr);
+
+                    newConstr->Type = Sketcher::Coincident;
+                    newConstr->First = GeoId;
+                    newConstr->FirstPos = Sketcher::mid;
+                    newConstr->Second = newGeoId;
+                    newConstr->SecondPos = Sketcher::mid;
+                    addConstraint(newConstr);
+
+                    delete newConstr;
+
+                    return 0;
+                } else
+                    return -1;
+            } else if (theta1 < 0.001*arcLength) { // drop the second intersection point
+                std::swap(GeoId1,GeoId2);
+                std::swap(point1,point2);
+            } else if (theta2 > 0.999*arcLength) {
+            }
+            else
+                return -1;
+        }
+
+        if (GeoId1 >= 0) {
+
+            ConstraintType constrType = Sketcher::PointOnObject;
+            PointPos secondPos = Sketcher::none;
+            for (std::vector<Constraint *>::const_iterator it=constraints.begin();
+                 it != constraints.end(); ++it) {
+                Constraint *constr = *(it);
+                if ((constr->First == GeoId1  && constr->Second == GeoId)) {
+                    constrType = Sketcher::Coincident;
+                    secondPos = constr->FirstPos;
+                    delConstraintOnPoint(GeoId1, constr->FirstPos, false);
+                    break;
+                }
+            }
+            
+            double theta1 = Base::fmod(
+                        atan2(-aoe->getMajorRadius()*((point1.x-center.x)*sin(aoe->getAngleXU())-(point1.y-center.y)*cos(aoe->getAngleXU())),
+                              aoe->getMinorRadius()*((point1.x-center.x)*cos(aoe->getAngleXU())+(point1.y-center.y)*sin(aoe->getAngleXU()))
+                             )- startAngle, 2.f*M_PI) * dir; // x1
+                
+            if (theta1 >= 0.001*arcLength && theta1 <= 0.999*arcLength) {
+                if (theta1 > theta0) { // trim arc start
+                    delConstraintOnPoint(GeoId, start, false);
+                    Part::GeomArcOfEllipse *aoe1 = dynamic_cast<Part::GeomArcOfEllipse*>(geomlist[GeoId]);
+                    aoe1->setRange(startAngle + theta1, endAngle);
+                    // constrain the trimming point on the corresponding geometry
+                    Sketcher::Constraint *newConstr = new Sketcher::Constraint();
+                    newConstr->Type = constrType;
+                    newConstr->First = GeoId;
+                    newConstr->FirstPos = start;
+                    newConstr->Second = GeoId1;
+
+                    if (constrType == Sketcher::Coincident)
+                        newConstr->SecondPos = secondPos;
+
+                    addConstraint(newConstr);
+                    delete newConstr;
+                    return 0;
+                }
+                else { // trim arc end
+                    delConstraintOnPoint(GeoId, end, false);
+                    Part::GeomArcOfEllipse *aoe1 = dynamic_cast<Part::GeomArcOfEllipse*>(geomlist[GeoId]);
+                    aoe1->setRange(startAngle, startAngle + theta1);
+                    Sketcher::Constraint *newConstr = new Sketcher::Constraint();
+                    newConstr->Type = constrType;
+                    newConstr->First = GeoId;
+                    newConstr->FirstPos = end;
+                    newConstr->Second = GeoId1;
+
+                    if (constrType == Sketcher::Coincident)
+                        newConstr->SecondPos = secondPos;
+
+                    addConstraint(newConstr);
+                    delete newConstr;
+                    return 0;
+                }
+            }
+        }
     }
 
     return -1;
