@@ -30,11 +30,13 @@
 # include <gp_Pln.hxx>
 # include <gp_Ax3.hxx>
 # include <gp_Circ.hxx>
+# include <gp_Elips.hxx>
 # include <BRepAdaptor_Surface.hxx>
 # include <BRepAdaptor_Curve.hxx>
 # include <BRep_Tool.hxx>
 # include <Geom_Plane.hxx>
 # include <Geom_Circle.hxx>
+# include <Geom_Ellipse.hxx>
 # include <Geom_TrimmedCurve.hxx>
 # include <GeomAPI_ProjectPointOnSurf.hxx>
 # include <BRepOffsetAPI_NormalProjection.hxx>
@@ -1653,6 +1655,35 @@ void SketchObject::rebuildExternalGeometry(void)
                                         ExternalGeo.push_back(arc);
                                     }
                                 }
+                                else if (projCurve.GetType() == GeomAbs_Ellipse) {
+                                    gp_Elips e = projCurve.Ellipse();
+                                    gp_Pnt p = e.Location();
+                                    gp_Pnt P1 = projCurve.Value(projCurve.FirstParameter());
+                                    gp_Pnt P2 = projCurve.Value(projCurve.LastParameter());
+                                    
+                                    gp_Dir normal = e.Axis().Direction();
+                                    gp_Dir xdir = e.XAxis().Direction();
+                                    gp_Ax2 xdirref(p, normal);
+
+                                    if (P1.SquareDistance(P2) < Precision::Confusion()) {
+                                        Part::GeomEllipse* ellipse = new Part::GeomEllipse();
+                                        ellipse->setMajorRadius(e.MajorRadius());
+                                        ellipse->setMinorRadius(e.MinorRadius());
+                                        ellipse->setCenter(Base::Vector3d(p.X(),p.Y(),p.Z()));
+                                        ellipse->setAngleXU(-xdir.AngleWithRef(xdirref.XDirection(),normal));
+                                        ellipse->Construction = true;
+                                        ExternalGeo.push_back(ellipse);
+                                    }
+                                    else {
+                                        Part::GeomArcOfEllipse* aoe = new Part::GeomArcOfEllipse();
+                                        Handle_Geom_Curve curve = new Geom_Ellipse(e);
+                                        Handle_Geom_TrimmedCurve tCurve = new Geom_TrimmedCurve(curve, projCurve.FirstParameter(),
+                                                                                                projCurve.LastParameter());
+                                        aoe->setHandle(tCurve);
+                                        aoe->Construction = true;
+                                        ExternalGeo.push_back(aoe);
+                                    }
+                                }                                
                                 else {
                                     throw Base::Exception("Not yet supported geometry for external geometry");
                                 }
