@@ -3094,9 +3094,11 @@ namespace SketcherGui {
                 const Part::Geometry *geom = Sketch->getGeometry(GeoId);
                 if (geom->getTypeId() == Part::GeomLineSegment::getClassTypeId() ||
                     geom->getTypeId() == Part::GeomCircle::getClassTypeId()||
-                    geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId())
+                    geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId()||
+                    geom->getTypeId() == Part::GeomEllipse::getClassTypeId()||
+                    geom->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId()
+                )
                     return true;
-                // TODO: ellipse 
             }
             return  false;
         }
@@ -3176,9 +3178,9 @@ public:
             const Part::Geometry *geom = sketchgui->getSketchObject()->getGeometry(GeoId);
             if (geom->getTypeId() == Part::GeomLineSegment::getClassTypeId() ||
                 geom->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ||
-                geom->getTypeId() == Part::GeomCircle::getClassTypeId()
-                // TODO: ellipse
-            ) {
+                geom->getTypeId() == Part::GeomCircle::getClassTypeId()      ||
+                geom->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId() ||
+                geom->getTypeId() == Part::GeomEllipse::getClassTypeId()) {
                 try {
                     Gui::Command::openCommand("Trim edge");
                     Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.trim(%d,App.Vector(%f,%f,0))",

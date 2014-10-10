@@ -1839,7 +1839,7 @@ int System::diagnose()
         Eigen::MatrixXd Q = qrJT.matrixQ ();
         int paramsNum = qrJT.rows();
         int constrNum = qrJT.cols();
-        qrJT.setThreshold(1e-10);
+        qrJT.setThreshold(1e-13);
         int rank = qrJT.rank();
 
         Eigen::MatrixXd R;
