@@ -3085,10 +3085,18 @@ Restart:
                                 r1 = ellipse->getMajorRadius();
                                 angle1 = -ellipse->getAngleXU();
                                 midpos1 = ellipse->getCenter();
+                            } else if (geo1->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId()) {
+                                // TODO: ellipse
+                                const Part::GeomArcOfEllipse *aoe = dynamic_cast<const Part::GeomArcOfEllipse *>(geo1);
+                                r1 = aoe->getMajorRadius();
+                                double startangle, endangle;
+                                aoe->getRange(startangle, endangle);
+                                angle1 = (startangle + endangle)/2-aoe->getAngleXU();
+                                midpos1 = aoe->getCenter();
                             } else
                                 break;
 
-                            if (geo2->getTypeId() == Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
+                            if (geo2->getTypeId() == Part::GeomCircle::getClassTypeId()) {
                                 const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(geo2);
                                 r2 = circle->getRadius();
                                 angle2 = M_PI/4;
@@ -3106,6 +3114,14 @@ Restart:
                                 r2 = ellipse->getMajorRadius();
                                 angle2 = -ellipse->getAngleXU();
                                 midpos2 = ellipse->getCenter();
+                            } else if (geo2->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId()) {
+                                // TODO: ellipse
+                                const Part::GeomArcOfEllipse *aoe = dynamic_cast<const Part::GeomArcOfEllipse *>(geo2);
+                                r2 = aoe->getMajorRadius();
+                                double startangle, endangle;
+                                aoe->getRange(startangle, endangle);
+                                angle1 = (startangle + endangle)/2-aoe->getAngleXU();
+                                midpos1 = aoe->getCenter();
                             }
                             else
                                 break;
