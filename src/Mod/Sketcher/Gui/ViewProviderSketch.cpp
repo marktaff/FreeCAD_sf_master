@@ -2140,6 +2140,34 @@ void ViewProviderSketch::updateColor(void)
                 if (index >= 0 && index < PtNum) pcolor[index] = SelectColor;
                 index = edit->ActSketch.getPointId(constraint->Second, constraint->SecondPos) + 1;
                 if (index >= 0 && index < PtNum) pcolor[index] = SelectColor;
+            } else if (type == Sketcher::InternalAlignment) {
+                switch(constraint->AlignmentType) {
+                    case EllipseMajorDiameter:
+                    case EllipseMinorDiameter:
+                    {
+                        // color line
+                        int CurvNum = edit->CurvesMaterials->diffuseColor.getNum();
+                        for (int  i=0; i < CurvNum; i++) {
+                            int cGeoId = edit->CurvIdToGeoId[i];
+                            
+                            if(cGeoId == constraint->First) {
+                                int indexes=(edit->CurveSet->numVertices[i]);
+                                color[i] = SelectColor;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                    case EllipseFocus1:
+                    case EllipseFocus2:
+                    {
+                        int index = edit->ActSketch.getPointId(constraint->First, constraint->FirstPos) + 1;
+                        if (index >= 0 && index < PtNum) pcolor[index] = SelectColor;
+                    }
+                    break;
+                    default:
+                    break;
+                }
             }
         } else if (edit->PreselectConstraintSet.count(i)) {
             if (hasDatumLabel) {
@@ -2199,7 +2227,7 @@ QString ViewProviderSketch::iconTypeFromConstraint(Constraint *constraint)
     case Equal:
         return QString::fromAscii("small/Constraint_EqualLength_sm");
     case Symmetric:
-        return QString::fromAscii("small/Constraint_Symmetric_sm");
+        return QString::fromAscii("small/Constraint_Symmetric_sm");          
     default:
         return QString();
     }
