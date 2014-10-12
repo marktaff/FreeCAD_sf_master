@@ -3122,13 +3122,11 @@ Restart:
                             if (geo1->getTypeId() == Part::GeomCircle::getClassTypeId()) { // TODO: ellipse
                                 const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(geo1);
                                 r1a = circle->getRadius();
-                                r1b=r1a;
                                 angle1 = M_PI/4;
                                 midpos1 = circle->getCenter();
                             } else if (geo1->getTypeId() == Part::GeomArcOfCircle::getClassTypeId()) {
                                 const Part::GeomArcOfCircle *arc = dynamic_cast<const Part::GeomArcOfCircle *>(geo1);
                                 r1a = arc->getRadius();
-                                r1b=r1a;
                                 double startangle, endangle;
                                 arc->getRange(startangle, endangle);
                                 angle1 = (startangle + endangle)/2;
@@ -3155,13 +3153,11 @@ Restart:
                             if (geo2->getTypeId() == Part::GeomCircle::getClassTypeId()) {
                                 const Part::GeomCircle *circle = dynamic_cast<const Part::GeomCircle *>(geo2);
                                 r2a = circle->getRadius();
-                                r2b=r2a;
                                 angle2 = M_PI/4;
                                 midpos2 = circle->getCenter();
                             } else if (geo2->getTypeId() == Part::GeomArcOfCircle::getClassTypeId()) {
                                 const Part::GeomArcOfCircle *arc = dynamic_cast<const Part::GeomArcOfCircle *>(geo2);
                                 r2a = arc->getRadius();
-                                r2b=r2a;
                                 double startangle, endangle;
                                 arc->getRange(startangle, endangle);
                                 angle2 = (startangle + endangle)/2;
@@ -3182,26 +3178,46 @@ Restart:
                                 angle2 = aoe->getAngleXU();
                                 angle2plus = (startangle + endangle)/2;
                                 midpos2 = aoe->getCenter();
-                            }
-                            else
+                            } else
                                 break;
 
-                            Base::Vector3d majDir, minDir, rvec;
-                            majDir = Base::Vector3d(cos(angle1),sin(angle1),0);//direction of major axis of ellipse
-                            minDir = Base::Vector3d(-majDir.y,majDir.x,0);//direction of minor axis of ellipse
-                            rvec = (r1a*cos(angle1plus)) * majDir   +   (r1b*sin(angle1plus)) * minDir;
-                            midpos1 += rvec;
-                            rvec.Normalize();
-                            norm1 = rvec;
-                            dir1 = Base::Vector3d(-rvec.y,rvec.x,0);//DeepSOIC: I'm not sure what dir is supposed to mean.
+                            if( geo1->getTypeId() == Part::GeomEllipse::getClassTypeId() || 
+                                geo1->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId() ){
+                                
+                                Base::Vector3d majDir, minDir, rvec;
+                                majDir = Base::Vector3d(cos(angle1),sin(angle1),0);//direction of major axis of ellipse
+                                minDir = Base::Vector3d(-majDir.y,majDir.x,0);//direction of minor axis of ellipse
+                                rvec = (r1a*cos(angle1plus)) * majDir   +   (r1b*sin(angle1plus)) * minDir;
+                                midpos1 += rvec;
+                                rvec.Normalize();
+                                norm1 = rvec;
+                                dir1 = Base::Vector3d(-rvec.y,rvec.x,0);//DeepSOIC: I'm not sure what dir is supposed to mean.
+                            }
+                            else {
+                                norm1 = Base::Vector3d(cos(angle1),sin(angle1),0);
+                                dir1 = Base::Vector3d(-norm1.y,norm1.x,0);
+                                midpos1 += r1a*norm1;
+                            }
+                            
 
-                            majDir = Base::Vector3d(cos(angle2),sin(angle2),0);//direction of major axis of ellipse
-                            minDir = Base::Vector3d(-majDir.y,majDir.x,0);//direction of minor axis of ellipse
-                            rvec = (r2a*cos(angle2plus)) * majDir   +   (r2b*sin(angle2plus)) * minDir;
-                            midpos2 += rvec;
-                            rvec.Normalize();
-                            norm2 = rvec;
-                            dir2 = Base::Vector3d(-rvec.y,rvec.x,0);
+                            if( geo2->getTypeId() == Part::GeomEllipse::getClassTypeId() || 
+                                geo2->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId() ) {                            
+                                
+                                Base::Vector3d majDir, minDir, rvec;
+                                majDir = Base::Vector3d(cos(angle2),sin(angle2),0);//direction of major axis of ellipse
+                                minDir = Base::Vector3d(-majDir.y,majDir.x,0);//direction of minor axis of ellipse
+                                rvec = (r2a*cos(angle2plus)) * majDir   +   (r2b*sin(angle2plus)) * minDir;
+                                midpos2 += rvec;
+                                rvec.Normalize();
+                                norm2 = rvec;
+                                dir2 = Base::Vector3d(-rvec.y,rvec.x,0);
+                            }
+                            else {
+                                norm2 = Base::Vector3d(cos(angle2),sin(angle2),0);
+                                dir2 = Base::Vector3d(-norm2.y,norm2.x,0);
+                                midpos2 += r2a*norm2; 
+                            }
+                            
                         } else // Parallel can only apply to a GeomLineSegment
                             break;
                     } else {
