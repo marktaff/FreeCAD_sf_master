@@ -952,48 +952,48 @@ double ConstraintPointOnEllipse::error()
 }
 
 double ConstraintPointOnEllipse::grad(double *param)
-{      
+{
     double deriv=0.;
     if (param == p1x() || param == p1y() ||
         param == f1x() || param == f1y() ||
         param == cx() || param == cy() ||
         param == rmin()) {
-                
+
         double X_0 = *p1x();
         double Y_0 = *p1y();
         double X_c = *cx();
-        double Y_c = *cy();     
+        double Y_c = *cy();
         double X_F1 = *f1x();
         double Y_F1 = *f1y();
         double b = *rmin();
-                
-        if (param == p1x()) 
+
+        if (param == p1x())
             deriv += (X_0 - X_F1)/sqrt(pow(X_0 - X_F1, 2) + pow(Y_0 - Y_F1, 2)) +
                 (X_0 + X_F1 - 2*X_c)/sqrt(pow(X_0 + X_F1 - 2*X_c, 2) + pow(Y_0 + Y_F1 -
                 2*Y_c, 2));
-        if (param == p1y()) 
+        if (param == p1y())
             deriv += (Y_0 - Y_F1)/sqrt(pow(X_0 - X_F1, 2) + pow(Y_0 - Y_F1, 2)) +
                 (Y_0 + Y_F1 - 2*Y_c)/sqrt(pow(X_0 + X_F1 - 2*X_c, 2) + pow(Y_0 + Y_F1 -
                 2*Y_c, 2));
-        if (param == f1x()) 
+        if (param == f1x())
             deriv += -(X_0 - X_F1)/sqrt(pow(X_0 - X_F1, 2) + pow(Y_0 - Y_F1, 2)) -
                 2*(X_F1 - X_c)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))
                 + (X_0 + X_F1 - 2*X_c)/sqrt(pow(X_0 + X_F1 - 2*X_c, 2) + pow(Y_0 + Y_F1
                 - 2*Y_c, 2));
-        if (param == f1y()) 
+        if (param == f1y())
             deriv +=-(Y_0 - Y_F1)/sqrt(pow(X_0 - X_F1, 2) + pow(Y_0 - Y_F1, 2)) -
                 2*(Y_F1 - Y_c)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c, 2))
                 + (Y_0 + Y_F1 - 2*Y_c)/sqrt(pow(X_0 + X_F1 - 2*X_c, 2) + pow(Y_0 + Y_F1
                 - 2*Y_c, 2));
-        if (param == cx()) 
+        if (param == cx())
             deriv += 2*(X_F1 - X_c)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1
                 - Y_c, 2)) - 2*(X_0 + X_F1 - 2*X_c)/sqrt(pow(X_0 + X_F1 - 2*X_c, 2) +
                 pow(Y_0 + Y_F1 - 2*Y_c, 2));
-        if (param == cy()) 
+        if (param == cy())
             deriv +=2*(Y_F1 - Y_c)/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1
                 - Y_c, 2)) - 2*(Y_0 + Y_F1 - 2*Y_c)/sqrt(pow(X_0 + X_F1 - 2*X_c, 2) +
                 pow(Y_0 + Y_F1 - 2*Y_c, 2));
-        if (param == rmin()) 
+        if (param == rmin())
             deriv += -2*b/sqrt(pow(b, 2) + pow(X_F1 - X_c, 2) + pow(Y_F1 - Y_c,
                 2));
     }
