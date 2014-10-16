@@ -27,10 +27,10 @@
 #include "qp_eq.h"
 #include <Eigen/QR>
 
-#define _GCS_DEBUG 1
+#undef _GCS_DEBUG 
 #undef _GCS_DEBUG_SOLVER_JACOBIAN_QR_DECOMPOSITION_TRIANGULAR_MATRIX 
 
-#ifdef _GCS_DEBUG
+#if defined(_GCS_DEBUG) || defined(_GCS_DEBUG_SOLVER_JACOBIAN_QR_DECOMPOSITION_TRIANGULAR_MATRIX)
 #include <Base/Writer.h>
 #include <Base/Reader.h>
 #include <Base/Exception.h>

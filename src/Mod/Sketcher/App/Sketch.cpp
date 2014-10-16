@@ -1591,7 +1591,7 @@ int Sketch::addDistanceConstraint(int geoId1, PointPos pos1, int geoId2, PointPo
     return -1;
 }
 
-int Sketch::addRadiusConstraint(int geoId, double value, int radiusnumber)
+int Sketch::addRadiusConstraint(int geoId, double value)
 {
     geoId = checkGeoId(geoId);
 

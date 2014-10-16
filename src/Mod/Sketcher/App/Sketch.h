@@ -165,7 +165,7 @@ public:
     int addTangentConstraint(int geoId1, PointPos pos1, int geoId2);
     int addTangentConstraint(int geoId1, PointPos pos1, int geoId2, PointPos pos2);
     /// add a radius constraint on a circle or an arc
-    int addRadiusConstraint(int geoId, double value, int radiusnumber=0);
+    int addRadiusConstraint(int geoId, double value);
     /// add an angle constraint on a line or between two lines
     int addAngleConstraint(int geoId, double value);
     int addAngleConstraint(int geoId1, int geoId2, double value);
