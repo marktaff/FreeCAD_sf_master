@@ -2045,6 +2045,8 @@ private:
      * +Z coming out of the sketch, this b position is in the +Y direction from the centroid.
      */
     Base::Vector2D positiveB;
+    /// the other b position
+    Base::Vector2D negativeB;
     /// cart. position vector for primary focus
     Base::Vector2D f;
     /// cart. position vector for other focus
@@ -2380,19 +2382,27 @@ private:
          * limit of 25 attempts, I have been unable to make it fail.
          */
 
-        // simulate loss of precision in centroid and periapsis
+        // simulate loss of precision in centroid, periapsis, and apoapsis
         char cx[64];
         char cy[64];
         char px[64];
         char py[64];
+        char ax[64];
+        char ay[64];
         sprintf(cx, "%.6lf\n", centroid.fX);
         sprintf(cy, "%.6lf\n", centroid.fY);
         sprintf(px, "%.6lf\n", periapsis.fX);
         sprintf(py, "%.6lf\n", periapsis.fY);
+        sprintf(ax, "%.6lf\n", apoapsis.fX);
+        sprintf(ay, "%.6lf\n", apoapsis.fY);
         centroid.fX = atof(cx);
         centroid.fY = atof(cy);
         periapsis.fX = atof(px);
         periapsis.fY = atof(py);
+        apoapsis.fX = atof(ax);
+        apoapsis.fY = atof(ay);
+        double majorLength = (periapsis - apoapsis).Length();
+        double minorLength = 0;
 
         /* GC_MakeEllipse requires a right-handed coordinate system, with +X
          * from centroid to periapsis, +Z out of the page.
@@ -2406,23 +2416,34 @@ private:
         bool success = false;
         double tempB = b;
 
-        // adjust b until our mangled vectors produce a good ellispe
+        // adjust b until our mangled vectors produce a good ellipse in GC_MakeEllipse
+        // and the mangled major and minor lines in LinePy::PyInit(...) are such that
+        // major is at least slightly larger than minor
         do {
             tempB = b - double(count * beta);
             j = j.Normalize() * tempB;
             positiveB.fX = centroid.fX + j.x;
             positiveB.fY = centroid.fY + j.y;
-            char bx[64];
-            char by[64];
-            sprintf(bx, "%.6lf\n", positiveB.fX);
-            sprintf(by, "%.6lf\n", positiveB.fY);
-            positiveB.fX = atof(bx);
-            positiveB.fY = atof(by);
+            negativeB.fX = centroid.fX + (j.x * -1);
+            negativeB.fY = centroid.fY + (j.y * -1);
+            char bpx[64];
+            char bpy[64];
+            char bnx[64];
+            char bny[64];
+            sprintf(bpx, "%.6lf\n", positiveB.fX);
+            sprintf(bpy, "%.6lf\n", positiveB.fY);
+            sprintf(bnx, "%.6lf\n", negativeB.fX);
+            sprintf(bny, "%.6lf\n", negativeB.fY);
+            positiveB.fX = atof(bpx);
+            positiveB.fY = atof(bpy);
+            negativeB.fX = atof(bnx);
+            negativeB.fY = atof(bny);
             GC_MakeEllipse me(gp_Pnt(periapsis.fX,periapsis.fY,0),
                               gp_Pnt(positiveB.fX,positiveB.fY,0),
                               gp_Pnt(centroid.fX,centroid.fY,0));
+            minorLength = (negativeB - positiveB).Length();
             count++;
-            success = me.IsDone();
+            success = me.IsDone() && (minorLength + beta < majorLength);
         } while (!success && (count <= limit));
         if (!success) {
             qDebug() << "Failed to create a valid mangled ellipse after" << count << "attempts";
@@ -2499,16 +2520,6 @@ private:
                                     sketchgui->getObject()->getNameInDocument(),
                                     currentgeoid+2,currentgeoid);
 
-            /// @bug small circular ellipses have conflicting minor and major axis constraints.
-            /// May be the same issue with floating point and round-tripping doubles when making lines
-            /// as with GC_MakeEllipse
-            /// Conflict occurs when major > minor by 1e-6: 2.0658824836106
-            ///                                             2.0658817202241
-            /// This case is probably a bug in the constaint solver.
-            /// Also we can create major line slightly smaller than minor line: major: 1.4808106044856
-            ///                                                                 minor: 1.4808111779494
-            /// This case is likely due to round-tripping doubles when making lines.
-            /// @see LinePy::PyInit(...) in LinePyImp.cpp
             Gui::Command::doCommand(Gui::Command::Doc,
                                     "App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
                                     sketchgui->getObject()->getNameInDocument(),
