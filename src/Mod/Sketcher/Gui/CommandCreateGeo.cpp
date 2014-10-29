@@ -2460,16 +2460,6 @@ private:
         fPrime.Scale(-1 * ae);
         fPrime = centroid + fPrime;
 
-        // Taff: Not sure why we are making 3d vectors of existing 2d vectors when
-        //       we are only using two dimensions of the 3d vectors. :-)
-        Base::Vector3d center = Base::Vector3d(centroid.fX,centroid.fY,0);
-        Base::Vector3d majorPositiveEnd = Base::Vector3d(periapsis.fX,periapsis.fY,0);
-        Base::Vector3d majorNegativeEnd = Base::Vector3d(apoapsis.fX,apoapsis.fY,0);
-        Base::Vector3d minorPositiveEnd = Base::Vector3d(positiveB.fX,positiveB.fY,0);
-        Base::Vector3d minorNegativeEnd = center + (j.Normalize() * b * -1);
-        Base::Vector3d focus1P = Base::Vector3d(f.fX,f.fY,0);
-        Base::Vector3d focus2P = Base::Vector3d(fPrime.fX,fPrime.fY,0);
-
         int currentgeoid = getHighestCurveIndex(); // index of the ellipse we just created
 
         Gui::Command::openCommand("Add sketch ellipse");
@@ -2489,8 +2479,8 @@ private:
                                     "App.ActiveDocument.%s.addGeometry(Part.Line"
                                     "(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                                     sketchgui->getObject()->getNameInDocument(),
-                                    majorPositiveEnd.x,majorPositiveEnd.y,
-                                    majorNegativeEnd.x,majorNegativeEnd.y);
+                                    periapsis.fX,periapsis.fY,
+                                    apoapsis.fX,apoapsis.fY);
 
             Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",
                                     sketchgui->getObject()->getNameInDocument(),currentgeoid+1);
@@ -2507,8 +2497,8 @@ private:
                                     "App.ActiveDocument.%s.addGeometry(Part.Line"
                                     "(App.Vector(%f,%f,0),App.Vector(%f,%f,0)))",
                                     sketchgui->getObject()->getNameInDocument(),
-                                    minorPositiveEnd.x,minorPositiveEnd.y,
-                                    minorNegativeEnd.x,minorNegativeEnd.y);
+                                    positiveB.fX,positiveB.fY,
+                                    negativeB.fX,negativeB.fY);
 
             Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.toggleConstruction(%d) ",
                                     sketchgui->getObject()->getNameInDocument(),currentgeoid+2);
@@ -2520,10 +2510,11 @@ private:
                                     sketchgui->getObject()->getNameInDocument(),
                                     currentgeoid+2,currentgeoid);
 
+            // create point for focus
             Gui::Command::doCommand(Gui::Command::Doc,
                                     "App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
                                     sketchgui->getObject()->getNameInDocument(),
-                                    focus1P.x,focus1P.y);
+                                    f.fX,f.fY);
 
             // constrain focus
             Gui::Command::doCommand(Gui::Command::Doc,
@@ -2532,10 +2523,11 @@ private:
                                     sketchgui->getObject()->getNameInDocument(),
                                     currentgeoid+3,Sketcher::start,currentgeoid);
 
+            // create point for second focus
             Gui::Command::doCommand(Gui::Command::Doc,
                                     "App.ActiveDocument.%s.addGeometry(Part.Point(App.Vector(%f,%f,0)))",
                                     sketchgui->getObject()->getNameInDocument(),
-                                    focus2P.x,focus2P.y);
+                                    fPrime.fX,fPrime.fY);
 
             // constrain second focus
             Gui::Command::doCommand(Gui::Command::Doc,
