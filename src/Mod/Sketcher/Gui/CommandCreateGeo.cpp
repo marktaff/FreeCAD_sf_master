@@ -2546,10 +2546,12 @@ private:
         Gui::Command::commitCommand();
         Gui::Command::updateActive();
 
-        // add auto constraints for the center point
-        if (sugConstr1.size() > 0) {
-            createAutoConstraints(sugConstr1, currentgeoid, Sketcher::mid);
-            sugConstr1.clear();
+        if (method == CENTER_PERIAPSIS_B) {
+            // add auto constraints for the center point
+            if (sugConstr1.size() > 0) {
+                createAutoConstraints(sugConstr1, currentgeoid, Sketcher::mid);
+                sugConstr1.clear();
+            }
         }
 
         // delete the temp construction curve from the sketch
